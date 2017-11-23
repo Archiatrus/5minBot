@@ -1,1 +1,1 @@
-Terran Bot in the very early stages. Code still needs to be cleaned.
+Terran Bot in the very early stages. Based on the CommandCenter bot by David Churchill. Code still needs to be cleaned. 
