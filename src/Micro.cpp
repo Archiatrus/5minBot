@@ -208,9 +208,20 @@ void Micro::SmartRightClick(const sc2::Unit * unit, sc2::Units targets, CCBot & 
 	BOT_ASSERT(targets.size()>0, "Unit is null");
 	if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 	{
+		const sc2::Unit * target;
+		float minDist = std::numeric_limits<float>::max();
 		for (auto & t : targets)
 		{
-			bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::LOAD_MEDIVAC, t);
+			float dist = Util::Dist(t->pos, unit->pos);
+			if (!target || minDist > dist)
+			{
+				minDist = dist;
+				target = t;
+			}
+		}
+		if (target)
+		{
+			bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::LOAD_MEDIVAC, target);
 		}
 	}
 	else

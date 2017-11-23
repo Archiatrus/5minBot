@@ -397,5 +397,8 @@ void BaseLocationManager::assignTownhallToBase(const sc2::Unit * townHall) const
 {
 
 	BaseLocation * baseLocation = getBaseLocation(townHall->pos);
-	baseLocation->setTownHall(townHall);
+	if (baseLocation)
+	{
+		baseLocation->setTownHall(townHall);
+	}
 }

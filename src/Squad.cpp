@@ -172,6 +172,10 @@ const bool Squad::needsToRegroup()
 	sc2::Point2D variance(0.0f, 0.0f);
 	for (auto & unit : m_units)
 	{
+		if (!unit->is_alive)
+		{
+			continue;
+		}
 		++n;
 		sc2::Point2D delta = unit->pos - mean;
 		mean += delta / n;

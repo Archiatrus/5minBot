@@ -210,17 +210,6 @@ void BuildingManager::constructAssignedBuildings()
 					{
 						Micro::SmartBuild(b.builderUnit, b.type, b.finalPosition, m_bot);
 					}
-					else
-					{
-						if (m_bot.Query()->Placement(m_bot.Data(b.type).buildAbility, b.finalPosition+sc2::Point2D(1,1)))
-						{
-							int a = 1;
-						}
-						else
-						{
-							int test = 1;
-						}
-					}
                 }
 
                 // set the flag to true
@@ -319,7 +308,7 @@ void BuildingManager::checkForDeadTerranBuilders()
 		}
 		if (b.status == BuildingStatus::Assigned)
 		{
-			if (b.builderUnit->orders.empty() || !(isBuildingOrder(b.builderUnit->orders[0].ability_id) || b.builderUnit->orders[0].ability_id==sc2::ABILITY_ID::MOVE))
+			if (!b.builderUnit->is_alive || b.builderUnit->orders.empty() || !(isBuildingOrder(b.builderUnit->orders[0].ability_id) || b.builderUnit->orders[0].ability_id==sc2::ABILITY_ID::MOVE))
 			{
 				if (b.lastOrderFrame > frames) //We give the worker 10 frames to move
 				{
@@ -539,6 +528,7 @@ void BuildingManager::removeBuildings(const std::vector<Building> & toRemove)
 			{
 				m_bot.Workers().finishedWithWorker(b.builderUnit);
 			}
+			m_buildingPlacer.freeTiles((int)b.finalPosition.x, (int)b.finalPosition.y, Util::GetUnitTypeWidth(b.type, m_bot), Util::GetUnitTypeHeight(b.type, m_bot));
             m_buildings.erase(it);
         }
     }

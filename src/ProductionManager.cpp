@@ -504,9 +504,9 @@ void ProductionManager::defaultMacro()
 						}
 					}
 				}
-				else if (minerals >= 50)
+				else if (minerals >= 50 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
 				{
-					if (unit->add_on_tag && minerals >= 100 && m_bot.Observation()->GetUnit(unit->add_on_tag)->unit_type == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR)
+					if (unit->add_on_tag && minerals >= 100 && m_bot.Observation()->GetUnit(unit->add_on_tag)->unit_type == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR && supply <= 200 - 2*m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_MARINE);
 						std::cout << "Marine" << std::endl;
@@ -551,7 +551,7 @@ void ProductionManager::defaultMacro()
 				}
 				else if (m_bot.Observation()->GetUnit(unit->add_on_tag)->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORYTECHLAB)
 				{
-					if (minerals >= 150 && gas >= 125)
+					if (minerals >= 150 && gas >= 125 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_SIEGETANK).supplyCost)
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_SIEGETANK);
 						std::cout << "Tank" << std::endl;
@@ -598,10 +598,10 @@ void ProductionManager::defaultMacro()
 				}
 				else
 				{
-					if (minerals >= 100 && gas >= 100)
+					if (minerals >= 100 && gas >= 100 && supply<=200-m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_MEDIVAC);
-						if (minerals >= 200 && gas >= 200 && unit->orders.size()==1)
+						if (minerals >= 200 && gas >= 200 && unit->orders.size()==1 && supply <= 200 - 2*m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
 						{
 							m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_MEDIVAC);
 						}
