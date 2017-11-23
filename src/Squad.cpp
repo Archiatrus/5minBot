@@ -121,12 +121,12 @@ void Squad::addUnitsToMicroManagers()
         {
 			if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_SIEGETANK)
 			{
-				if (m_order.getType() == SquadOrderTypes::Defend && unit->orders[0].ability_id != sc2::ABILITY_ID::MORPH_SIEGEMODE)
+				if (m_order.getType() == SquadOrderTypes::Defend && (unit->orders.empty() || unit->orders.back().ability_id != sc2::ABILITY_ID::MORPH_SIEGEMODE))
 				{
 					m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::MORPH_SIEGEMODE);
 				}
 				sc2::Point2D centre = m_bot.Bases().getRallyPoint();
-				if (Util::Dist(unit->pos, centre) < 3 && (unit->orders.empty() || unit->orders[0].ability_id != sc2::ABILITY_ID::MORPH_SIEGEMODE) && m_bot.Map().isBuildable(unit->pos))
+				if (Util::Dist(unit->pos, centre) < 3 && (unit->orders.empty() || unit->orders.back().ability_id != sc2::ABILITY_ID::MORPH_SIEGEMODE) && m_bot.Map().isBuildable(unit->pos))
 				{
 					m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::MORPH_SIEGEMODE);
 				}
@@ -196,7 +196,7 @@ const bool Squad::needsToRegroup()
 	}
 	else
 	{
-		if (scattering > 2.5)
+		if (scattering > 4)
 		{
 			m_lastRetreatSwitchVal = true;
 		}

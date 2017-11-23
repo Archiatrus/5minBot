@@ -496,6 +496,10 @@ const sc2::Unit * CombatCommander::findClosestWorkerTo(std::vector<const sc2::Un
     // for each of our workers
     for (auto & unit : unitsToAssign)
     {
+		if (!unit)
+		{
+			return closestMineralWorker;
+		}
         BOT_ASSERT(unit, "unit to assign was null");
 
         if (!Util::IsWorker(unit))

@@ -168,7 +168,6 @@ void BaseLocationManager::onFrame()
     for (const auto & kv : m_bot.UnitInfo().getUnitInfoMap(Players::Enemy))
     {
         const UnitInfo & ui = kv.second;
-
         if (!m_bot.Data(ui.type).isBuilding || ui.lastHealth == 0)
         {
             continue;

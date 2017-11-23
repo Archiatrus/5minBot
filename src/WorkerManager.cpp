@@ -200,7 +200,7 @@ const bool WorkerManager::isBeingRepaired(const sc2::Unit * unit) const
 {
 	for (auto worker : m_workerData.getWorkers())
 	{
-		if (!worker) { continue; }
+		if (!worker || !worker->is_alive) { continue; }
 
 		if (m_workerData.getWorkerJob(worker) == WorkerJobs::Repair && worker->orders.back().target_unit_tag == unit->tag)
 		{

@@ -115,31 +115,7 @@ const std::vector<const sc2::Unit *> & MicroManager::getUnits() const
 
 void MicroManager::regroup(const sc2::Point2D & regroupPosition) const
 {
-    sc2::Point2D ourBasePosition = m_bot.GetStartLocation();
-    int regroupDistanceFromBase = m_bot.Map().getGroundDistance(regroupPosition, ourBasePosition);
-
-    // for each of the units we have
-    for (auto unit : m_units)
-    {
-        BOT_ASSERT(unit, "null unit in MicroManager regroup");
-
-        int unitDistanceFromBase = m_bot.Map().getGroundDistance(unit->pos, ourBasePosition);
-
-        // if the unit is outside the regroup area
-        if (unitDistanceFromBase > regroupDistanceFromBase)
-        {
-            Micro::SmartMove(unit, ourBasePosition, m_bot);
-        }
-        else if (Util::Dist(unit->pos, regroupPosition) > 4)
-        {
-            // regroup it
-            Micro::SmartMove(unit, regroupPosition, m_bot);
-        }
-        else
-        {
-            Micro::SmartAttackMove(unit, unit->pos, m_bot);
-        }
-    }
+	Micro::SmartAttackMove(m_units, regroupPosition, m_bot);
 }
 
 void MicroManager::trainSubUnits(const sc2::Unit * unit) const

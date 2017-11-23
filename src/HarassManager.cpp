@@ -187,6 +187,10 @@ void Hitsquad::harass(const BaseLocation * target)
 		}
 		if (targetUnitsCanHitMedivac.size()>0)
 		{
+			while (!m_wayPoints.empty())
+			{
+				m_wayPoints.pop();
+			}
 			const sc2::Point2D enemyPos = Util::CalcCenter(targetUnitsCanHitMedivac);
 			sc2::Point2D runningVector = m_medivac->pos - enemyPos;
 			runningVector *= 5 / Util::Dist(runningVector);
@@ -325,6 +329,14 @@ const sc2::Unit * Hitsquad::getTargetMarines(sc2::Units targets) const
 		else if (Util::IsCombatUnitType(t->unit_type.ToType(),m_bot))
 		{
 			prio = 5;
+		}
+		else if (Util::IsTownHallType(t->unit_type.ToType()))
+		{
+			prio = 2;
+		}
+		else if (t->unit_type.ToType() == sc2::UNIT_TYPEID::ZERG_EGG || t->unit_type.ToType() == sc2::UNIT_TYPEID::ZERG_LARVA)
+		{
+			prio = 0;
 		}
 		else
 		{
