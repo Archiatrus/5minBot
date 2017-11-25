@@ -41,6 +41,7 @@ void CCBot::OnGameStart()
     m_workers.onStart();
 
     m_gameCommander.onStart();
+	Actions()->SendChat("gl hf gg");
 }
 
 void CCBot::OnStep()

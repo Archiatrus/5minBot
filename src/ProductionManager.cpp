@@ -8,9 +8,12 @@
 const int UNIT = 5;
 const int BUILDING = 3;
 
-int addonBuild = 0;
-const int addonBuildMax = 30;
-bool defeat = false;
+//it seems to many commands confuse the engine
+int defaultMacroSleep = 0;
+const int defaultMacroSleepMax = 20;
+bool canBuildAddon = true;
+int addonCounter = 0;
+const int maxAddonCounter = 5;
 
 ProductionManager::ProductionManager(CCBot & bot)
     : m_bot             (bot)
@@ -200,12 +203,13 @@ void ProductionManager::create(const sc2::Unit * producer, BuildOrderItem & item
 			}
 			else
 			{
-				m_buildingManager.addBuildingTask(item.type.getUnitTypeID(), m_bot.GetStartLocation());
+				
+				m_buildingManager.addBuildingTask(item.type.getUnitTypeID(),m_bot.Bases().getBuildingLocation());
 			}
 		}
 		else
 		{
-			m_buildingManager.addBuildingTask(item.type.getUnitTypeID(), m_bot.GetStartLocation());
+			m_buildingManager.addBuildingTask(item.type.getUnitTypeID(), m_bot.Bases().getBuildingLocation());
 		}
     }
     // if we're dealing with a non-building unit
@@ -307,15 +311,29 @@ void ProductionManager::drawProductionInformation()
 
 void ProductionManager::defaultMacro()
 {
-	int32_t minerals = getFreeMinerals();//m_bot.Observation()->GetMinerals()-;
 
-	//without money...
-	if (minerals < 50)
+	//Maybe too fast addon command confuse the engine?!
+	++defaultMacroSleep;
+	if (defaultMacroSleep < defaultMacroSleepMax)
 	{
 		return;
 	}
-	//Maybe too fast addon command confuse the engine?!
-	++addonBuild;
+	defaultMacroSleep = 0;
+
+	//It seems that for now player 2 can not build addons. Since we do not know which one we are, we first try a few times
+	if (canBuildAddon && addonCounter > maxAddonCounter)
+	{
+		m_bot.Actions()->SendChat("Seems I am player 2. Unable to build addons.");
+		canBuildAddon = false;
+	}
+
+	int32_t minerals = getFreeMinerals();
+	//without money...
+	if (minerals < 50)
+	{
+		defaultMacroSleep = defaultMacroSleepMax;
+		return;
+	}
 	int32_t gas = getFreeGas();//m_bot.Observation()->GetVespene();
 	//for every production building we need 2 supply free
 	int32_t supply = m_bot.Observation()->GetFoodUsed();
@@ -361,7 +379,7 @@ void ProductionManager::defaultMacro()
 	{
 		for (auto & unit : CommandCenters)
 		{
-			if (unit->build_progress==1.0f)
+			if (unit->build_progress == 1.0f)
 			{
 				//Sometimes we have a problem here
 				if (unit->assigned_harvesters == 0 || unit->energy > 60)
@@ -369,12 +387,11 @@ void ProductionManager::defaultMacro()
 					m_bot.OnBuildingConstructionComplete(unit);
 				}
 				//Before building a worker, make sure it is a OC
-				if (addonBuild>addonBuildMax && unit->unit_type == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER && (unit->orders.empty() || unit->orders[0].ability_id.ToType()!=sc2::ABILITY_ID::MORPH_ORBITALCOMMAND) && numRaxFinished > 0)
+				if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER && (unit->orders.empty() || unit->orders[0].ability_id.ToType() != sc2::ABILITY_ID::MORPH_ORBITALCOMMAND) && numRaxFinished > 0)
 				{
 					if (minerals > 150)
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::MORPH_ORBITALCOMMAND);
-						addonBuild = 0;
 					}
 					std::cout << "OC" << std::endl;
 					return;
@@ -382,7 +399,7 @@ void ProductionManager::defaultMacro()
 				if (unit->energy >= 50)
 				{
 					const sc2::Unit * mineralPatch = Util::getClostestMineral(unit->pos, m_bot);
-					if (mineralPatch && mineralPatch->Visible==sc2::Unit::DisplayType::Visible)
+					if (mineralPatch && mineralPatch->Visible == sc2::Unit::DisplayType::Visible)
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::EFFECT_CALLDOWNMULE, mineralPatch);
 					}
@@ -394,13 +411,14 @@ void ProductionManager::defaultMacro()
 					std::cout << "Refinary" << std::endl;
 					return;
 				}
-				if (unit->orders.empty() && unit->assigned_harvesters < unit->ideal_harvesters+3)
+				if (unit->orders.empty() && unit->assigned_harvesters < unit->ideal_harvesters + 3)
 				{
 					//m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_SCV), UNIT, false));
 					m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_SCV);
 					std::cout << "TrainSCV" << std::endl;
 					return;
 				}
+
 			}
 		}
 	}
@@ -455,6 +473,7 @@ void ProductionManager::defaultMacro()
 	}
 
 	//Every rax has to build
+	const sc2::Units bReactor = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR));
 	for (auto & unit : Rax)
 	{
 		//Any finished rax
@@ -478,19 +497,19 @@ void ProductionManager::defaultMacro()
 					}
 				}
 				//if it is only a rax build addon
-				if (!unit->add_on_tag)
+				if (canBuildAddon && !unit->add_on_tag)
 				{
 					//The second barracks gets a lab
-					if (bTechLab.size() == 1 || m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR, false) == 0)
+					if (bTechLab.size() == 1 || bReactor.size() == 0)
 					{
 						if (minerals >= 50 && gas >= 50)
 						{
-							if (addonBuild > addonBuildMax)
+							m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::BUILD_REACTOR_BARRACKS);
+							if (bReactor.size() == 0)
 							{
-								m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::BUILD_REACTOR_BARRACKS);
-								std::cout << "ReactorBarracks" << std::endl;
-								addonBuild = 0;
+								++addonCounter;
 							}
+							std::cout << "ReactorBarracks" << std::endl;
 							return;
 						}
 					}
@@ -524,7 +543,7 @@ void ProductionManager::defaultMacro()
 		if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_FACTORY && unit->build_progress == 1)
 		{
 			//that is idle
-			if (unit->orders.empty())
+			if (canBuildAddon && unit->orders.empty())
 			{
 				//if it is only a factory build addon
 				if (!unit->add_on_tag)
@@ -570,7 +589,7 @@ void ProductionManager::defaultMacro()
 			if (unit->orders.empty() || unit->add_on_tag && m_bot.Observation()->GetUnit(unit->add_on_tag)->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_STARPORTREACTOR)
 			{
 				//if it is only a Starport build addon
-				if (!unit->add_on_tag)
+				if (canBuildAddon && !unit->add_on_tag)
 				{
 					//The reactor for the first starport should be with the factory
 					for (auto & factory : Factories)
@@ -612,9 +631,9 @@ void ProductionManager::defaultMacro()
 			}
 		}
 	}
-	const sc2::Units bReactor = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR));
+	
 	//Factories. For now just one.
-	if (minerals >= 150 && gas >= 100 && numFactory + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_FACTORY) == 0 && bReactor.size()>0)
+	if (minerals >= 150 && gas >= 100 && numFactory + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_FACTORY) == 0 && (bReactor.size()>0 || !canBuildAddon))
 	{
 		m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_FACTORY), BUILDING, false));
 		std::cout << "Factory" << std::endl;
@@ -657,6 +676,8 @@ void ProductionManager::defaultMacro()
 		std::cout << "CC" << std::endl;
 		return;
 	}
+	//When we did nothing...
+	defaultMacroSleep = defaultMacroSleepMax;
 	return;
 }
 

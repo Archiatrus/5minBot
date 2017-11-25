@@ -66,7 +66,7 @@ bool CombatCommander::shouldWeStartAttacking()
 	auto upgrades = m_bot.Observation()->GetUpgrades();
 	for (auto & upgrade : upgrades)
 	{
-		if (upgrade.ToType() == sc2::UPGRADE_ID::STIMPACK && m_combatUnits.size() >= m_bot.Config().CombatUnitsForAttack)
+		if (upgrade.ToType() == sc2::UPGRADE_ID::STIMPACK || m_combatUnits.size() >= m_bot.Config().CombatUnitsForAttack)
 		{
 			return true;
 		}

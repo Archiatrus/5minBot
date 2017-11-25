@@ -29,6 +29,7 @@ public:
     const std::vector<const BaseLocation *> & getBaseLocations() const;
     const std::vector<const BaseLocation *> & getStartingBaseLocations() const;
     const std::set<const BaseLocation *> & getOccupiedBaseLocations(int player) const;
+	const sc2::Point2D getBuildingLocation() const;
     const BaseLocation * getPlayerStartingBaseLocation(int player) const;
     
     sc2::Point2D getNextExpansion(int player) const;

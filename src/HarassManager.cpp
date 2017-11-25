@@ -120,6 +120,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		}
 		break;
 	case HarassStatus::Unloading:
+		//We dont go here anymore I think
 		if (m_medivac->health < 0.5*m_medivac->health_max || shouldWeFlee(getNearbyEnemyUnits()))
 		{
 			while (!m_wayPoints.empty())
@@ -141,6 +142,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		// break;
 	case HarassStatus::Harass:
 	{
+		
 		sc2::Units targetUnits = getNearbyEnemyUnits();
 		if (m_medivac->health < 0.5*m_medivac->health_max || shouldWeFlee(targetUnits))
 		{
@@ -153,7 +155,7 @@ void Hitsquad::harass(const BaseLocation * target)
 			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, unloadPos, m_bot);
 		}
 		const sc2::Unit * targetUnit = getTargetMarines(targetUnits);
-		if (targetUnit && targetUnit->tag)
+		if (targetUnit)
 		{
 			Micro::SmartAttackUnit(m_marines, targetUnit, m_bot);
 			Micro::SmartStim(m_marines, m_bot);
@@ -308,7 +310,7 @@ sc2::Units Hitsquad::getNearbyEnemyUnits() const
 
 const sc2::Unit * Hitsquad::getTargetMarines(sc2::Units targets) const
 {
-	const sc2::Unit * target;
+	const sc2::Unit * target = nullptr;
 	int maxPriority = 0;
 	float minHealth = std::numeric_limits<float>::max();
 	for (auto & t : targets)
@@ -354,6 +356,10 @@ const sc2::Unit * Hitsquad::getTargetMarines(sc2::Units targets) const
 
 const bool Hitsquad::manhattenMove(const BaseLocation * target)
 {
+	if (!target)
+	{
+		return false;
+	}
 	sc2::Point2D posEnd = target->getPosition() + 1.4*(target->getPosition() - target->getBasePosition());
 	if (Util::Dist(posEnd, m_medivac->pos)>0.1f)
 	{

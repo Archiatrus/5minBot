@@ -148,6 +148,24 @@ void BaseLocationManager::onFrame()
     }
 
     // for each unit on the map, update which base location it may be occupying
+
+	//We start with the enemy to avoid situation with proxys locations declared as enemy region
+	// update enemy base occupations
+	for (const auto & kv : m_bot.UnitInfo().getUnitInfoMap(Players::Enemy))
+	{
+		const UnitInfo & ui = kv.second;
+		if (!m_bot.Data(ui.type).isBuilding || ui.lastHealth == 0)
+		{
+			continue;
+		}
+
+		BaseLocation * baseLocation = getBaseLocation(ui.lastPosition);
+
+		if (baseLocation != nullptr)
+		{
+			baseLocation->setPlayerOccupying(Players::Enemy, true);
+		}
+	}
     for (auto & unit : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self))
     {
         // we only care about buildings on the ground
@@ -160,26 +178,12 @@ void BaseLocationManager::onFrame()
 
         if (baseLocation != nullptr)
         {
-            baseLocation->setPlayerOccupying(Util::GetPlayer(unit), true);
+            baseLocation->setPlayerOccupying(Players::Self, true);
+			baseLocation->setPlayerOccupying(Players::Enemy, false);
         }
     }
 
-    // update enemy base occupations
-    for (const auto & kv : m_bot.UnitInfo().getUnitInfoMap(Players::Enemy))
-    {
-        const UnitInfo & ui = kv.second;
-        if (!m_bot.Data(ui.type).isBuilding || ui.lastHealth == 0)
-        {
-            continue;
-        }
 
-        BaseLocation * baseLocation = getBaseLocation(ui.lastPosition);
-
-        if (baseLocation != nullptr)
-        {
-            baseLocation->setPlayerOccupying(Players::Enemy, true);
-        }
-    }
 
     // update the starting locations of the enemy player
     // this will happen one of two ways:
@@ -293,7 +297,23 @@ const std::set<const BaseLocation *> & BaseLocationManager::getOccupiedBaseLocat
 {
     return m_occupiedBaseLocations.at(player);
 }
-
+const sc2::Point2D BaseLocationManager::getBuildingLocation() const
+{
+	sc2::Point2D homePos = m_bot.GetStartLocation();
+	const std::set<const BaseLocation *> bases = getOccupiedBaseLocations(Players::Self);
+	float minDist = std::numeric_limits<float>::max();
+	sc2::Point2D buildPos = homePos;
+	for (auto & base : bases)
+	{
+		float dist = Util::Dist(base->getBasePosition(), homePos);
+		if (minDist > dist)
+		{
+			minDist = dist;
+			buildPos = base->getBasePosition();
+		}
+	}
+	return buildPos;
+}
 const sc2::Point2D BaseLocationManager::getRallyPoint() const
 {
 	//GET NEWEST EXPANSION

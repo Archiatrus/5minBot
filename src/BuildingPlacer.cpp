@@ -84,7 +84,8 @@ bool BuildingPlacer::canBuildHereWithSpace(int bx, int by, const Building & b, i
 
 	if (b.type == sc2::UNIT_TYPEID::TERRAN_BARRACKS || b.type == sc2::UNIT_TYPEID::TERRAN_FACTORY || b.type == sc2::UNIT_TYPEID::TERRAN_STARPORT)
 	{
-		endx += 3;
+		--startx;
+		endx += 2;
 	}
     // if this rectangle doesn't fit on the map we can't build here
     if (startx < 0 || starty < 0 || endx > m_bot.Map().width() || endy > m_bot.Map().height())
