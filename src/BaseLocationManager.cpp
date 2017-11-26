@@ -1,5 +1,6 @@
 #include "BaseLocationManager.h"
 #include "Util.h"
+#include "sc2lib/sc2_search.h"
 
 #include "CCBot.h"
 
@@ -11,6 +12,8 @@ BaseLocationManager::BaseLocationManager(CCBot & bot)
 
 void BaseLocationManager::onStart()
 {
+	//sc2::search::CalculateExpansionLocations(m_bot.Observation(),m_bot.Query())
+
     m_tileBaseLocations = std::vector<std::vector<BaseLocation *>>(m_bot.Map().width(), std::vector<BaseLocation *>(m_bot.Map().height(), nullptr));
     m_playerStartingBaseLocations[Players::Self]  = nullptr;
     m_playerStartingBaseLocations[Players::Enemy] = nullptr; 
@@ -139,7 +142,6 @@ void BaseLocationManager::onStart()
 void BaseLocationManager::onFrame()
 {   
     drawBaseLocations();
-
     // reset the player occupation information for each location
     for (auto & baseLocation : m_baseLocationData)
     {

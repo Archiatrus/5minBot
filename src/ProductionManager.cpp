@@ -10,7 +10,7 @@ const int BUILDING = 3;
 
 //it seems to many commands confuse the engine
 int defaultMacroSleep = 0;
-const int defaultMacroSleepMax = 20;
+const int defaultMacroSleepMax = 10;
 bool canBuildAddon = true;
 int addonCounter = 0;
 const int maxAddonCounter = 5;
@@ -370,7 +370,7 @@ void ProductionManager::defaultMacro()
 		if (numBuildingDepots + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT) < numBasesFinished)
 		{
 			m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT), BUILDING, false));
-			std::cout << "Depot" << std::endl;
+			//std::cout << "Depot" << std::endl;
 			return;
 		}
 	}
@@ -393,7 +393,7 @@ void ProductionManager::defaultMacro()
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::MORPH_ORBITALCOMMAND);
 					}
-					std::cout << "OC" << std::endl;
+					//std::cout << "OC" << std::endl;
 					return;
 				}
 				if (unit->energy >= 50)
@@ -408,14 +408,14 @@ void ProductionManager::defaultMacro()
 				if (numRax > 0 && minerals >= 75 && ((m_bot.Observation()->GetFoodWorkers() >= 15 && numOfRefinaries == 0) || (m_bot.Observation()->GetFoodWorkers() >= 21 && numOfRefinaries == 1)))
 				{
 					m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_REFINERY), BUILDING, false));
-					std::cout << "Refinary" << std::endl;
+					//std::cout << "Refinary" << std::endl;
 					return;
 				}
 				if (unit->orders.empty() && unit->assigned_harvesters < unit->ideal_harvesters + 3)
 				{
 					//m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_SCV), UNIT, false));
 					m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_SCV);
-					std::cout << "TrainSCV" << std::endl;
+					//std::cout << "TrainSCV" << std::endl;
 					return;
 				}
 
@@ -438,7 +438,7 @@ void ProductionManager::defaultMacro()
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::RESEARCH_COMBATSHIELD);
 					}
-					std::cout << "CombatShield" << std::endl;
+					//std::cout << "CombatShield" << std::endl;
 					return;
 				}
 			}
@@ -451,7 +451,7 @@ void ProductionManager::defaultMacro()
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::RESEARCH_STIMPACK);
 					}
-					std::cout << "Stim" << std::endl;
+					//std::cout << "Stim" << std::endl;
 					return;
 				}
 			}
@@ -464,7 +464,7 @@ void ProductionManager::defaultMacro()
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::RESEARCH_CONCUSSIVESHELLS);
 					}
-					std::cout << "Concussiv" << std::endl;
+					//std::cout << "Concussiv" << std::endl;
 					return;
 				}
 			}
@@ -492,7 +492,7 @@ void ProductionManager::defaultMacro()
 							m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_REAPER);
 							m_scoutRequested = false;
 						}
-						std::cout << "Scout" << std::endl;
+						//std::cout << "Scout" << std::endl;
 						return;
 					}
 				}
@@ -509,7 +509,7 @@ void ProductionManager::defaultMacro()
 							{
 								++addonCounter;
 							}
-							std::cout << "ReactorBarracks" << std::endl;
+							//std::cout << "ReactorBarracks" << std::endl;
 							return;
 						}
 					}
@@ -518,7 +518,7 @@ void ProductionManager::defaultMacro()
 						if (minerals >= 50 && gas >= 25)
 						{
 							m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::BUILD_TECHLAB_BARRACKS);
-							std::cout << "TechlabBarracks" << std::endl;
+							//std::cout << "TechlabBarracks" << std::endl;
 							return;
 						}
 					}
@@ -528,10 +528,10 @@ void ProductionManager::defaultMacro()
 					if (unit->add_on_tag && minerals >= 100 && m_bot.Observation()->GetUnit(unit->add_on_tag)->unit_type == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR && supply <= 200 - 2*m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_MARINE);
-						std::cout << "Marine" << std::endl;
+						//std::cout << "Marine" << std::endl;
 					}
 					m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_MARINE);
-					std::cout << "Marine" << std::endl;
+					//std::cout << "Marine" << std::endl;
 					return;
 				}
 			}
@@ -554,7 +554,7 @@ void ProductionManager::defaultMacro()
 						if (minerals >= 50 && gas >= 50 && numStarport == 1)
 						{
 							m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::BUILD_REACTOR_FACTORY);
-							std::cout << "ReactorFactory" << std::endl;
+							//std::cout << "ReactorFactory" << std::endl;
 							return;
 						}
 					}
@@ -563,7 +563,7 @@ void ProductionManager::defaultMacro()
 						if (minerals >= 50 && gas >= 25)
 						{
 							m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::BUILD_TECHLAB_FACTORY);
-							std::cout << "TechlabFactory" << std::endl;
+							//std::cout << "TechlabFactory" << std::endl;
 							return;
 						}
 					}
@@ -573,7 +573,7 @@ void ProductionManager::defaultMacro()
 					if (minerals >= 150 && gas >= 125 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_SIEGETANK).supplyCost)
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_SIEGETANK);
-						std::cout << "Tank" << std::endl;
+						//std::cout << "Tank" << std::endl;
 						return;
 					}
 				}
@@ -597,7 +597,7 @@ void ProductionManager::defaultMacro()
 						if ((factory->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORY && factory->orders.empty() && factory->add_on_tag && !unit->is_flying)||(factory->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING && factory->orders.empty()&& unit->is_flying))
 						{
 							Util::swapBuildings(unit, factory,m_bot);
-							std::cout << "Swap" << std::endl;
+							//std::cout << "Swap" << std::endl;
 							return;
 						}
 						else
@@ -608,7 +608,7 @@ void ProductionManager::defaultMacro()
 								if (minerals >= 50 && gas >= 25)
 								{
 									m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::BUILD_REACTOR_STARPORT);
-									std::cout << "ReactorStarport" << std::endl;
+									//std::cout << "ReactorStarport" << std::endl;
 									return;
 								}
 							}
@@ -624,7 +624,7 @@ void ProductionManager::defaultMacro()
 						{
 							m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_MEDIVAC);
 						}
-						std::cout << "Medivac" << std::endl;
+						//std::cout << "Medivac" << std::endl;
 						return;
 					}
 				}
@@ -636,14 +636,14 @@ void ProductionManager::defaultMacro()
 	if (minerals >= 150 && gas >= 100 && numFactory + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_FACTORY) == 0 && (bReactor.size()>0 || !canBuildAddon))
 	{
 		m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_FACTORY), BUILDING, false));
-		std::cout << "Factory" << std::endl;
+		//std::cout << "Factory" << std::endl;
 		return;
 	}
 	//Starports. For now just one.
 	if (minerals >= 150 && gas >= 100 && numFactoryFinished>0 && numStarport + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_STARPORT) ==0)
 	{
 		m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_STARPORT), BUILDING, false));
-		std::cout << "Starport" << std::endl;
+		//std::cout << "Starport" << std::endl;
 		return;
 	}
 	//On one base save a little to get an expansion
@@ -652,7 +652,7 @@ void ProductionManager::defaultMacro()
 		if (Depots.size() > 0 && minerals >= 150 && numRax + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 1)
 		{
 			m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
-			std::cout << "Barracks" << std::endl;
+			//std::cout << "Barracks" << std::endl;
 			return;
 		}
 	}
@@ -664,7 +664,7 @@ void ProductionManager::defaultMacro()
 			if (minerals >= 150 && numRax + 2 + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 3 * numBases)
 			{
 				m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
-				std::cout << "Barracks" << std::endl;
+				//std::cout << "Barracks" << std::endl;
 				return;
 			}
 		}
@@ -673,7 +673,7 @@ void ProductionManager::defaultMacro()
 	if (minerals >= 400 && numBases-numBasesFinished+howOftenQueued(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER)==0)
 	{
 		m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER), BUILDING, false));
-		std::cout << "CC" << std::endl;
+		//std::cout << "CC" << std::endl;
 		return;
 	}
 	//When we did nothing...

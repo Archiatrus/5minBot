@@ -201,7 +201,6 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 const sc2::Unit * RangedManager::getTarget(const sc2::Unit * rangedUnit, const std::vector<const sc2::Unit *> & targets)
 {
     BOT_ASSERT(rangedUnit, "null melee unit in getTarget");
-
     int highPriorityFar = 0;
 	int highPriorityNear = 0;
     double closestDist = std::numeric_limits<double>::max();
