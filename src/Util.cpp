@@ -74,6 +74,8 @@ bool Util::IsMineral(const sc2::Unit * unit)
         case sc2::UNIT_TYPEID::NEUTRAL_MINERALFIELD750      : return true;
         case sc2::UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD     : return true;
         case sc2::UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD750  : return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_LABMINERALFIELD: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_LABMINERALFIELD750: return true;
         default: return false;
     }
 }

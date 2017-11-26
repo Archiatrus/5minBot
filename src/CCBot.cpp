@@ -41,7 +41,7 @@ void CCBot::OnGameStart()
     m_workers.onStart();
 
     m_gameCommander.onStart();
-	Actions()->SendChat("gl hf (business)");
+	//Actions()->SendChat("gl hf (business)");
 }
 
 void CCBot::OnStep()
@@ -56,7 +56,7 @@ void CCBot::OnStep()
 
     m_gameCommander.onFrame();
 
-    Debug()->SendDebug();
+    //Debug()->SendDebug();
 }
 
 void CCBot::OnUnitCreated(const sc2::Unit * unit)

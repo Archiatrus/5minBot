@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 		});
 		// Start the game.
 		coordinator.LaunchStarcraft();
-		coordinator.StartGame(mapString);
+		coordinator.StartGame("Blackpink LE");
 
 
 		// Step forward the game simulation.
