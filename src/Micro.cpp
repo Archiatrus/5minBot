@@ -213,7 +213,7 @@ void Micro::SmartRightClick(const sc2::Unit * unit, sc2::Units targets, CCBot & 
 		for (auto & t : targets)
 		{
 			float dist = Util::Dist(t->pos, unit->pos);
-			if (!target || minDist > dist)
+			if (t->last_seen_game_loop==unit->last_seen_game_loop && (!target || minDist > dist))
 			{
 				minDist = dist;
 				target = t;

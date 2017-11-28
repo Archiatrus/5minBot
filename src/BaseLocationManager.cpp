@@ -146,7 +146,7 @@ void BaseLocationManager::onFrame()
     for (auto & baseLocation : m_baseLocationData)
     {
         baseLocation.setPlayerOccupying(Players::Self, false);
-        baseLocation.setPlayerOccupying(Players::Self, false);
+        baseLocation.setPlayerOccupying(Players::Enemy, false);
     }
 
     // for each unit on the map, update which base location it may be occupying
@@ -398,7 +398,7 @@ sc2::Point2D BaseLocationManager::getNewestExpansion(int player) const
 	for (auto & base : getBaseLocations())
 	{
 		float dist = Util::Dist(homeBase->getPosition(), base->getPosition());
-		if (base->isOccupiedByPlayer(Players::Self) && maxDistance < dist)
+		if (base->isOccupiedByPlayer(Players::Self) && maxDistance < dist && base->getTownHall())
 		{
 			maxDistance = dist;
 			newestBase = base;

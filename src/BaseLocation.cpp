@@ -187,6 +187,11 @@ const std::vector<sc2::Point2D> & BaseLocation::getClosestTiles() const
     return m_distanceMap.getSortedTiles();
 }
 
+const sc2::Unit * BaseLocation::getTownHall() const
+{
+	return m_townhall;
+}
+
 void BaseLocation::setTownHall(const sc2::Unit * townHall)
 {
 	m_townhall = townHall;

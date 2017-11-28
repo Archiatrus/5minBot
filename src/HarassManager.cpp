@@ -360,7 +360,7 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 	{
 		return false;
 	}
-	sc2::Point2D posEnd = target->getPosition() + 1.4*(target->getPosition() - target->getBasePosition());
+	sc2::Point2D posEnd = target->getPosition() + 1.2*(target->getPosition() - target->getBasePosition());
 	if (Util::Dist(posEnd, m_medivac->pos)>0.1f)
 	{
 		Micro::SmartCDAbility(m_medivac, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);

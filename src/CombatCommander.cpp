@@ -88,6 +88,19 @@ void CombatCommander::updateIdleSquad()
 				if (Util::IsCombatUnitType(unit->unit_type, m_bot))
 				{
 					Micro::SmartAttackMove(unit, m_bot.Bases().getRallyPoint(), m_bot);
+					const sc2::Units Bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_BUNKER }));
+					if (Bunker.size() > 0)
+					{
+						for (auto & b : Bunker)
+						{
+							if (b->cargo_space_taken != b->cargo_space_max)
+							{
+								Micro::SmartRightClick(unit, b, m_bot);
+								m_bot.Actions()->UnitCommand(b, sc2::ABILITY_ID::LOAD, unit);
+								break;
+							}
+						}
+					}
 				}
 				else
 				{

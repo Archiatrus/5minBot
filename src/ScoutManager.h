@@ -41,6 +41,7 @@ public:
 	void setScout(const sc2::Unit * unit);
 	int getNumScouts();
 	void updateNearestUnoccupiedBases(sc2::Point2D pos,int player);
+	const bool dontBlowYourselfUp() const;
 	void scoutRequested();
 	void raiseAlarm(std::vector<const sc2::Unit *> enemyUnitsInSight);
 };

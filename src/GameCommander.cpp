@@ -76,7 +76,7 @@ void GameCommander::setValidUnits()
 	// make sure the unit is completed and alive and usable
 	for (auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
 	{
-		if (m_bot.GetUnit(unit->tag) && unit->is_alive)
+		if (m_bot.GetUnit(unit->tag) && unit->is_alive && unit->last_seen_game_loop == m_bot.Observation()->GetGameLoop())
 		{
 			m_validUnits.push_back(unit);
 		}
@@ -205,6 +205,16 @@ void GameCommander::onUnitCreate(const sc2::Unit * unit)
 			}
 			else
 			{
+				const sc2::Units Bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_BUNKER }));
+				for (auto & b : Bunker)
+				{
+					if (b->build_progress==1.0f && b->cargo_space_taken != b->cargo_space_max)
+					{
+						Micro::SmartRightClick(unit, b, m_bot);
+						m_bot.Actions()->UnitCommand(b, sc2::ABILITY_ID::LOAD, unit);
+						return;
+					}
+				}
 				Micro::SmartAttackMove(unit, m_bot.Bases().getRallyPoint(), m_bot);
 				return;
 			}

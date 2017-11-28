@@ -203,8 +203,13 @@ void ScoutManager::moveScouts()
         {
 			//Whos there in sight?
 			std::vector<const sc2::Unit *> enemyUnitsInSight = getEnemyUnitsInSight(scout->pos);
+			// without words
+			if (dontBlowYourselfUp())
+			{
+
+			}
 			//if there is a unit and we are getting too close, throw granade and run
-			if (enemyTooClose(enemyUnitsInSight))
+			else if (enemyTooClose(enemyUnitsInSight))
 			{
 				if (Util::DistSq(scout->pos,m_targetBasesPositions.front())<20)
 				{
@@ -561,6 +566,25 @@ void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos,int player)
 			m_targetBasesPositions.push(base.second->getBasePosition());
 		}
 	}
+}
+
+const bool ScoutManager::dontBlowYourselfUp() const
+{
+	const sc2::Units grenades = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_KD8CHARGE));
+	if (grenades.size() > 0)
+	{
+		for (auto & g : grenades)
+		{
+			if (Util::Dist(g->pos, m_scoutUnit->pos) < 3)
+			{
+				//pi/2 = 1.57079
+				const sc2::Point2D targetPos(m_scoutUnit->pos.x + 2 * std::cos(m_scoutUnit->facing + 1.57079f), m_scoutUnit->pos.y + 2 * std::sin(m_scoutUnit->facing + 1.57079f));
+				Micro::SmartMove(m_scoutUnit, targetPos, m_bot);
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 void ScoutManager::scoutRequested()

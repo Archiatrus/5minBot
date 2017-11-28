@@ -55,5 +55,7 @@ public:
 
     const std::vector<sc2::Point2D> & getClosestTiles() const;
 
+	const sc2::Unit * getTownHall() const;
+
     void draw();
 };
