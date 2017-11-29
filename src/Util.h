@@ -46,7 +46,8 @@ namespace Util
     int GetUnitTypeMineralPrice(const sc2::UnitTypeID type, const CCBot & bot);
     int GetUnitTypeGasPrice(const sc2::UnitTypeID type, const CCBot & bot);
     sc2::UnitTypeID GetTownHall(const sc2::Race & race);
-    sc2::UnitTypeID GetSupplyProvider(const sc2::Race & race);
+	bool IsBuildingType(const sc2::UnitTypeID & type, const CCBot & bot);
+	sc2::UnitTypeID GetSupplyProvider(const sc2::Race & race);
     std::string     GetStringFromRace(const sc2::Race & race);
     sc2::Race       GetRaceFromString(const std::string & race);
     sc2::Point2D    CalcCenter(const std::vector<const sc2::Unit *> & units);

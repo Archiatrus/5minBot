@@ -241,12 +241,26 @@ void UnitInfoManager::drawUnitInformation(float x,float y) const
 void UnitInfoManager::updateUnit(const sc2::Unit * unit)
 {
 	//We don't want to use snapshots!
-    if (!(Util::GetPlayer(unit) == Players::Self || Util::GetPlayer(unit) == Players::Enemy) || unit->display_type==sc2::Unit::DisplayType::Snapshot)
+    if (!(Util::GetPlayer(unit) == Players::Self || Util::GetPlayer(unit) == Players::Enemy))
     {
         return;
     }
-
-    m_unitData[Util::GetPlayer(unit)].updateUnit(unit);
+	//If it is not just a snap shot
+	if (unit->display_type != sc2::Unit::DisplayType::Snapshot)
+	{
+		m_unitData[Util::GetPlayer(unit)].updateUnit(unit);
+	}
+	//else if we see the position and there should be a building, but there is not, it seems to be dead
+	else
+	{
+		if (Util::IsBuildingType(unit->unit_type, m_bot))
+		{
+			if (m_bot.Observation()->GetVisibility(unit->pos) == sc2::Visibility::Visible && !m_bot.GetUnit(unit->tag))
+			{
+				m_unitData[Util::GetPlayer(unit)].killUnit(unit);
+			}
+		}
+	}
 }
 
 // is the unit valid?

@@ -12,27 +12,28 @@ UnitData::UnitData()
 
 void UnitData::updateUnit(const sc2::Unit * unit)
 {
-    bool firstSeen = false;
-    const auto & it = m_unitMap.find(unit);
-    if (it == m_unitMap.end())
-    {
-        firstSeen = true;
-        m_unitMap[unit] = UnitInfo();
-    }
 
-    UnitInfo & ui   = m_unitMap[unit];
-    ui.unit         = unit;
-    ui.player       = Util::GetPlayer(unit);
-    ui.lastPosition = unit->pos;
-    ui.lastHealth   = unit->health;
-    ui.lastShields  = unit->shield;
-    ui.tag          = unit->tag;
-    ui.type         = unit->unit_type;
-    ui.progress     = unit->build_progress;
-    if (firstSeen)
-    {
-        m_numUnits[ui.type]++;
-    }
+	bool firstSeen = false;
+	const auto & it = m_unitMap.find(unit);
+	if (it == m_unitMap.end())
+	{
+		firstSeen = true;
+		m_unitMap[unit] = UnitInfo();
+	}
+
+	UnitInfo & ui = m_unitMap[unit];
+	ui.unit = unit;
+	ui.player = Util::GetPlayer(unit);
+	ui.lastPosition = unit->pos;
+	ui.lastHealth = unit->health;
+	ui.lastShields = unit->shield;
+	ui.tag = unit->tag;
+	ui.type = unit->unit_type;
+	ui.progress = unit->build_progress;
+	if (firstSeen)
+	{
+		m_numUnits[ui.type]++;
+	}
 }
 
 void UnitData::killUnit(const sc2::Unit * unit)

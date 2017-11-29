@@ -99,6 +99,10 @@ bool Util::IsWorkerType(const sc2::UnitTypeID & unit)
     }
 }
 
+bool Util::IsBuildingType(const sc2::UnitTypeID & type, const CCBot &bot)
+{
+	return bot.Data(type).isBuilding;
+}
 sc2::UnitTypeID Util::GetSupplyProvider(const sc2::Race & race)
 {
     switch (race) 

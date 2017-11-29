@@ -212,7 +212,8 @@ void ProductionManager::create(const sc2::Unit * producer, BuildOrderItem & item
 			//Just because of pocket bases-.-
 			sc2::Point2D bPoint(m_bot.Bases().getRallyPoint());
 			const BaseLocation * homeBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
-			const BaseLocation * enemyBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
+			//Any enemy base is fine
+			const BaseLocation * enemyBase = *m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).begin();
 			if (homeBase && enemyBase)
 			{
 				sc2::Point2D homeBasePos = homeBase->getBasePosition();
