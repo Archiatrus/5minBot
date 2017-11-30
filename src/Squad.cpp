@@ -86,7 +86,9 @@ void Squad::setAllUnits()
         if (!unit) { continue; }
         if (unit->build_progress < 1.0f) { continue; }
         if (unit->health <= 0) { continue; }
-        
+		if (unit->last_seen_game_loop != m_bot.Observation()->GetGameLoop()) { continue; }
+        if (m_order.getType() != SquadOrderTypes::Attack  && Util::IsWorker(unit)) { continue; }
+
         goodUnits.insert(unit);
     }
 
@@ -162,7 +164,7 @@ void Squad::addUnitsToMicroManagers()
 
 const bool Squad::needsToRegroup()
 {
-	if (m_order.getType() != SquadOrderTypes::Attack || m_units.size()==0 || m_bot.Observation()->GetFoodUsed()==0)
+	if (m_order.getType() != SquadOrderTypes::Attack || m_units.size()==0 || m_bot.Observation()->GetFoodUsed()==200)
 	{
 		return false;
 	}
