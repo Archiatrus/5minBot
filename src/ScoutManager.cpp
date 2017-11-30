@@ -186,7 +186,7 @@ void ScoutManager::moveScouts()
     // if we know where the enemy region is and where our scout is
     if (enemyBaseLocation)
     {
-		if (!gotAttackedInEnemyRegion && m_targetBasesPositions.empty())
+		if (gotAttackedInEnemyRegion && m_targetBasesPositions.empty())
 		{
 			updateNearestUnoccupiedBases(enemyBaseLocation->getPosition(),Players::Enemy);
 		}
@@ -211,7 +211,7 @@ void ScoutManager::moveScouts()
 			//if there is a unit and we are getting too close, throw granade and run
 			else if (enemyTooClose(enemyUnitsInSight))
 			{
-				if (Util::DistSq(scout->pos,m_targetBasesPositions.front())<20)
+				if (Util::Dist(scout->pos,m_targetBasesPositions.front())<20)
 				{
 					gotAttackedInEnemyRegion = true;
 					m_targetBasesPositions.pop();
@@ -561,7 +561,7 @@ void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos,int player)
 	}
 	for (auto & base : allTargetBases)
 	{
-		if (m_targetBasesPositions.size() < numBasesEnemy)
+		if (m_targetBasesPositions.size() < numBasesEnemy || numBasesEnemy==0)
 		{
 			m_targetBasesPositions.push(base.second->getBasePosition());
 		}
@@ -575,7 +575,7 @@ const bool ScoutManager::dontBlowYourselfUp() const
 	{
 		for (auto & g : grenades)
 		{
-			if (Util::Dist(g->pos, m_scoutUnit->pos) < 3)
+			if (Util::Dist(g->pos, m_scoutUnit->pos) < 4)
 			{
 				//escape sideways Does not look too good
 				const sc2::Point2D targetPos = m_scoutUnit->pos + sc2::Point2D(-(g->pos.y- m_scoutUnit->pos.y), g->pos.x - m_scoutUnit->pos.x);

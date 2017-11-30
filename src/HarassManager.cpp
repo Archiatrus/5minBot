@@ -153,6 +153,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		{
 			sc2::Point2D unloadPos = m_medivac->pos;
 			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, unloadPos, m_bot);
+			Micro::SmartAbility(m_marines, sc2::ABILITY_ID::STOP, m_bot);
 		}
 		const sc2::Unit * targetUnit = getTargetMarines(targetUnits);
 		if (targetUnit)
@@ -163,6 +164,14 @@ void Hitsquad::harass(const BaseLocation * target)
 		else
 		{
 			m_status = HarassStatus::Refueling;
+		}
+		for (auto & m : m_marines)
+		{
+			if (m->health <= 5)
+			{
+				Micro::SmartRightClick(m, m_medivac, m_bot);
+				Micro::SmartRightClick(m_medivac, m, m_bot);
+			}
 		}
 		break;
 	}

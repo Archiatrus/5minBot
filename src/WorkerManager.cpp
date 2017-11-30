@@ -28,7 +28,7 @@ void WorkerManager::onFrame()
 
     m_workerData.drawDepotDebugInfo();
 
-    handleRepairWorkers();
+    //handleRepairWorkers();
 }
 
 void WorkerManager::setRepairWorker(const sc2::Unit * unitToRepair)
@@ -163,7 +163,14 @@ void WorkerManager::handleIdleWorkers()
 
 void WorkerManager::handleRepairWorkers()
 {
-    // TODO
+	const sc2::Units Bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit( sc2::UNIT_TYPEID::TERRAN_BUNKER ));
+	for (auto & b : Bunker)
+	{
+		if (b->health < b->health_max)
+		{
+			setRepairWorker(b);
+		}
+	}
 }
 
 const sc2::Unit * WorkerManager::getClosestMineralWorkerTo(const sc2::Point2D & pos) const

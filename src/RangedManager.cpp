@@ -209,6 +209,10 @@ const sc2::Unit * RangedManager::getTarget(const sc2::Unit * rangedUnit, const s
 	const sc2::Unit * weakestTargetInsideRange = nullptr;
 	const float range = Util::GetAttackRange(rangedUnit->unit_type,m_bot);
     // for each target possiblity
+	// We have three levels in range, in sight, somewhere.
+	// We want to attack the weakest/highest prio target in range
+	// If there is no in range, we want to attack one in sight,
+	// else the one with highest prio.
 	for (auto targetUnit : targets)
 	{
 		if (targetUnit->cloak==1)
@@ -224,6 +228,11 @@ const sc2::Unit * RangedManager::getTarget(const sc2::Unit * rangedUnit, const s
 		float distance = Util::Dist(rangedUnit->pos, targetUnit->pos);
 		if (distance > range)
 		{
+			// If in sight we just add 20 to prio. This should make sure that a unit in sight has higher priority than any unit outside of range
+			if (distance <= Util::GetUnitTypeSight(rangedUnit->unit_type, m_bot))
+			{
+				priority += 20;
+			}
 			// if it's a higher priority, or it's closer, set it
 			if (!closestTargetOutsideRange || (priority > highPriorityFar) || (priority == highPriorityFar && distance < closestDist))
 			{
@@ -267,11 +276,14 @@ int RangedManager::getAttackPriority(const sc2::Unit * attacker, const sc2::Unit
     {
         return 10;
     }
-	if (unit->unit_type == sc2::UNIT_TYPEID::PROTOSS_PYLON || unit->unit_type == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER)
+	if (unit->unit_type == sc2::UNIT_TYPEID::PROTOSS_PYLON || unit->unit_type == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || unit->unit_type == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
 	{
 		return 5;
 	}
-
+	if (Util::IsTownHallType(unit->unit_type))
+	{
+		return 4;
+	}
     return 1;
 }
 

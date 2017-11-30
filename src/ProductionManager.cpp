@@ -213,13 +213,26 @@ void ProductionManager::create(const sc2::Unit * producer, BuildOrderItem & item
 			sc2::Point2D bPoint(m_bot.Bases().getRallyPoint());
 			const BaseLocation * homeBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
 			//Any enemy base is fine
-			const BaseLocation * enemyBase = *m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).begin();
-			if (homeBase && enemyBase)
+			std::vector<const BaseLocation *> startBases = m_bot.Bases().getStartingBaseLocations();
+			const BaseLocation * enemyBase;
+			//size = 0 should not happen but who knows
+			if (startBases.size()>=2)
 			{
-				sc2::Point2D homeBasePos = homeBase->getBasePosition();
-				if (enemyBase->getGroundDistance(bPoint) > enemyBase->getGroundDistance(homeBasePos))
+				if (startBases[0]->isPlayerStartLocation(Players::Self))
 				{
-					bPoint = homeBasePos;
+					enemyBase = startBases[1];
+				}
+				else
+				{
+					enemyBase = startBases[0];
+				}
+				if (homeBase && enemyBase)
+				{
+					sc2::Point2D homeBasePos = homeBase->getBasePosition();
+					if (enemyBase->getGroundDistance(bPoint) > enemyBase->getGroundDistance(homeBasePos))
+					{
+						bPoint = homeBasePos;
+					}
 				}
 			}
 			m_buildingManager.addBuildingTask(item.type.getUnitTypeID(), bPoint);
@@ -391,52 +404,50 @@ void ProductionManager::defaultMacro()
 			return;
 		}
 	}
-	//Every Base has to build a worker until 66 workers.
-	if (m_bot.Observation()->GetFoodWorkers() < 66)
+	for (auto & unit : CommandCenters)
 	{
-		for (auto & unit : CommandCenters)
+		if (unit->build_progress == 1.0f)
 		{
-			if (unit->build_progress == 1.0f)
+			if (unit->energy >= 50)
 			{
-				//Sometimes we have a problem here
-				if (unit->assigned_harvesters == 0 || unit->energy > 60)
+				const sc2::Unit * mineralPatch = Util::getClostestMineral(unit->pos, m_bot);
+				if (mineralPatch && mineralPatch->Visible == sc2::Unit::DisplayType::Visible)
 				{
-					m_bot.OnBuildingConstructionComplete(unit);
+					m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::EFFECT_CALLDOWNMULE, mineralPatch);
 				}
-				//Before building a worker, make sure it is a OC
-				if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER && (unit->orders.empty() || unit->orders[0].ability_id.ToType() != sc2::ABILITY_ID::MORPH_ORBITALCOMMAND) && numRaxFinished > 0)
-				{
-					if (minerals > 150)
-					{
-						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::MORPH_ORBITALCOMMAND);
-					}
-					std::cout << "OC" << std::endl;
-					return;
-				}
-				if (unit->energy >= 50)
-				{
-					const sc2::Unit * mineralPatch = Util::getClostestMineral(unit->pos, m_bot);
-					if (mineralPatch && mineralPatch->Visible == sc2::Unit::DisplayType::Visible)
-					{
-						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::EFFECT_CALLDOWNMULE, mineralPatch);
-					}
-				}
-				int numOfRefinaries = m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_REFINERY, false) + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_REFINERY);
-				if (numRax > 0 && minerals >= 75 && ((m_bot.Observation()->GetFoodWorkers() >= 15 && numOfRefinaries == 0) || (m_bot.Observation()->GetFoodWorkers() >= 21 && numOfRefinaries == 1)))
-				{
-					m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_REFINERY), BUILDING, false));
-					std::cout << "Refinary" << std::endl;
-					return;
-				}
-				if (unit->orders.empty() && unit->assigned_harvesters < unit->ideal_harvesters + 3)
-				{
-					//m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_SCV), UNIT, false));
-					m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_SCV);
-					std::cout << "TrainSCV" << std::endl;
-					return;
-				}
-
 			}
+
+			//Sometimes we have a problem here
+			if (unit->assigned_harvesters == 0 || unit->energy > 60)
+			{
+				m_bot.OnBuildingConstructionComplete(unit);
+			}
+			//Before building a worker, make sure it is a OC
+			if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER && (unit->orders.empty() || unit->orders[0].ability_id.ToType() != sc2::ABILITY_ID::MORPH_ORBITALCOMMAND) && numRaxFinished > 0)
+			{
+				if (minerals > 150)
+				{
+					m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::MORPH_ORBITALCOMMAND);
+				}
+				std::cout << "OC" << std::endl;
+				return;
+			}
+			int numOfRefinaries = m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_REFINERY, false) + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_REFINERY);
+			if (numRax > 0 && minerals >= 75 && ((m_bot.Observation()->GetFoodWorkers() >= 15 && numOfRefinaries == 0) || (m_bot.Observation()->GetFoodWorkers() >= 21 && numOfRefinaries == 1)))
+			{
+				m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_REFINERY), BUILDING, false));
+				std::cout << "Refinary" << std::endl;
+				return;
+			}
+			//Every Base has to build a worker until 66 workers.
+			if (unit->orders.empty() && unit->assigned_harvesters < unit->ideal_harvesters + 3 && m_bot.Observation()->GetFoodWorkers() < 66)
+			{
+				//m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_SCV), UNIT, false));
+				m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_SCV);
+				std::cout << "TrainSCV" << std::endl;
+				return;
+			}
+
 		}
 	}
 	//Upgrades
