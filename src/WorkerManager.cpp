@@ -28,7 +28,7 @@ void WorkerManager::onFrame()
 
     m_workerData.drawDepotDebugInfo();
 
-    //handleRepairWorkers();
+    handleRepairWorkers();
 }
 
 void WorkerManager::setRepairWorker(const sc2::Unit * unitToRepair)
@@ -166,11 +166,12 @@ void WorkerManager::handleRepairWorkers()
 	const sc2::Units Bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit( sc2::UNIT_TYPEID::TERRAN_BUNKER ));
 	for (auto & b : Bunker)
 	{
-		if (b->health < b->health_max)
+		if (b->build_progress==1.0f && b->health < b->health_max)
 		{
 			setRepairWorker(b);
 		}
 	}
+	m_workerData.checkForRepairedBuildings();
 }
 
 const sc2::Unit * WorkerManager::getClosestMineralWorkerTo(const sc2::Point2D & pos) const
@@ -205,17 +206,7 @@ const sc2::Unit * WorkerManager::getClosestMineralWorkerTo(const sc2::Point2D & 
 
 const bool WorkerManager::isBeingRepaired(const sc2::Unit * unit) const
 {
-	for (auto worker : m_workerData.getWorkers())
-	{
-		if (!worker || !worker->is_alive) { continue; }
-
-		if (m_workerData.getWorkerJob(worker) == WorkerJobs::Repair && worker->orders.back().target_unit_tag == unit->tag)
-		{
-			return true;
-		}
-	}
-	return false;
-
+	return m_workerData.isBeingRepaired(unit);
 }
 
 

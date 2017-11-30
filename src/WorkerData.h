@@ -20,6 +20,7 @@ class WorkerData
     std::map<const sc2::Unit *, int>    m_depotWorkerCount;
     std::map<const sc2::Unit *, const sc2::Unit *>  m_workerRefineryMap;
     std::map<const sc2::Unit *, const sc2::Unit *>  m_workerDepotMap;
+	std::map<sc2::Tag, sc2::Units > m_repair_map;
 
     void clearPreviousJob(const sc2::Unit * unit);
 
@@ -42,4 +43,6 @@ public:
     const std::set<const sc2::Unit *> & getWorkers() const;
 	std::vector<const sc2::Unit*> getMineralWorkers() const;
 	std::vector<const sc2::Unit*> getGasWorkers() const;
+	const bool isBeingRepaired(const sc2::Unit * unit) const;
+	void checkForRepairedBuildings();
 };

@@ -123,6 +123,7 @@ void WorkerData::setWorkerJob(const sc2::Unit * unit, int job, const sc2::Unit *
     }
     else if (job == WorkerJobs::Repair)
     {
+		m_repair_map[jobUnit->tag].push_back(unit);
         Micro::SmartRepair(unit, jobUnit, m_bot);
     }
     else if (job == WorkerJobs::Scout)
@@ -157,7 +158,7 @@ void WorkerData::clearPreviousJob(const sc2::Unit * unit)
     }
     else if (previousJob == WorkerJobs::Repair)
     {
-
+		
     }
     else if (previousJob == WorkerJobs::Move)
     {
@@ -309,4 +310,43 @@ std::vector<const sc2::Unit *> WorkerData::getGasWorkers() const
 		}
 	}
 	return gasWorkers;
+}
+
+const bool WorkerData::isBeingRepaired(const sc2::Unit * unit) const
+{
+	if (m_repair_map.find(unit->tag) == m_repair_map.end())
+	{
+		return false;
+	}
+	return m_repair_map.at(unit->tag).size() > 0;
+}
+
+void WorkerData::checkForRepairedBuildings()
+{
+	if (m_repair_map.empty())
+	{
+		return;
+	}
+	std::vector<sc2::Tag> targetsToDelete;
+	for (auto m : m_repair_map)
+	{
+		auto target = m_bot.GetUnit(m.first);
+		if (target && target->health == target->health_max)
+		{
+			targetsToDelete.push_back(m.first);
+			continue;
+		}
+		auto workers = m.second;
+		for (auto & w : workers)
+		{
+			if (w->orders.empty() || w->orders.front().target_unit_tag != m.first)
+			{
+				m_bot.Actions()->UnitCommand(w, sc2::ABILITY_ID::EFFECT_REPAIR, target);
+			}
+		}
+	}
+	for (auto & t : targetsToDelete)
+	{
+		m_repair_map.erase(t);
+	}
 }
