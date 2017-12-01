@@ -163,8 +163,15 @@ void BaseLocationManager::onFrame()
 
 		BaseLocation * baseLocation = getBaseLocation(ui.lastPosition);
 
+		
+
 		if (baseLocation != nullptr)
 		{
+			if (Util::IsTownHallType(ui.type))
+			{
+				int a = 1;
+			}
+			m_bot.Debug()->DebugSphereOut(ui.lastPosition, 3.0f,sc2::Colors::Red);
 			baseLocation->setPlayerOccupying(Players::Enemy, true);
 		}
 	}

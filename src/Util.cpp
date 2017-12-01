@@ -617,5 +617,25 @@ const sc2::Unit * Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 			}
 		}
 	}
+	//If we get till here its time to long distance mine
+	const std::vector<const BaseLocation *> bases2 = bot.Bases().getBaseLocations();
+	std::map<int, const BaseLocation *> orderedBases2;
+	for (auto & base : bases2)
+	{
+		int distance = base->getGroundDistance(pos);
+		orderedBases2[distance] = base;
+	}
+	for (auto & baseMap : orderedBases2)
+	{
+		const std::vector<const sc2::Unit *> mineralPatches = baseMap.second->getMinerals();
+		for (auto & mineralPatch : mineralPatches)
+		{
+			//Bad things happen if it is not alive or just snapshot. But they are probably snapshots if we get till here.
+			if (mineralPatch->is_alive && mineralPatch->display_type == sc2::Unit::DisplayType::Visible && mineralPatch->mineral_contents > 200)
+			{
+				return mineralPatch;
+			}
+		}
+	}
 	return nullptr;
 }

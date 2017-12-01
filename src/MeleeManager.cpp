@@ -121,6 +121,13 @@ int MeleeManager::getAttackPriority(const sc2::Unit * attacker, const sc2::Unit 
 
 bool MeleeManager::meleeUnitShouldRetreat(const sc2::Unit * meleeUnit, const std::vector<const sc2::Unit *> & targets)
 {
-    // TODO: should melee units ever retreat?
+	for (auto & target : targets)
+	{
+		//It would be better if we have one sacrifice.
+		if (target->unit_type.ToType() == sc2::UNIT_TYPEID::ZERG_BANELING && Util::Dist(meleeUnit->pos, target->pos) <= 3.2f)
+		{
+			return true;
+		}
+	}
     return false;
 }

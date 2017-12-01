@@ -180,8 +180,13 @@ void SquadData::assignUnitToSquad(const sc2::Unit * unit, Squad & squad)
 
 bool SquadData::canAssignUnitToSquad(const sc2::Unit * unit, const Squad & squad) const
 {
-    const Squad * unitSquad = getUnitSquad(unit);
 
+    const Squad * unitSquad = getUnitSquad(unit);
+	//It really should not happen, that the harass medivac reaches here. No idea how this happens
+	if (unit->cargo_space_taken > 0)
+	{
+		return false;
+	}
     // make sure strictly less than so we don't reassign to the same squad etc
     return !unitSquad || (unitSquad->getPriority() < squad.getPriority());
 }

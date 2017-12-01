@@ -64,6 +64,10 @@ void UnitData::removeBadUnits()
 
 bool UnitData::badUnitInfo(const UnitInfo & ui) const
 {
+	if (!ui.unit->is_alive)
+	{
+		return true;
+	}
     return false;
 }
 

@@ -31,9 +31,10 @@ void WorkerManager::onFrame()
     handleRepairWorkers();
 }
 
-void WorkerManager::setRepairWorker(const sc2::Unit * unitToRepair)
+void WorkerManager::setRepairWorker(const sc2::Unit * unitToRepair,int numWorkers)
 {
-	if (!isBeingRepaired(unitToRepair))
+	auto test = isBeingRepairedNum(unitToRepair);
+	if (isBeingRepairedNum(unitToRepair)<numWorkers)
 	{
 		const sc2::Unit * worker = getClosestMineralWorkerTo(unitToRepair->pos);
 		if (worker)
@@ -168,10 +169,10 @@ void WorkerManager::handleRepairWorkers()
 	{
 		if (b->build_progress==1.0f && b->health < b->health_max)
 		{
-			setRepairWorker(b);
+			setRepairWorker(b,6);
 		}
 	}
-	m_workerData.checkForRepairedBuildings();
+	m_workerData.checkRepairedBuildings();
 }
 
 const sc2::Unit * WorkerManager::getClosestMineralWorkerTo(const sc2::Point2D & pos) const
@@ -204,9 +205,9 @@ const sc2::Unit * WorkerManager::getClosestMineralWorkerTo(const sc2::Point2D & 
     return closestMineralWorker;
 }
 
-const bool WorkerManager::isBeingRepaired(const sc2::Unit * unit) const
+const size_t WorkerManager::isBeingRepairedNum(const sc2::Unit * unit) const
 {
-	return m_workerData.isBeingRepaired(unit);
+	return m_workerData.isBeingRepairedNum(unit);
 }
 
 
@@ -220,26 +221,6 @@ void WorkerManager::setMineralWorker(const sc2::Unit * unit)
 	{
 		m_workerData.setWorkerJob(unit, WorkerJobs::Minerals, mineralPatch);
 	}
-	/*
-	const std::set<const BaseLocation *> bases = m_bot.Bases().getOccupiedBaseLocations(Players::Self);
-	std::map<int, const BaseLocation *> orderedBases;
-	for (auto & base : bases)
-	{
-		int distance = base->getGroundDistance(unit->pos);
-		orderedBases[distance] = base;
-	}
-	for (auto & baseMap : orderedBases)
-	{
-		const std::vector<const sc2::Unit *> mineralPatches = baseMap.second->getMinerals();
-		for (auto & mineralPatch : mineralPatches)
-		{
-			if (mineralPatch->is_alive)
-			{
-				m_workerData.setWorkerJob(unit, WorkerJobs::Minerals, mineralPatch);
-				return;
-			}
-		}
-	}*/
 }
 
 const sc2::Unit * WorkerManager::getClosestDepot(const sc2::Unit * worker) const

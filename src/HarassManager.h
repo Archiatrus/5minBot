@@ -44,7 +44,7 @@ class HarassManager
 	CCBot &   m_bot;
 
 	std::vector<Hitsquad>	m_hitSquads;
-	sc2::Units	m_liberator;
+	const sc2::Unit* m_liberator;
 	const int	m_numHitSquads = 1;
 
 	std::vector<const BaseLocation *> getPotentialTargets(size_t n) const;
@@ -67,5 +67,9 @@ public:
 	const bool setMedivac(const sc2::Unit * medivac);
 	const bool setMarine(const sc2::Unit * marine);
 	const bool setLiberator(const sc2::Unit * liberator);
+
+	const sc2::Unit * getMedivac();
+	const sc2::Units getMarines();
+	const sc2::Unit * getLiberator();
 
 };

@@ -72,18 +72,24 @@ void Hitsquad::harass(const BaseLocation * target)
 	{
 	case HarassStatus::Idle:
 		//We get here if we have a brand new hit squad
-		if (m_medivac && m_marines.size() == 8 && m_medivac->health==m_medivac->health_max)
+		if (m_medivac)
 		{
-			//Everybody there? Start loading!
-			while (!m_wayPoints.empty())
+			if (m_medivac->health == m_medivac->health_max)
 			{
-				m_wayPoints.pop();
+				if (m_marines.size() == 8)
+				{
+					//Everybody there? Start loading!
+					while (!m_wayPoints.empty())
+					{
+						m_wayPoints.pop();
+					}
+					m_status = HarassStatus::Loading;
+				}
 			}
-			m_status = HarassStatus::Loading;
-		}
-		else
-		{
-			m_bot.Workers().setRepairWorker(m_medivac);
+			else if (m_medivac->health == m_medivac->health_max)
+			{
+				m_bot.Workers().setRepairWorker(m_medivac);
+			}
 		}
 		break;
 	case HarassStatus::Loading:
@@ -236,9 +242,10 @@ void Hitsquad::harass(const BaseLocation * target)
 		{
 			Micro::SmartAbility(m_marines, sc2::ABILITY_ID::STOP, m_bot);
 			//if the medivac is home, repair it
-			if (m_medivac->health != m_medivac->health_max && Util::Dist(m_medivac->pos, m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getBasePosition()) < 10)
+			if (m_medivac->health != m_medivac->health_max && Util::Dist(m_medivac->pos, m_bot.Workers().getClosestMineralWorkerTo(m_medivac->pos)->pos) < 20)
 			{
 				m_bot.Workers().setRepairWorker(m_medivac);
+				m_status = HarassStatus::Idle;
 			}
 			for (auto & marine : m_marines)
 			{
@@ -252,7 +259,7 @@ void Hitsquad::harass(const BaseLocation * target)
 				}
 			}
 			//At home we can also get new marines.
-			if (Util::Dist(m_medivac->pos, m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getBasePosition()) < 10)
+			if (Util::Dist(m_medivac->pos, m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getBasePosition()) < 20)
 			{
 				m_status = HarassStatus::Idle;
 			}
@@ -454,7 +461,7 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 }
 
 HarassManager::HarassManager(CCBot & bot)
-	: m_bot(bot)
+	: m_bot(bot), m_liberator(nullptr)
 {
 
 }
@@ -504,7 +511,7 @@ std::vector<const BaseLocation *> HarassManager::getPotentialTargets(size_t n) c
 	std::map<float, const BaseLocation *> targetsWithDistance;
 	for (auto & base : bases)
 	{
-		float dist = Util::Dist(homePos, base->getBasePosition());
+		float dist = base->getGroundDistance(homePos);
 		targetsWithDistance[-dist] = base;
 	}
 	for (auto & tb : targetsWithDistance)
@@ -589,4 +596,26 @@ const bool HarassManager::setLiberator(const sc2::Unit * liberator)
 void HarassManager::handleLiberator()
 {
 
+}
+
+const sc2::Unit * HarassManager::getMedivac()
+{
+	if (m_hitSquads.empty())
+	{
+		return nullptr;
+	}
+	return m_hitSquads.front().getMedivac();
+}
+
+const sc2::Units HarassManager::getMarines()
+{
+	if (m_hitSquads.empty())
+	{
+		return sc2::Units();
+	}
+	return m_hitSquads.front().getMarines();
+}
+const sc2::Unit * HarassManager::getLiberator()
+{
+	return m_liberator;
 }

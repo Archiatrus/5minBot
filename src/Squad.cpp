@@ -87,8 +87,8 @@ void Squad::setAllUnits()
         if (unit->build_progress < 1.0f) { continue; }
         if (unit->health <= 0) { continue; }
 		if (unit->last_seen_game_loop != m_bot.Observation()->GetGameLoop()) { continue; }
-        if (m_order.getType() != SquadOrderTypes::Attack  && Util::IsWorker(unit)) { continue; }
-
+        if (m_order.getType() == SquadOrderTypes::Attack  && Util::IsWorker(unit)) { continue; }
+		if (unit->cargo_space_taken>0) { continue; } //This really should not happen. No idea, why the harass medivac gets here
         goodUnits.insert(unit);
     }
 

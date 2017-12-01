@@ -577,8 +577,12 @@ const bool ScoutManager::dontBlowYourselfUp() const
 		{
 			if (Util::Dist(g->pos, m_scoutUnit->pos) < 4)
 			{
-				//escape sideways Does not look too good
-				const sc2::Point2D targetPos = m_scoutUnit->pos + sc2::Point2D(-(g->pos.y- m_scoutUnit->pos.y), g->pos.x - m_scoutUnit->pos.x);
+				//escape 3/4 pi
+				const float n = 1.0f / std::sqrt(2.0f);
+				sc2::Point2D vector(g->pos.x - m_scoutUnit->pos.x, g->pos.y - m_scoutUnit->pos.y);
+				vector.x = -n*(vector.x + vector.y);
+				vector.y = n*(vector.x - vector.y);
+				const sc2::Point2D targetPos = m_scoutUnit->pos + vector;
 				Micro::SmartMove(m_scoutUnit, targetPos, m_bot);
 				return true;
 			}

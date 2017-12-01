@@ -51,16 +51,16 @@ void GameCommander::drawGameInformation(int x, int y)
 // assigns units to various managers
 void GameCommander::handleUnitAssignments()
 {
-    m_validUnits.clear();
-    m_combatUnits.clear();
+	m_validUnits.clear();
+	m_combatUnits.clear();
+	m_harassUnits.clear();
+	// filter our units for those which are valid and usable
+	setValidUnits();
 
-// filter our units for those which are valid and usable
-setValidUnits();
-
-// set each type of unit
-setScoutUnits();
-setHarassUnits();
-setCombatUnits();
+	// set each type of unit
+	setScoutUnits();
+	setHarassUnits();
+	setCombatUnits();
 }
 
 bool GameCommander::isAssigned(const sc2::Unit * unit) const
@@ -145,6 +145,25 @@ bool GameCommander::shouldSendInitialScout()
 
 void GameCommander::setHarassUnits()
 {
+	const sc2::Unit * medivac = m_harassManager.getMedivac();
+	if (medivac)
+	{
+		assignUnit(medivac, m_harassUnits);
+	}
+	sc2::Units marines = m_harassManager.getMarines();
+	if (marines.size()>0)
+	{
+		for (auto & m : marines)
+		{
+			assignUnit(m, m_harassUnits);
+		}
+	}
+	const sc2::Unit * liberator = m_harassManager.getLiberator();
+	if (liberator)
+	{
+		assignUnit(liberator, m_harassUnits);
+	}
+	sc2::Units enemies = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
 	for (auto & unit : m_validUnits)
 	{
 		BOT_ASSERT(unit, "Have a null unit in our valid units\n");
@@ -158,9 +177,18 @@ void GameCommander::setHarassUnits()
 					assignUnit(unit, m_harassUnits);
 				}
 			}
-			else if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MARINE && m_harassManager.needMarine())
+			else if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MARINE && unit->health==unit->health_max && m_harassManager.needMarine())
 			{
-				if (m_harassManager.setMarine(unit))
+				//If the marine is currently close to an anti air enemy, the medivac does not know what to do
+				bool tooClose = false;
+				for (auto & e : enemies)
+				{
+					if (Util::Dist(e->pos, unit->pos) < Util::GetUnitTypeSight(unit->unit_type,m_bot))
+					{
+						tooClose = true;
+					}
+				}
+				if (!tooClose && m_harassManager.setMarine(unit))
 				{
 					assignUnit(unit, m_harassUnits);
 				}
@@ -183,9 +211,12 @@ void GameCommander::setCombatUnits()
     for (auto & unit : m_validUnits)
     {
         BOT_ASSERT(unit, "Have a null unit in our valid units\n");
-
         if (!isAssigned(unit) && Util::IsCombatUnitType(unit->unit_type, m_bot))
         {
+			if (unit->cargo_space_taken > 0)
+			{
+				int a = 1;
+			}
             assignUnit(unit, m_combatUnits);
         }
     }

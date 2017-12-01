@@ -369,6 +369,12 @@ void BuildingManager::addBuildingTask(const sc2::UnitTypeID & type, const sc2::P
     Building b(type, desiredPosition);
     b.status = BuildingStatus::Unassigned;
 
+	//with an empty building task queue there shouldn't be any reserved tiles.
+	//Well there are. The ones reserved for addons...
+	//if (m_buildings.empty())
+	//{
+	//	m_buildingPlacer.freeTiles();
+	//}
     m_buildings.push_back(b);
 }
 

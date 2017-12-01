@@ -248,9 +248,17 @@ void UnitInfoManager::updateUnit(const sc2::Unit * unit)
 	//If it is not just a snap shot
 	if (unit->display_type != sc2::Unit::DisplayType::Snapshot)
 	{
-		m_unitData[Util::GetPlayer(unit)].updateUnit(unit);
+		if (unit->is_alive)
+		{
+			m_unitData[Util::GetPlayer(unit)].updateUnit(unit);
+		}
+		else
+		{
+			m_unitData[Util::GetPlayer(unit)].killUnit(unit);
+		}
 	}
 	//else if we see the position and there should be a building, but there is not, it seems to be dead
+	//or if it actually dead, then it is also dead
 	else
 	{
 		if (Util::IsBuildingType(unit->unit_type, m_bot))

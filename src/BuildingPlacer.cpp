@@ -256,6 +256,11 @@ void BuildingPlacer::freeTiles(int bx, int by, int width, int height)
     }
 }
 
+void BuildingPlacer::freeTiles()
+{
+	m_reserveMap = std::vector< std::vector<bool> >(m_bot.Map().width(), std::vector<bool>(m_bot.Map().height(), false));
+}
+
 sc2::Point2D BuildingPlacer::getRefineryPosition()
 {
     sc2::Point2D closestGeyser(0, 0);

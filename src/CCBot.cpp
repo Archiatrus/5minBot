@@ -56,7 +56,7 @@ void CCBot::OnStep()
 
     m_gameCommander.onFrame();
 
-    //Debug()->SendDebug();
+    Debug()->SendDebug();
 }
 
 void CCBot::OnUnitCreated(const sc2::Unit * unit)

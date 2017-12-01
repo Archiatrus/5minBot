@@ -42,7 +42,7 @@ void WorkerData::updateAllWorkerData()
     for (auto worker : getWorkers())
     {
         // TODO: for now skip gas workers because they disappear inside refineries, this is annoying
-        if (!worker && !worker->is_alive && (getWorkerJob(worker) != WorkerJobs::Gas))
+        if (!worker || !worker->is_alive || (m_bot.Observation()->GetGameLoop() != worker->last_seen_game_loop && getWorkerJob(worker) != WorkerJobs::Gas))
         {
             workersDestroyed.push_back(worker);
         }
@@ -312,16 +312,16 @@ std::vector<const sc2::Unit *> WorkerData::getGasWorkers() const
 	return gasWorkers;
 }
 
-const bool WorkerData::isBeingRepaired(const sc2::Unit * unit) const
+const size_t WorkerData::isBeingRepairedNum(const sc2::Unit * unit) const
 {
 	if (m_repair_map.find(unit->tag) == m_repair_map.end())
 	{
-		return false;
+		return 0;
 	}
-	return m_repair_map.at(unit->tag).size() > 0;
+	return m_repair_map.at(unit->tag).size();
 }
 
-void WorkerData::checkForRepairedBuildings()
+void WorkerData::checkRepairedBuildings()
 {
 	if (m_repair_map.empty())
 	{

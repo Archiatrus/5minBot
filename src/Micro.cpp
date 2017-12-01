@@ -84,6 +84,10 @@ void Micro::SmartMove(const sc2::Unit * attacker, const sc2::Point2D & targetPos
 	}
 	if (!attacker->is_flying)
 	{
+		if (attacker->cargo_space_taken > 0)
+		{
+			int a = 1;
+		}
 		sc2::Point2D validWalkableTargetPosition = targetPosition;
 		if (!(bot.Map().isWalkable(targetPosition) && bot.Map().isValid(targetPosition)))
 		{
@@ -175,6 +179,10 @@ void Micro::SmartMove(sc2::Units attackers, const sc2::Point2D & targetPosition,
 		}
 		else
 		{
+			if (attacker->cargo_space_taken > 0)
+			{
+				int a = 1;
+			}
 			flyingMover.push_back(attacker);
 		}
 	}

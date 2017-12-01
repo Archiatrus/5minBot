@@ -43,6 +43,6 @@ public:
     const std::set<const sc2::Unit *> & getWorkers() const;
 	std::vector<const sc2::Unit*> getMineralWorkers() const;
 	std::vector<const sc2::Unit*> getGasWorkers() const;
-	const bool isBeingRepaired(const sc2::Unit * unit) const;
-	void checkForRepairedBuildings();
+	const size_t isBeingRepairedNum(const sc2::Unit * unit) const;
+	void checkRepairedBuildings();
 };
