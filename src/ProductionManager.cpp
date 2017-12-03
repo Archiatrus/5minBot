@@ -17,9 +17,6 @@ const int maxAddonCounter = 5;
 
 bool startedResearch = false;
 
-int _weapons = 0;
-int _armor = 0;
-
 ProductionManager::ProductionManager(CCBot & bot)
 	: m_bot(bot)
 	, m_buildingManager(bot)
@@ -514,7 +511,7 @@ void ProductionManager::defaultMacro()
 	}
 
 	//upgrades
-	const sc2::Units Armories = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_ARMORY));
+	const sc2::Units Armories = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRANm_armorY));
 	const int numArmories = Armories.size();
 	const int numArmoriesFinished = buildingsFinished(Armories);
 	for (auto & unit : Engibays)
@@ -525,9 +522,9 @@ void ProductionManager::defaultMacro()
 			{
 					//If you have enough minerals but not enough gas do not block. That mins could be marines.
 				//Weapons first
-				if ((_weapons == 0 && _armor == 0 && gas >= 100) || (_weapons == 1 && _armor == 1 && gas >= 175) || (_weapons == 2 && _armor == 2 && gas >= 250))
+				if ((m_weapons == 0 && m_armor == 0 && gas >= 100) || (m_weapons == 1 && m_armor == 1 && gas >= 175) || (m_weapons == 2 && m_armor == 2 && gas >= 250))
 				{
-					if ((_weapons == 0 && minerals >= 100) || (_weapons == 1 && minerals >= 175) || (_weapons == 2 && minerals >= 250))
+					if ((m_weapons == 0 && minerals >= 100) || (m_weapons == 1 && minerals >= 175) || (m_weapons == 2 && minerals >= 250))
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONS);
 						startedResearch = true;
@@ -535,9 +532,9 @@ void ProductionManager::defaultMacro()
 					std::cout << "Weapon++" << std::endl;
 					return;
 				}
-				if ((_weapons == 1 && _armor == 0 && gas >= 100) || (_weapons == 2 && _armor == 1 && gas >= 175) || (_weapons == 3 && _armor == 2 && gas >= 250))
+				if ((m_weapons == 1 && m_armor == 0 && gas >= 100) || (m_weapons == 2 && m_armor == 1 && gas >= 175) || (m_weapons == 3 && m_armor == 2 && gas >= 250))
 				{
-					if ((_armor == 0 && minerals >= 100) || (_armor == 1 && minerals >= 175) || (_armor == 2 && minerals >= 250))
+					if ((m_armor == 0 && minerals >= 100) || (m_armor == 1 && minerals >= 175) || (m_armor == 2 && minerals >= 250))
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMOR);
 						startedResearch = true;
@@ -591,11 +588,11 @@ void ProductionManager::defaultMacro()
 				const sc2::AbilityID research = unit->orders.front().ability_id;
 				if (research == sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONS)
 				{
-					_weapons++;
+					m_weapons++;
 				}
 				else if (research == sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMOR)
 				{
-					_armor++;
+					m_armor++;
 				}
 			}
 		}
@@ -779,7 +776,7 @@ void ProductionManager::defaultMacro()
 
 	//Armory
 	//Needed for upgrades after +1
-	if (_weapons == 1 && _armor == 1 && minerals >= 150 && gas >= 100 && numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ARMORY) == 0)
+	if (m_weapons == 1 && m_armor == 1 && minerals >= 150 && gas >= 100 && numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRANm_armorY) == 0)
 	{
 		//A armory needs 46 seconds to build.
 		//+1 weapons needs 114 seconds.
@@ -795,7 +792,7 @@ void ProductionManager::defaultMacro()
 		}
 		if (maxProgress >= 68.0f / 114.0f)
 		{
-			m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_ARMORY), BUILDING, false));
+			m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRANm_armorY), BUILDING, false));
 		}
 	}
 
