@@ -196,7 +196,7 @@ void BaseLocation::setTownHall(const sc2::Unit * townHall)
 {
 	m_townhall = townHall;
 	//it seems we have a new base. Time to update the mineral nodes.
-	sc2::Units resources = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral, sc2::IsUnits({ sc2::UNIT_TYPEID::NEUTRAL_LABMINERALFIELD ,sc2::UNIT_TYPEID::NEUTRAL_LABMINERALFIELD750 ,sc2::UNIT_TYPEID::NEUTRAL_MINERALFIELD , sc2::UNIT_TYPEID::NEUTRAL_MINERALFIELD750, sc2::UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD, sc2::UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD750}));
+	sc2::Units resources = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral, sc2::IsUnits(Util::getMineralTypes()));
 	m_minerals.clear();
 	for (auto & resource : resources)
 	{

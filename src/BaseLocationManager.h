@@ -16,8 +16,6 @@ class BaseLocationManager
     std::map<int, std::set<const BaseLocation *>>   m_occupiedBaseLocations;
     std::vector<std::vector<BaseLocation *>>        m_tileBaseLocations;
 
-    BaseLocation * getBaseLocation(const sc2::Point2D & pos) const;
-
 public:
 
     BaseLocationManager(CCBot & bot);
@@ -27,6 +25,7 @@ public:
     void drawBaseLocations();
 
     const std::vector<const BaseLocation *> & getBaseLocations() const;
+	BaseLocation * getBaseLocation(const sc2::Point2D & pos) const;
     const std::vector<const BaseLocation *> & getStartingBaseLocations() const;
     const std::set<const BaseLocation *> & getOccupiedBaseLocations(int player) const;
 	const sc2::Point2D getBuildingLocation() const;

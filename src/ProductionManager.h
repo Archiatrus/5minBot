@@ -13,6 +13,10 @@ class ProductionManager
 
     BuildingManager m_buildingManager;
     BuildOrderQueue m_queue;
+
+	int m_weapons;
+	int m_armor;
+
 	bool m_scoutRequested;
 
     const sc2::Unit * getClosestUnitToPosition(const std::vector<const sc2::Unit *> & units, sc2::Point2D closestTo);

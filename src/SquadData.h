@@ -34,4 +34,7 @@ public:
 
     Squad &         getSquad(const std::string & squadName);
     const std::map<std::string, Squad> & getSquads() const;
+
+
+	const bool underAttack() const;
 };

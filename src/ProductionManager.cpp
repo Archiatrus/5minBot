@@ -15,10 +15,14 @@ bool canBuildAddon = true;
 int addonCounter = 0;
 const int maxAddonCounter = 5;
 
+bool startedResearch = false;
+
 ProductionManager::ProductionManager(CCBot & bot)
-    : m_bot             (bot)
-    , m_buildingManager (bot)
-    , m_queue           (bot)
+	: m_bot(bot)
+	, m_buildingManager(bot)
+	, m_queue(bot)
+	, m_weapons(0)
+	, m_armor(0)
 {
 
 }
@@ -342,7 +346,7 @@ void ProductionManager::drawProductionInformation()
 void ProductionManager::defaultMacro()
 {
 
-	//Maybe too fast addon command confuse the engine?!
+	//This avoids repeating the same command twice.
 	++defaultMacroSleep;
 	if (defaultMacroSleep < defaultMacroSleepMax)
 	{
@@ -364,11 +368,13 @@ void ProductionManager::defaultMacro()
 		defaultMacroSleep = defaultMacroSleepMax;
 		return;
 	}
-	int32_t gas = getFreeGas();//m_bot.Observation()->GetVespene();
+	int32_t gas = getFreeGas();
 	//for every production building we need 2 supply free
 	int32_t supply = m_bot.Observation()->GetFoodUsed();
 	int32_t supplyCap=m_bot.Observation()->GetFoodCap();
 	
+
+	//Maybe it would be smarter to search for all buildings first and then search through the resulting vector
 	const sc2::Units Depots = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT , sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOTLOWERED }));
 	const int numDepots = Depots.size();
 	const int numDepotsFinished = buildingsFinished(Depots);
@@ -389,8 +395,11 @@ void ProductionManager::defaultMacro()
 	const int numFactory = Factories.size();
 	const int numFactoryFinished = buildingsFinished(Factories);
 
-	//const sc2::Units mineralNodes = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral, sc2::IsUnits({ sc2::UNIT_TYPEID::NEUTRAL_MINERALFIELD , sc2::UNIT_TYPEID::NEUTRAL_MINERALFIELD750 , sc2::UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD , sc2::UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD750}));
-	
+	const sc2::Units Engibays = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit( sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY));
+	const int numEngibays = Engibays.size();
+	const int numEngibaysFinished = buildingsFinished(Engibays);
+
+	//const sc2::Units mineralNodes = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral, sc2::IsUnits(Util::getMineralTypes()));
 
 	if (supplyCap < 200 && supplyCap - supply < (numBasesFinished + 2 * numRaxFinished))
 	{
@@ -408,6 +417,7 @@ void ProductionManager::defaultMacro()
 	{
 		if (unit->build_progress == 1.0f)
 		{
+			auto test = m_bot.Query()->GetAbilitiesForUnit(unit);
 			if (unit->energy >= 50)
 			{
 				const sc2::Unit * mineralPatch = Util::getClostestMineral(unit->pos, m_bot);
@@ -433,7 +443,7 @@ void ProductionManager::defaultMacro()
 				return;
 			}
 			int numOfRefinaries = m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_REFINERY, false) + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_REFINERY);
-			if (numRax > 0 && minerals >= 75 && ((m_bot.Observation()->GetFoodWorkers() >= 15 && numOfRefinaries == 0) || (m_bot.Observation()->GetFoodWorkers() >= 21 && numOfRefinaries == 1)))
+			if (numRax > 0 && minerals >= 75 && ((m_bot.Observation()->GetFoodWorkers() >= 15 && numOfRefinaries == 0) || (m_bot.Observation()->GetFoodWorkers() >= 21 && numOfRefinaries == 1) || (m_bot.Observation()->GetFoodWorkers() >= 40 && numOfRefinaries <= 3)))
 			{
 				m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_REFINERY), BUILDING, false));
 				std::cout << "Refinary" << std::endl;
@@ -450,14 +460,14 @@ void ProductionManager::defaultMacro()
 
 		}
 	}
-	//Upgrades
+	//Upgrades techlab
 	const sc2::Units bTechLab = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_BARRACKSTECHLAB));
+	std::vector<sc2::UpgradeID> upgrades = m_bot.Observation()->GetUpgrades();
 	for (auto & unit : bTechLab)
 	{
 		if (unit->build_progress == 1 && unit->orders.empty())
 		{
-			auto upgrades=m_bot.Observation()->GetUpgrades();
-			if (upgrades.size() == 0)
+			if (std::find(upgrades.begin(),upgrades.end(),sc2::UPGRADE_ID::SHIELDWALL) == upgrades.end())
 			{
 				//If you have enough minerals but not enough gas do not block. That mins could be marines.
 				if (gas >= 100)
@@ -470,7 +480,7 @@ void ProductionManager::defaultMacro()
 					return;
 				}
 			}
-			else if (upgrades.size() == 1)
+			else if (std::find(upgrades.begin(), upgrades.end(), sc2::UPGRADE_ID::STIMPACK) == upgrades.end())
 			{
 				//If you have enough minerals but not enough gas do not block. That mins could be marines.
 				if (gas >= 100)
@@ -483,7 +493,7 @@ void ProductionManager::defaultMacro()
 					return;
 				}
 			}
-			else if (upgrades.size() == 2)
+			else if (std::find(upgrades.begin(), upgrades.end(), sc2::UPGRADE_ID::PUNISHERGRENADES) == upgrades.end())
 			{
 				//If you have enough minerals but not enough gas do not block. That mins could be marines.
 				if (gas >= 50)
@@ -500,6 +510,92 @@ void ProductionManager::defaultMacro()
 		}
 	}
 
+	//upgrades
+	const sc2::Units Armories = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_ARMORY));
+	const int numArmories = Armories.size();
+	const int numArmoriesFinished = buildingsFinished(Armories);
+	for (auto & unit : Engibays)
+	{
+		if (unit->build_progress == 1)
+		{
+			if (unit->orders.empty())
+			{
+					//If you have enough minerals but not enough gas do not block. That mins could be marines.
+				if ((m_weapons == 0 && gas >= 100) || (m_weapons == 1 && gas >= 175) || (m_weapons == 2 && gas >= 250))
+				{
+					if ((m_weapons == 0 && minerals >= 100) || (m_weapons == 1 && minerals >= 175) || (m_weapons == 2 && minerals >= 250))
+					{
+						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONS);
+						startedResearch = true;
+					}
+					std::cout << "Weapon++" << std::endl;
+					return;
+				}
+				if ((m_armor == 0 && gas >= 100) || (m_armor == 1 && gas >= 175) || (m_armor == 2 && gas >= 250))
+				{
+					if ((m_armor == 0 && minerals >= 100) || (m_armor == 1 && minerals >= 175) || (m_armor == 2 && minerals >= 250))
+					{
+						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMOR);
+						startedResearch = true;
+					}
+					std::cout << "Armor++" << std::endl;
+					return;
+				}
+				/*
+				//THE METHOD BELOW WOULD BE MUCH NICER... BUT THERE IS A BUG :/
+				std::vector<sc2::AvailableAbility> abilities = m_bot.Query()->GetAbilitiesForUnit(unit).abilities;
+				// Weapons and armor research has consecutive numbers
+				//First weapons
+				for (sc2::AvailableAbility & ability : abilities)
+				{
+					if (ability.ability_id >= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONSLEVEL1 && ability.ability_id <= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONSLEVEL3)
+					{
+						const sc2::UpgradeID upgradeID = Util::abilityIDToUpgradeID(ability.ability_id);
+						if (gas >= m_bot.Observation()->GetUpgradeData().at(upgradeID).vespene_cost)
+						{
+							if (minerals >= m_bot.Observation()->GetUpgradeData().at(upgradeID).mineral_cost)
+							{
+								m_bot.Actions()->UnitCommand(unit, ability.ability_id);
+							}
+							std::cout << "Weapon ++" << std::endl;
+							return;
+						}
+					}
+				}
+				//Then armor
+				for (sc2::AvailableAbility & ability : abilities)
+				{
+					if (ability.ability_id >= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMORLEVEL1 && ability.ability_id <= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMORLEVEL3)
+					{
+						const sc2::UpgradeID upgradeID = Util::abilityIDToUpgradeID(ability.ability_id);
+						if (gas >= m_bot.Observation()->GetUpgradeData().at(upgradeID).vespene_cost)
+						{
+							if (minerals >= m_bot.Observation()->GetUpgradeData().at(upgradeID).mineral_cost)
+							{
+								m_bot.Actions()->UnitCommand(unit, ability.ability_id);
+							}
+							std::cout << "Armor ++" << std::endl;
+							return;
+						}
+					}
+				}
+				*/
+			}
+			else if (startedResearch)
+			{
+				startedResearch = false;
+				const sc2::AbilityID research = unit->orders.front().ability_id;
+				if (research == sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONS)
+				{
+					++m_weapons;
+				}
+				else if (research == sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMOR)
+				{
+					++m_armor;
+				}
+			}
+		}
+	}
 	//Every rax has to build
 	const sc2::Units bReactor = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR));
 	for (auto & unit : Rax)
@@ -614,7 +710,7 @@ void ProductionManager::defaultMacro()
 		if (unit->build_progress == 1)
 		{
 			//that is idle
-			if (unit->orders.empty() || unit->add_on_tag && m_bot.Observation()->GetUnit(unit->add_on_tag)->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_STARPORTREACTOR)
+			if (unit->orders.empty() || unit->orders.size() == 1 && unit->add_on_tag && m_bot.Observation()->GetUnit(unit->add_on_tag)->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_STARPORTREACTOR)
 			{
 				//if it is only a Starport build addon
 				if (canBuildAddon && !unit->add_on_tag)
@@ -668,6 +764,37 @@ void ProductionManager::defaultMacro()
 		}
 	}
 
+	//Engineering bay
+	//We start with one. We want to built it after the starport has finished
+	if (minerals >= 125 && numStarportFinished == 1 && numEngibays + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY) == 0)
+	{
+		m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY), BUILDING, false));
+		std::cout << "Engineering Bay" << std::endl;
+		return;
+	}
+
+	//Armory
+	//Needed for upgrades after +1
+	if (m_weapons = 1 && m_armor == 1 && minerals >= 150 && gas >= 100 && numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ARMORY) == 0)
+	{
+		//A armory needs 46 seconds to build.
+		//+1 weapons needs 114 seconds.
+		//So only after 68/114 seconds we need to build the armory
+		float maxProgress = 0.0f;
+		for (auto & engi : Engibays)
+		{
+			float progress = engi->orders.front().progress;
+			if (maxProgress < progress)
+			{
+				maxProgress = progress;
+			}
+		}
+		if (maxProgress >= 68.0f / 114.0f)
+		{
+			m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_ARMORY), BUILDING, false));
+		}
+	}
+
 	//Factories. For now just one.
 	if (minerals >= 150 && gas >= 100 && numFactory + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_FACTORY) == 0 && (bReactor.size()>0 || !canBuildAddon))
 	{
@@ -697,7 +824,7 @@ void ProductionManager::defaultMacro()
 	{
 		if (numRax==1 || numStarport>0)
 		{
-			if (minerals >= 150 && numRax + 2 + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 3 * numBases)
+			if (minerals >= 150 && numRax + 2 + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 3 * numBases - 1)
 			{
 				m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
 				std::cout << "Barracks" << std::endl;

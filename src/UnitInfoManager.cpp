@@ -104,7 +104,7 @@ void UnitInfoManager::drawSelectedUnitDebugInfo()
     sc2::AvailableAbilities available_abilities = query->GetAbilitiesForUnit(unit);
     if (available_abilities.abilities.size() < 1) 
     {
-        std::cout << "No abilities available for this unit" << std::endl;
+        std::cout << "No abilities available for this unit: "<< unit->unit_type << std::endl;
     }
     else 
     {

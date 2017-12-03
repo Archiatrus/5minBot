@@ -124,10 +124,6 @@ void CombatCommander::updateAttackSquads()
     for (auto unit : m_combatUnits)
     {   
         BOT_ASSERT(unit, "null unit in combat units");
-		if (unit->cargo_space_taken > 0)
-		{
-			int a = 1;
-		}
         // get every unit of a lower priority and put it into the attack squad
         if (!Util::IsWorker(unit) 
             && !(unit->unit_type == sc2::UNIT_TYPEID::ZERG_OVERLORD) 
@@ -537,4 +533,9 @@ const sc2::Unit * CombatCommander::findClosestWorkerTo(std::vector<const sc2::Un
     }
 
     return closestMineralWorker;
+}
+
+const bool CombatCommander::underAttack() const
+{
+	return m_squadData.underAttack();
 }

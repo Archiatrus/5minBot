@@ -55,14 +55,17 @@ bool Util::IsRefineryType(const sc2::UnitTypeID & type)
 
 bool Util::IsGeyser(const sc2::Unit * unit)
 {
-    BOT_ASSERT(unit, "Unit pointer was null");
-    switch (unit->unit_type.ToType()) 
-    {
-        case sc2::UNIT_TYPEID::NEUTRAL_VESPENEGEYSER        : return true;
-        case sc2::UNIT_TYPEID::NEUTRAL_PROTOSSVESPENEGEYSER : return true;
-        case sc2::UNIT_TYPEID::NEUTRAL_SPACEPLATFORMGEYSER  : return true;
-        default: return false;
-    }
+	BOT_ASSERT(unit, "Unit pointer was null");
+	switch (unit->unit_type.ToType())
+	{
+		case sc2::UNIT_TYPEID::NEUTRAL_VESPENEGEYSER: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_PROTOSSVESPENEGEYSER: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_SPACEPLATFORMGEYSER: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_PURIFIERVESPENEGEYSER: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_SHAKURASVESPENEGEYSER: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_RICHVESPENEGEYSER: return true;
+		default: return false;
+	}
 }
 
 bool Util::IsMineral(const sc2::Unit * unit)
@@ -70,12 +73,18 @@ bool Util::IsMineral(const sc2::Unit * unit)
     BOT_ASSERT(unit, "Unit pointer was null");
     switch (unit->unit_type.ToType()) 
     {
-        case sc2::UNIT_TYPEID::NEUTRAL_MINERALFIELD         : return true;
-        case sc2::UNIT_TYPEID::NEUTRAL_MINERALFIELD750      : return true;
-        case sc2::UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD     : return true;
-        case sc2::UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD750  : return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_MINERALFIELD: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_MINERALFIELD750: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD750: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_PURIFIERMINERALFIELD: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_PURIFIERMINERALFIELD750: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_PURIFIERRICHMINERALFIELD: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_PURIFIERRICHMINERALFIELD750: return true;
 		case sc2::UNIT_TYPEID::NEUTRAL_LABMINERALFIELD: return true;
 		case sc2::UNIT_TYPEID::NEUTRAL_LABMINERALFIELD750: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_BATTLESTATIONMINERALFIELD: return true;
+		case sc2::UNIT_TYPEID::NEUTRAL_BATTLESTATIONMINERALFIELD750: return true;
         default: return false;
     }
 }
@@ -638,4 +647,36 @@ const sc2::Unit * Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 		}
 	}
 	return nullptr;
+}
+
+std::vector<sc2::UNIT_TYPEID> Util::getMineralTypes()
+{
+	std::vector<sc2::UNIT_TYPEID> minerals = { sc2::UNIT_TYPEID::NEUTRAL_BATTLESTATIONMINERALFIELD,
+												sc2::UNIT_TYPEID::NEUTRAL_BATTLESTATIONMINERALFIELD750,
+												sc2::UNIT_TYPEID::NEUTRAL_PURIFIERMINERALFIELD,
+												sc2::UNIT_TYPEID::NEUTRAL_PURIFIERMINERALFIELD750,
+												sc2::UNIT_TYPEID::NEUTRAL_PURIFIERRICHMINERALFIELD,
+												sc2::UNIT_TYPEID::NEUTRAL_PURIFIERRICHMINERALFIELD750,
+												sc2::UNIT_TYPEID::NEUTRAL_LABMINERALFIELD,
+												sc2::UNIT_TYPEID::NEUTRAL_LABMINERALFIELD750,
+												sc2::UNIT_TYPEID::NEUTRAL_MINERALFIELD,
+												sc2::UNIT_TYPEID::NEUTRAL_MINERALFIELD750,
+												sc2::UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD,
+												sc2::UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD750 };
+	return minerals;
+}
+
+const sc2::UpgradeID Util::abilityIDToUpgradeID(const sc2::ABILITY_ID id)
+{
+	switch (id)
+	{
+	case sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONSLEVEL1: return sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL1;
+	case sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONSLEVEL2: return sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL2;
+	case sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONSLEVEL3: return sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL3;
+
+	case sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMORLEVEL1: return sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL1;
+	case sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMORLEVEL2: return sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL2;
+	case sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMORLEVEL3: return sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL3;
+	}
+	return 0;
 }

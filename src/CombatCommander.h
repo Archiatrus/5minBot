@@ -24,6 +24,7 @@ class CombatCommander
     const sc2::Unit * findClosestDefender(const Squad & defenseSquad, const sc2::Point2D & pos);
     const sc2::Unit * findClosestWorkerTo(std::vector<const sc2::Unit *> & unitsToAssign, const sc2::Point2D & target);
 
+
     sc2::Point2D    getMainAttackLocation();
 
     void            updateDefenseSquadUnits(Squad & defenseSquad, const size_t & flyingDefendersNeeded, const size_t & groundDefendersNeeded);
@@ -38,5 +39,6 @@ public:
     void onFrame(const std::vector<const sc2::Unit *> & combatUnits);
 
     void drawSquadInformation();
+	const bool underAttack() const;
 };
 

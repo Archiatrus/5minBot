@@ -70,4 +70,6 @@ namespace Util
     bool    Placement(const sc2::GameInfo& info, const sc2::Point2D& point);
     bool    Pathable(const sc2::GameInfo& info, const sc2::Point2D& point);
 	const sc2::Unit * getClostestMineral(sc2::Point2D pos, CCBot & bot);
+	std::vector<sc2::UNIT_TYPEID> getMineralTypes();
+	const sc2::UpgradeID abilityIDToUpgradeID(const sc2::ABILITY_ID id);
 };

@@ -194,10 +194,18 @@ bool SquadData::canAssignUnitToSquad(const sc2::Unit * unit, const Squad & squad
 Squad & SquadData::getSquad(const std::string & squadName)
 {
     BOT_ASSERT(squadExists(squadName), "Trying to access squad that doesn't exist: %s", squadName.c_str());
-    if (!squadExists(squadName))
-    {
-        int a = 10;
-    }
-
     return m_squads.at(squadName);
+}
+
+
+const bool SquadData::underAttack() const
+{
+	for (auto & squad : m_squads)
+	{
+		if (squad.second.getSquadOrder().getType() == SquadOrderTypes::Defend)
+		{
+			return true;
+		}
+	}
+	return false;
 }

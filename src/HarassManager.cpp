@@ -215,15 +215,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		}
 		else
 		{
-			const BaseLocation * savePos;
-			if (m_medivac->health > 0.5*m_medivac->health_max && m_marines.size() >= 6)
-			{
-				savePos = Hitsquad::getSavePosition();
-			}
-			else
-			{
-				savePos = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
-			}
+			const BaseLocation * savePos = Hitsquad::getSavePosition();
 			if (manhattenMove(savePos))
 			{
 				m_status = HarassStatus::Refueling;
@@ -242,7 +234,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		{
 			Micro::SmartAbility(m_marines, sc2::ABILITY_ID::STOP, m_bot);
 			//if the medivac is home, repair it
-			if (m_medivac->health != m_medivac->health_max && Util::Dist(m_medivac->pos, m_bot.Workers().getClosestMineralWorkerTo(m_medivac->pos)->pos) < 20)
+			if (m_medivac->health != m_medivac->health_max && m_bot.Workers().getNumMineralWorkers()>0 && Util::Dist(m_medivac->pos, m_bot.Workers().getClosestMineralWorkerTo(m_medivac->pos)->pos) < 20)
 			{
 				m_bot.Workers().setRepairWorker(m_medivac);
 				m_status = HarassStatus::Idle;
@@ -276,19 +268,37 @@ void Hitsquad::harass(const BaseLocation * target)
 
 const BaseLocation * Hitsquad::getSavePosition() const
 {
-	sc2::Point2D pos = m_medivac->pos;
-	std::vector<const BaseLocation *> bases = m_bot.Bases().getBaseLocations();
-	//We use that it is ordered
-	std::map<float, const BaseLocation *> allTargetBases;
-	int numBasesEnemy = 0;
-	for (auto & base : bases)
+	//If we just need to evade enemies.
+	if (m_medivac->health > 0.5*m_medivac->health_max && m_marines.size() >= 6)
 	{
-		if (!(base->isOccupiedByPlayer(Players::Enemy)))
+		sc2::Point2D pos = m_medivac->pos;
+		std::vector<const BaseLocation *> bases = m_bot.Bases().getBaseLocations();
+		//We use that it is ordered
+		std::map<float, const BaseLocation *> allTargetBases;
+		int numBasesEnemy = 0;
+		for (auto & base : bases)
 		{
-			allTargetBases[Util::Dist(base->getBasePosition(),pos)] = base;
+			if (!(base->isOccupiedByPlayer(Players::Enemy)))
+			{
+				allTargetBases[Util::Dist(base->getBasePosition(), pos)] = base;
+			}
+		}
+		return allTargetBases.begin()->second;
+	}
+	//If we are damaged or lost too many marines
+	else
+	{
+		const sc2::Unit * worker = m_bot.Workers().getClosestMineralWorkerTo(m_medivac->pos);
+		if (worker)
+		{
+			return m_bot.Bases().getBaseLocation(worker->pos);
+		}
+		//If there are no mineral workers left, we are probably dead anyway
+		else
+		{
+			return m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
 		}
 	}
-	return allTargetBases.begin()->second;
 }
 
 const bool Hitsquad::shouldWeFlee(sc2::Units targets) const

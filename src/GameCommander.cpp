@@ -2,6 +2,10 @@
 #include "CCBot.h"
 #include "Util.h"
 
+//Only harass if we have more than
+const int manyUnits = 50;
+
+
 GameCommander::GameCommander(CCBot & bot)
     : m_bot                 (bot)
     , m_productionManager   (bot)
@@ -53,7 +57,7 @@ void GameCommander::handleUnitAssignments()
 {
 	m_validUnits.clear();
 	m_combatUnits.clear();
-	m_harassUnits.clear();
+	m_scoutUnits.clear();
 	// filter our units for those which are valid and usable
 	setValidUnits();
 
@@ -145,6 +149,7 @@ bool GameCommander::shouldSendInitialScout()
 
 void GameCommander::setHarassUnits()
 {
+	//Re-assign the ones already in the harass manager
 	const sc2::Unit * medivac = m_harassManager.getMedivac();
 	if (medivac)
 	{
@@ -163,41 +168,47 @@ void GameCommander::setHarassUnits()
 	{
 		assignUnit(liberator, m_harassUnits);
 	}
-	sc2::Units enemies = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
-	for (auto & unit : m_validUnits)
+	
+	//We only start harassing after we saw two bases. Otherwise it might be a 1 base allin
+	//We should only can add units, if we are not under attack or if we have many units already
+	if (m_bot.Bases().getOccupiedBaseLocations(Players::Self).size() && ( !m_combatCommander.underAttack() || m_validUnits.size() > manyUnits))
 	{
-		BOT_ASSERT(unit, "Have a null unit in our valid units\n");
-
-		if (!isAssigned(unit))
+		sc2::Units enemies = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
+		for (auto & unit : m_validUnits)
 		{
-			if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC && m_harassManager.needMedivac())
+			BOT_ASSERT(unit, "Have a null unit in our valid units\n");
+
+			if (!isAssigned(unit))
 			{
-				if (m_harassManager.setMedivac(unit))
+				if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC && m_harassManager.needMedivac())
 				{
-					assignUnit(unit, m_harassUnits);
-				}
-			}
-			else if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MARINE && unit->health==unit->health_max && m_harassManager.needMarine())
-			{
-				//If the marine is currently close to an anti air enemy, the medivac does not know what to do
-				bool tooClose = false;
-				for (auto & e : enemies)
-				{
-					if (Util::Dist(e->pos, unit->pos) < Util::GetUnitTypeSight(unit->unit_type,m_bot))
+					if (m_harassManager.setMedivac(unit))
 					{
-						tooClose = true;
+						assignUnit(unit, m_harassUnits);
 					}
 				}
-				if (!tooClose && m_harassManager.setMarine(unit))
+				else if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MARINE && unit->health == unit->health_max && m_harassManager.needMarine())
 				{
-					assignUnit(unit, m_harassUnits);
+					//If the marine is currently close to an anti air enemy, the medivac does not know what to do
+					bool tooClose = false;
+					for (auto & e : enemies)
+					{
+						if (Util::Dist(e->pos, unit->pos) < Util::GetUnitTypeSight(unit->unit_type, m_bot))
+						{
+							tooClose = true;
+						}
+					}
+					if (!tooClose && m_harassManager.setMarine(unit))
+					{
+						assignUnit(unit, m_harassUnits);
+					}
 				}
-			}
-			else if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_LIBERATOR && m_harassManager.needLiberator())
-			{
-				if (m_harassManager.setLiberator(unit))
+				else if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_LIBERATOR && m_harassManager.needLiberator())
 				{
-					assignUnit(unit, m_harassUnits);
+					if (m_harassManager.setLiberator(unit))
+					{
+						assignUnit(unit, m_harassUnits);
+					}
 				}
 			}
 		}
