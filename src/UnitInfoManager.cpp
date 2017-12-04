@@ -52,6 +52,20 @@ const std::vector<const sc2::Unit *> & UnitInfoManager::getUnits(int player) con
 
     return m_units.at(player);
 }
+const int UnitInfoManager::getNumCombatUnits(int player) const
+{
+	BOT_ASSERT(m_units.find(player) != m_units.end(), "Couldn't find player units: %d", player);
+
+	int numCombatUnits = 0;
+	for (auto& unit : m_units.at(player))
+	{
+		if (Util::IsCombatUnit(unit,m_bot))
+		{
+			numCombatUnits++;
+		}
+	}
+	return numCombatUnits;
+}
 const std::vector<const sc2::Unit *> UnitInfoManager::getBuildings(int player) const
 {
 	BOT_ASSERT(m_units.find(player) != m_units.end(), "Couldn't find player units: %d", player);

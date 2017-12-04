@@ -57,7 +57,7 @@ void GameCommander::handleUnitAssignments()
 {
 	m_validUnits.clear();
 	m_combatUnits.clear();
-	m_scoutUnits.clear();
+	m_harassUnits.clear();
 	// filter our units for those which are valid and usable
 	setValidUnits();
 

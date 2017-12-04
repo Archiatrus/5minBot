@@ -179,10 +179,6 @@ void Micro::SmartMove(sc2::Units attackers, const sc2::Point2D & targetPosition,
 		}
 		else
 		{
-			if (attacker->cargo_space_taken > 0)
-			{
-				int a = 1;
-			}
 			flyingMover.push_back(attacker);
 		}
 	}
@@ -259,7 +255,7 @@ void Micro::SmartKiteTarget(const sc2::Unit * rangedUnit, const sc2::Unit * targ
 	float dist = Util::Dist(rangedUnit->pos, target->pos);
 	//Our range
 	float range = Util::GetAttackRange(rangedUnit->unit_type, bot);
-	if (rangedUnit->weapon_cooldown == 0.0f || dist>range)
+	if (rangedUnit->weapon_cooldown == 0.0f || dist>range+0.5f)
 	{
 		SmartAttackUnit(rangedUnit, target, bot,queue);
 	}

@@ -168,13 +168,17 @@ const bool Squad::needsToRegroup()
 	{
 		return false;
 	}
-	
+	if (m_units.size() < 100 && m_units.size()<m_bot.UnitInfo().getNumCombatUnits(Players::Enemy))
+	{
+		m_lastRetreatSwitchVal = true;
+		return m_lastRetreatSwitchVal;
+	}
 	float n = 0.0f;
 	sc2::Point2D mean(0.0f, 0.0f);
 	sc2::Point2D variance(0.0f, 0.0f);
 	for (auto & unit : m_units)
 	{
-		if (!unit->is_alive)
+		if (!unit->is_alive || unit->unit_type.ToType()==sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 		{
 			continue;
 		}

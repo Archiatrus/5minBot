@@ -511,18 +511,18 @@ void ProductionManager::defaultMacro()
 	}
 
 	//upgrades
-	const sc2::Units Armories = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRANm_armorY));
+	const sc2::Units Armories = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_ARMORY));
 	const int numArmories = Armories.size();
 	const int numArmoriesFinished = buildingsFinished(Armories);
 	for (auto & unit : Engibays)
 	{
 		if (unit->build_progress == 1)
 		{
-			if (unit->orders.empty())
+			if (!startedResearch && unit->orders.empty())
 			{
 					//If you have enough minerals but not enough gas do not block. That mins could be marines.
 				//Weapons first
-				if ((m_weapons == 0 && m_armor == 0 && gas >= 100) || (m_weapons == 1 && m_armor == 1 && gas >= 175) || (m_weapons == 2 && m_armor == 2 && gas >= 250))
+				if ((m_weapons == 0 && m_armor == 0 && gas >= 100) || (m_weapons == 1 && m_armor == 1 && gas >= 175 && numArmoriesFinished>0) || (m_weapons == 2 && m_armor == 2 && gas >= 250))
 				{
 					if ((m_weapons == 0 && minerals >= 100) || (m_weapons == 1 && minerals >= 175) || (m_weapons == 2 && minerals >= 250))
 					{
@@ -582,7 +582,7 @@ void ProductionManager::defaultMacro()
 				}
 				*/
 			}
-			else if (startedResearch)
+			else if (startedResearch && !unit->orders.empty())
 			{
 				startedResearch = false;
 				const sc2::AbilityID research = unit->orders.front().ability_id;
@@ -648,16 +648,43 @@ void ProductionManager::defaultMacro()
 						}
 					}
 				}
-				else if (minerals >= 50 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
+				//If we have an addon
+				else if (unit->add_on_tag)
 				{
-					if (unit->add_on_tag && minerals >= 100 && m_bot.Observation()->GetUnit(unit->add_on_tag)->unit_type == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR && supply <= 200 - 2*m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
+					//Reactor -> double marines
+					if (m_bot.Observation()->GetUnit(unit->add_on_tag)->unit_type == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR)
+					{
+						if (minerals >= 50 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
+						{
+							if (unit->orders.size() == 0 && unit->add_on_tag && minerals >= 100 && m_bot.Observation()->GetUnit(unit->add_on_tag)->unit_type == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR && supply <= 200 - 2 * m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
+							{
+								m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_MARINE);
+								std::cout << "Marine" << std::endl;
+							}
+							m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_MARINE);
+							std::cout << "Marine" << std::endl;
+							return;
+						}
+					}
+					//techlab ->marauder
+					{
+						if (minerals >= 100 && gas >= 25 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARAUDER).supplyCost)
+						{
+							m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_MARAUDER);
+							std::cout << "Marauder" << std::endl;
+							return;
+						}
+					}
+				}
+				//We really should not reach here. But if we do, build marine
+				else
+				{
+					if (minerals >= 50 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_MARINE);
 						std::cout << "Marine" << std::endl;
+						return;
 					}
-					m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_MARINE);
-					std::cout << "Marine" << std::endl;
-					return;
 				}
 			}
 		}
@@ -776,24 +803,34 @@ void ProductionManager::defaultMacro()
 
 	//Armory
 	//Needed for upgrades after +1
-	if (m_weapons == 1 && m_armor == 1 && minerals >= 150 && gas >= 100 && numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRANm_armorY) == 0)
+	if (m_weapons == 1 && m_armor == 1 && gas >= 100 && numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ARMORY) == 0)
 	{
-		//A armory needs 46 seconds to build.
-		//+1 weapons needs 114 seconds.
-		//So only after 68/114 seconds we need to build the armory
-		float maxProgress = 0.0f;
-		for (auto & engi : Engibays)
+		if (minerals >= 150)
 		{
-			float progress = engi->orders.front().progress;
-			if (maxProgress < progress)
+			//A armory needs 46 seconds to build.
+			//+1 weapons needs 114 seconds.
+			//So only after 68/114 seconds we need to build the armory
+			//Since it always takes a while we do it 10sec earlier
+			float maxProgress = 0.0f;
+			for (auto & engi : Engibays)
 			{
-				maxProgress = progress;
+				if (engi->orders.empty())
+				{
+					maxProgress = 1.0f;
+					break;
+				}
+				float progress = engi->orders.front().progress;
+				if (maxProgress < progress)
+				{
+					maxProgress = progress;
+				}
+			}
+			if (maxProgress >= 58.0f / 114.0f)
+			{
+				m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_ARMORY), BUILDING, false));
 			}
 		}
-		if (maxProgress >= 68.0f / 114.0f)
-		{
-			m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRANm_armorY), BUILDING, false));
-		}
+		return;
 	}
 
 	//Factories. For now just one.
@@ -825,7 +862,7 @@ void ProductionManager::defaultMacro()
 	{
 		if (numRax==1 || numStarport>0)
 		{
-			if (minerals >= 150 && numRax + 2 + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 3 * numBases - 1)
+			if (minerals >= 150 && numRax + 2 + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 3 * numBases - 2)
 			{
 				m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
 				std::cout << "Barracks" << std::endl;

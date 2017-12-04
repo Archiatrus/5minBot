@@ -121,6 +121,8 @@ void CombatCommander::updateAttackSquads()
 
     Squad & mainAttackSquad = m_squadData.getSquad("MainAttack");
 
+	mainAttackSquad.clear();
+
     for (auto unit : m_combatUnits)
     {   
         BOT_ASSERT(unit, "null unit in combat units");
