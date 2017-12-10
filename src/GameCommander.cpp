@@ -90,7 +90,7 @@ void GameCommander::setValidUnits()
 void GameCommander::setScoutUnits()
 {
 	// if we haven't set a scout unit, do it
-	if (false && m_scoutUnits.empty() && !m_initialScoutSet)
+	if (!m_initialScoutSet && m_scoutUnits.empty())
 	{
 		// if it exists
 		if (shouldSendInitialScout())
@@ -104,10 +104,7 @@ void GameCommander::setScoutUnits()
 				m_scoutManager.setWorkerScout(workerScout);
 				assignUnit(workerScout, m_scoutUnits);
 				m_initialScoutSet = true;
-			}
-			else
-			{
-
+				return;
 			}
 		}
 	}
@@ -136,13 +133,11 @@ void GameCommander::setScoutUnits()
 
 bool GameCommander::shouldSendInitialScout()
 {
-	return true;
-
-	switch (m_bot.GetPlayerRace(Players::Self))
+	switch (m_bot.GetPlayerRace(Players::Enemy))
 	{
-	case sc2::Race::Terran:  return m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT, true) > 0;
-	case sc2::Race::Protoss: return m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::PROTOSS_PYLON, true) > 0;
-	case sc2::Race::Zerg:    return m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::ZERG_SPAWNINGPOOL, true) > 0;
+	case sc2::Race::Terran:  return false;
+	case sc2::Race::Protoss: return m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER, false) == 2;
+	case sc2::Race::Zerg:    return false;
 	default: return false;
 	}
 }

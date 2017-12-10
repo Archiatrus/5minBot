@@ -164,8 +164,21 @@ void Hitsquad::harass(const BaseLocation * target)
 		const sc2::Unit * targetUnit = getTargetMarines(targetUnits);
 		if (targetUnit)
 		{
-			Micro::SmartAttackUnit(m_marines, targetUnit, m_bot);
-			Micro::SmartStim(m_marines, m_bot);
+			//Really ugly here
+			sc2::Tag oldTargetTag = 0;
+			if (m_marines.front() && m_marines.front()->orders.size() > 0)
+			{
+				oldTargetTag = m_marines.front()->orders.back().target_unit_tag;
+			}
+			if (oldTargetTag && m_bot.GetUnit(oldTargetTag) && Util::IsWorkerType(m_bot.GetUnit(oldTargetTag)->unit_type))
+			{
+				//If we already attack a probe don't change the target
+			}
+			else
+			{
+				Micro::SmartAttackUnit(m_marines, targetUnit, m_bot);
+				Micro::SmartStim(m_marines, m_bot);
+			}
 		}
 		else
 		{

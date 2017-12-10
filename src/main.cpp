@@ -72,11 +72,12 @@ int main(int argc, char* argv[])
 		//          The bot may crash or do unexpected things if its logic is not called every frame
 		coordinator.SetStepSize(stepSize);
 		coordinator.SetRealtime(false);
+		coordinator.SetMultithreaded(true);
 
 		coordinator.SetParticipants({
 			CreateParticipant(Util::GetRaceFromString(botRaceString), &bot),
 			//sc2::PlayerSetup(sc2::PlayerType::Observer,Util::GetRaceFromString(enemyRaceString)),
-			CreateComputer(sc2::Race::Terran, sc2::Difficulty::CheatInsane)
+			CreateComputer(sc2::Race::Protoss, sc2::Difficulty::CheatInsane)
 		});
 		// Start the game.
 		coordinator.LaunchStarcraft();

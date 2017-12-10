@@ -274,6 +274,10 @@ const TypeData & TechTree::getData(const sc2::UnitTypeID & type) const
     {
         //std::cout << "WARNING: Unit type not found: " << sc2::UnitTypeToName(type) << "\n";
 		BOT_ASSERT(m_unitTypeData.size() > 0, "Techtree not initialized");
+		if (type != sc2::UNIT_TYPEID::TERRAN_KD8CHARGE && type!= sc2::UNIT_TYPEID::TERRAN_REACTOR && type != sc2::UNIT_TYPEID::PROTOSS_ARCHON && type != sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED)
+		{
+			int a = 1;
+		}
         return m_unitTypeData.begin()->second;
     }
 

@@ -57,9 +57,9 @@ const int UnitInfoManager::getNumCombatUnits(int player) const
 	BOT_ASSERT(m_units.find(player) != m_units.end(), "Couldn't find player units: %d", player);
 
 	int numCombatUnits = 0;
-	for (auto& unit : m_units.at(player))
+	for (auto& kv : getUnitData(player).getUnitInfoMap())
 	{
-		if (Util::IsCombatUnit(unit,m_bot))
+		if (Util::IsCombatUnit(kv.first,m_bot))
 		{
 			numCombatUnits++;
 		}
@@ -225,7 +225,7 @@ void UnitInfoManager::drawUnitInformation(float x,float y) const
 {
     if (!m_bot.Config().DrawEnemyUnitInfo)
     {
-        return;
+        //return;
     }
 
     std::stringstream ss;

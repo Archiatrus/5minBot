@@ -35,6 +35,12 @@ void ScoutManager::onFrame()
 	}
 	else
 	{
+		if (m_scoutUnit && Util::IsWorkerType(m_scoutUnit->unit_type))
+		{
+			m_bot.Workers().finishedWithWorker(m_scoutUnit);
+			m_scoutUnit = nullptr;
+			return;
+		}
 		moveScouts();
 	}
     drawScoutInformation();
@@ -112,7 +118,7 @@ void ScoutManager::checkOurBases()
 void ScoutManager::setWorkerScout(const sc2::Unit * tag)
 {
     // if we have a previous worker scout, release it back to the worker manager
-    if (m_scoutUnit)
+    if (m_scoutUnit && Util::IsWorkerType(m_scoutUnit->unit_type))
     {
         m_bot.Workers().finishedWithWorker(m_scoutUnit);
     }
@@ -552,10 +558,12 @@ void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos,int player)
 	{
 		if (base->isOccupiedByPlayer(player))
 		{
+			m_bot.Debug()->DebugSphereOut(base->getMinerals().front()->pos, 3.0f, sc2::Colors::Red);
 			numBasesEnemy++;
 		}
 		if (!(base->isOccupiedByPlayer(Players::Enemy)) && !(base->isOccupiedByPlayer(Players::Self)))
 		{
+			m_bot.Debug()->DebugSphereOut(base->getMinerals().front()->pos, 3.0f, sc2::Colors::White);
 			allTargetBases[base->getGroundDistance(pos)] = base;
 		}
 	}

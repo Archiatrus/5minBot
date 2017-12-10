@@ -611,6 +611,12 @@ const sc2::Unit * Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 	std::map<int, const BaseLocation *> orderedBases;
 	for (auto & base : bases)
 	{
+		//We don't care for not finished bases.
+		const sc2::Unit * townHall = base->getTownHall();
+		if (townHall && townHall->build_progress != 1.0f)
+		{
+			continue;
+		}
 		int distance = base->getGroundDistance(pos);
 		orderedBases[distance] = base;
 	}

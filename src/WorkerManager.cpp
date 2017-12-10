@@ -250,14 +250,7 @@ const sc2::Unit * WorkerManager::getClosestDepot(const sc2::Unit * worker) const
 // other managers that need workers call this when they're done with a unit
 void WorkerManager::finishedWithWorker(const sc2::Unit * unit)
 {
-	if (m_workerData.getWorkerJob(unit) == WorkerJobs::Combat)
-	{
-		Micro::SmartMove(unit, m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getPosition(), m_bot);
-	}
-    if (m_workerData.getWorkerJob(unit) != WorkerJobs::Scout)
-    {
-        m_workerData.setWorkerJob(unit, WorkerJobs::Idle);
-    }
+	m_workerData.setWorkerJob(unit, WorkerJobs::Idle);
 }
 
 const sc2::Unit * WorkerManager::getGasWorker(const sc2::Unit * refinery) const
