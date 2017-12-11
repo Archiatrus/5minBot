@@ -46,6 +46,15 @@ void UnitData::killUnit(const sc2::Unit * unit)
     m_unitMap.erase(unit);
 }
 
+void UnitData::lostPosition(const sc2::Unit * unit)
+{
+	const auto & it = m_unitMap.find(unit);
+	BOT_ASSERT(it != m_unitMap.end(), "We should not have a snapshot of unit we have never seen!");
+
+	UnitInfo & ui = m_unitMap[unit];
+	ui.lastPosition = sc2::Point3D(0.0f,0.0f,0.0f);
+}
+
 void UnitData::removeBadUnits()
 {
     for (auto iter = m_unitMap.begin(); iter != m_unitMap.end();)

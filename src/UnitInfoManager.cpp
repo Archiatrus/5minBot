@@ -35,8 +35,18 @@ void UnitInfoManager::updateUnitInfo()
             m_units[Util::GetPlayer(unit)].push_back(unit);
         }        
     }
-
-    // remove bad enemy units
+	// Update the location of units we only have snapshots of and the position is visible
+	if (m_unitData.size() > 1)
+	{
+		for (auto& kv : getUnitData(Players::Enemy).getUnitInfoMap())
+		{
+			if (Util::IsCombatUnit(kv.first, m_bot) && m_bot.Observation()->GetVisibility(kv.second.lastPosition) == sc2::Visibility::Visible)
+			{
+				m_unitData[Players::Enemy].lostPosition(kv.first);
+			}
+		}
+	}
+	// remove bad enemy units
     m_unitData[Players::Self].removeBadUnits();
     m_unitData[Players::Enemy].removeBadUnits();
 }
@@ -254,7 +264,6 @@ void UnitInfoManager::drawUnitInformation(float x,float y) const
 
 void UnitInfoManager::updateUnit(const sc2::Unit * unit)
 {
-	//We don't want to use snapshots!
     if (!(Util::GetPlayer(unit) == Players::Self || Util::GetPlayer(unit) == Players::Enemy))
     {
         return;
@@ -271,13 +280,13 @@ void UnitInfoManager::updateUnit(const sc2::Unit * unit)
 			m_unitData[Util::GetPlayer(unit)].killUnit(unit);
 		}
 	}
-	//else if we see the position and there should be a building, but there is not, it seems to be dead
-	//or if it actually dead, then it is also dead
-	else
+	//else if we see the position and still get only a snapshot
+	else if (m_bot.Observation()->GetVisibility(unit->pos) == sc2::Visibility::Visible)
 	{
+		//and there should be a building(actually only buildings should be here), but there is not, it seems to be dead
 		if (Util::IsBuildingType(unit->unit_type, m_bot))
 		{
-			if (m_bot.Observation()->GetVisibility(unit->pos) == sc2::Visibility::Visible && !m_bot.GetUnit(unit->tag))
+			if (!m_bot.GetUnit(unit->tag))
 			{
 				m_unitData[Util::GetPlayer(unit)].killUnit(unit);
 			}

@@ -576,6 +576,10 @@ bool Util::UnitCanBuildTypeNow(const sc2::Unit * unit, const sc2::UnitTypeID & t
 
 bool Util::canHitMe(const sc2::Unit * unit, const sc2::Unit * enemy, CCBot & bot)
 {
+	if (enemy->build_progress != 1.0f)
+	{
+		return false;
+	}
 	std::vector<sc2::Weapon> weapons = bot.Observation()->GetUnitTypeData()[enemy->unit_type].weapons;
 	if (unit->is_flying)
 	{
