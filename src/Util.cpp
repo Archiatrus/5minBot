@@ -292,7 +292,7 @@ bool Util::IsCombatUnitType(const sc2::UnitTypeID & type, CCBot & bot)
 {
     if (IsWorkerType(type)) { return false; }
     if (IsSupplyProviderType(type)) { return false; }
-    if (bot.Data(type).isBuilding) { return false; }
+    if (bot.Data(type).isBuilding && (type.ToType() != sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON) && (type.ToType() != sc2::UNIT_TYPEID::TERRAN_MISSILETURRET) && (type.ToType() != sc2::UNIT_TYPEID::ZERG_SPINECRAWLER) && (type.ToType() != sc2::UNIT_TYPEID::ZERG_SPORECRAWLER)) { return false; }
 
     if (type == sc2::UNIT_TYPEID::ZERG_EGG) { return false; }
     if (type == sc2::UNIT_TYPEID::ZERG_LARVA) { return false; }

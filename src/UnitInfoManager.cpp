@@ -27,23 +27,24 @@ void UnitInfoManager::updateUnitInfo()
     m_units[Players::Self].clear();
     m_units[Players::Enemy].clear();
 
-    for (auto & unit : m_bot.Observation()->GetUnits())
-    {
-        if (Util::GetPlayer(unit) == Players::Self || Util::GetPlayer(unit) == Players::Enemy)
-        {
-            updateUnit(unit);
-            m_units[Util::GetPlayer(unit)].push_back(unit);
-        }        
-    }
 	// Update the location of units we only have snapshots of and the position is visible
 	if (m_unitData.size() > 1)
 	{
 		for (auto& kv : getUnitData(Players::Enemy).getUnitInfoMap())
 		{
-			if (Util::IsCombatUnit(kv.first, m_bot) && m_bot.Observation()->GetVisibility(kv.second.lastPosition) == sc2::Visibility::Visible)
+			if (!Util::IsBuildingType(kv.second.type, m_bot) && m_bot.Observation()->GetVisibility(kv.second.lastPosition) == sc2::Visibility::Visible)
 			{
 				m_unitData[Players::Enemy].lostPosition(kv.first);
 			}
+		}
+	}
+
+	for (auto & unit : m_bot.Observation()->GetUnits())
+	{
+		if (Util::GetPlayer(unit) == Players::Self || Util::GetPlayer(unit) == Players::Enemy)
+		{
+			updateUnit(unit);
+			m_units[Util::GetPlayer(unit)].push_back(unit);
 		}
 	}
 	// remove bad enemy units

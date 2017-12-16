@@ -100,6 +100,9 @@
     <ClCompile Include="..\src\HarassManager.cpp">
       <Filter>micro</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\pathPlaning.cpp">
+      <Filter>micro</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\BaseLocationManager.h">
@@ -204,6 +207,9 @@
       <Filter>util</Filter>
     </ClInclude>
     <ClInclude Include="..\src\HarassManager.h">
+      <Filter>micro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\pathPlaning.h">
       <Filter>micro</Filter>
     </ClInclude>
   </ItemGroup>

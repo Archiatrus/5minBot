@@ -164,6 +164,10 @@ void ScoutManager::moveScouts()
 		if (m_numScouts==1)
 		{
 			//We HAD a scout....
+			if (scout && Util::Dist(scout->pos,m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getBasePosition()) > 50)
+			{
+				gotAttackedInEnemyRegion = true;
+			}
 			m_scoutStatus = "Need new scout!";
 			m_numScouts = -1;
 			firstCheckOurBases = true;
@@ -217,7 +221,7 @@ void ScoutManager::moveScouts()
 			//if there is a unit and we are getting too close, throw granade and run
 			else if (enemyTooClose(enemyUnitsInSight))
 			{
-				if (Util::Dist(scout->pos,m_targetBasesPositions.front())<50)
+				if (Util::Dist(scout->pos,m_targetBasesPositions.front())<20)
 				{
 					gotAttackedInEnemyRegion = true;
 					m_targetBasesPositions.pop();
@@ -563,7 +567,6 @@ void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos,int player)
 		}
 		if (!(base->isOccupiedByPlayer(Players::Enemy)) && !(base->isOccupiedByPlayer(Players::Self)))
 		{
-			m_bot.Debug()->DebugSphereOut(base->getMinerals().front()->pos, 3.0f, sc2::Colors::White);
 			allTargetBases[base->getGroundDistance(pos)] = base;
 		}
 	}
