@@ -70,6 +70,11 @@ void CCBot::OnBuildingConstructionComplete(const sc2::Unit * unit)
 }
 
 
+void CCBot::OnUnitEnterVision(const sc2::Unit * unit)
+{
+	m_gameCommander.OnUnitEnterVision(unit);
+}
+
 
 // TODO: Figure out my race
 const sc2::Race & CCBot::GetPlayerRace(int player) const

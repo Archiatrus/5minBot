@@ -197,7 +197,6 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 }
 
 // get a target for the ranged unit to attack
-// TODO: this is the melee targeting code, replace it with something better for ranged units
 const sc2::Unit * RangedManager::getTarget(const sc2::Unit * rangedUnit, const std::vector<const sc2::Unit *> & targets)
 {
     BOT_ASSERT(rangedUnit, "null melee unit in getTarget");
@@ -209,18 +208,15 @@ const sc2::Unit * RangedManager::getTarget(const sc2::Unit * rangedUnit, const s
 	const sc2::Unit * weakestTargetInsideRange = nullptr;
 	const float range = Util::GetAttackRange(rangedUnit->unit_type,m_bot);
     // for each target possiblity
-	// We have three levels in range, in sight, somewhere.
+	// We have three levels: in range, in sight, somewhere.
 	// We want to attack the weakest/highest prio target in range
 	// If there is no in range, we want to attack one in sight,
 	// else the one with highest prio.
 	for (auto targetUnit : targets)
 	{
-		if (targetUnit->cloak==1)
-		{
-			int a = 1;
-		}
 		BOT_ASSERT(targetUnit, "null target unit in getTarget");
-		if (!targetUnit->is_alive)
+		//Ignore dead units or ones we can not hit
+		if (!targetUnit->is_alive || !Util::canHitMe(targetUnit,rangedUnit,m_bot))
 		{
 			continue;
 		}

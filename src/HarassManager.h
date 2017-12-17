@@ -19,7 +19,7 @@ class Hitsquad
 	sc2::Units	m_marines;
 	sc2::Units	m_doomedMarines;
 	std::queue<sc2::Point2D> m_wayPoints;
-	bool m_firstEncounter;
+	int m_pathPlanCounter;
 
 	void checkForCasualties();
 	const sc2::Unit * getTargetMarines(sc2::Units targets) const;
@@ -27,7 +27,7 @@ class Hitsquad
 	sc2::Units getNearbyEnemyUnits() const;
 	const BaseLocation * getSavePosition() const;
 	const bool shouldWeFlee(sc2::Units targets) const;
-	void escapePathPlaning(sc2::Point2D currentPos, sc2::Point2D targetPos);
+	void escapePathPlaning();
 
 public:
 	Hitsquad(CCBot & bot, const sc2::Unit * medivac);

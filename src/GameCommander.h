@@ -52,6 +52,7 @@ public:
     void onUnitCreate(const sc2::Unit * unit);
 	void OnBuildingConstructionComplete(const sc2::Unit * unit);
     void onUnitDestroy(const sc2::Unit * unit);
+	void OnUnitEnterVision(const sc2::Unit * unit);
 
 	const ProductionManager & Production() const;
 };

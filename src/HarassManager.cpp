@@ -4,15 +4,32 @@
 #include "CCBot.h"
 #include "pathPlaning.h"
 
-Hitsquad::Hitsquad(CCBot & bot, const sc2::Unit * medivac) : m_bot(bot), m_status(HarassStatus::Idle), m_medivac(medivac), m_firstEncounter(true)
+
+const int updateRatePathplaning = 5;
+
+
+Hitsquad::Hitsquad(CCBot & bot, const sc2::Unit * medivac) : m_bot(bot), m_status(HarassStatus::Idle), m_medivac(medivac), m_pathPlanCounter(updateRatePathplaning+1)
 {
 }
 
-
-
-void Hitsquad::escapePathPlaning(sc2::Point2D currentPos, sc2::Point2D targetPos)
+void Hitsquad::escapePathPlaning()
 {
+	sc2::Point2D currentPos = m_medivac->pos;
+	std::vector<const BaseLocation *> bases = m_bot.Bases().getBaseLocations();
+	//We use that it is ordered
+	std::map<float, const BaseLocation *> allTargetBases;
+	int numBasesEnemy = 0;
+	for (auto & base : bases)
+	{
+		if (!(base->isOccupiedByPlayer(Players::Enemy)))
+		{
+			allTargetBases[Util::Dist(base->getBasePosition(), currentPos)] = base;
+		}
+	}
+	sc2::Point2D targetPos = allTargetBases.begin()->second->getBasePosition();
+	
 	pathPlaning escapePlan(m_bot, currentPos, targetPos, m_bot.Map().width(), m_bot.Map().height(), 1.0f);
+	
 	std::vector<sc2::Point2D> escapePath=escapePlan.planPath();
 	for (sc2::Point2D pos : escapePath)
 	{
@@ -104,7 +121,7 @@ void Hitsquad::harass(const BaseLocation * target)
 					m_status = HarassStatus::Loading;
 				}
 			}
-			else if (m_medivac->health == m_medivac->health_max)
+			else if (m_medivac->health != m_medivac->health_max)
 			{
 				m_bot.Workers().setRepairWorker(m_medivac);
 			}
@@ -235,6 +252,30 @@ void Hitsquad::harass(const BaseLocation * target)
 		}
 		if (targetUnitsCanHitMedivac.size()>0 )
 		{
+			if (m_pathPlanCounter>updateRatePathplaning || m_wayPoints.empty())
+			{
+				while (!m_wayPoints.empty())
+				{
+					m_wayPoints.pop();
+				}
+				escapePathPlaning();
+				m_pathPlanCounter = 0;
+			}
+			else
+			{
+				m_pathPlanCounter++;
+				if (Util::Dist(m_medivac->pos, m_wayPoints.front()) < 0.95f)
+				{
+					m_wayPoints.pop();
+				}
+				else
+				{
+					//Micro::SmartMove(m_medivac, m_wayPoints.front(), m_bot);
+					Micro::SmartCDAbility(m_medivac, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
+					m_bot.Actions()->UnitCommand(m_medivac, sc2::ABILITY_ID::MOVE, m_wayPoints.front());
+				}
+			}
+			/*
 			if (m_firstEncounter || m_wayPoints.empty())
 			{
 				while (!m_wayPoints.empty())
@@ -257,10 +298,11 @@ void Hitsquad::harass(const BaseLocation * target)
 					m_bot.Actions()->UnitCommand(m_medivac, sc2::ABILITY_ID::MOVE, m_wayPoints.front());
 				}
 			}
+			*/
 		}
 		else
 		{
-			m_firstEncounter = true;
+			m_pathPlanCounter = updateRatePathplaning+1;
 			const BaseLocation * savePos = Hitsquad::getSavePosition();
 			if (manhattenMove(savePos))
 			{
@@ -274,11 +316,11 @@ void Hitsquad::harass(const BaseLocation * target)
 		{
 			sc2::Point2D unloadPos = m_medivac->pos;
 			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, unloadPos, m_bot);
-			Micro::SmartAbility(m_marines, sc2::ABILITY_ID::STOP, m_bot);
+			Micro::SmartCDAbility(m_marines, sc2::ABILITY_ID::STOP, m_bot);
 		}
 		else
 		{
-			Micro::SmartAbility(m_marines, sc2::ABILITY_ID::STOP, m_bot);
+			Micro::SmartCDAbility(m_marines, sc2::ABILITY_ID::STOP, m_bot);
 			//if the medivac is home, repair it
 			if (m_medivac->health != m_medivac->health_max)
 			{

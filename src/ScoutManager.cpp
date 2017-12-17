@@ -74,7 +74,7 @@ void ScoutManager::checkOurBases()
 	{
 		updateNearestUnoccupiedBases(m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getPosition(), Players::Self);
 	}
-	if (Util::DistSq(scout->pos, m_targetBasesPositions.front()) < 5)
+	if (Util::DistSq(scout->pos, m_targetBasesPositions.front()) < 12.0f)
 	{
 		m_targetBasesPositions.pop();
 	}

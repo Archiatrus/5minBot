@@ -277,6 +277,7 @@ void GameCommander::onUnitDestroy(const sc2::Unit * unit)
 }
 
 
+
 void GameCommander::assignUnit(const sc2::Unit * unit, std::vector<const sc2::Unit *> & units)
 {
     if (std::find(m_scoutUnits.begin(), m_scoutUnits.end(), unit) != m_scoutUnits.end())
@@ -299,3 +300,4 @@ const ProductionManager & GameCommander::Production() const
 {
 	return m_productionManager;
 }
+

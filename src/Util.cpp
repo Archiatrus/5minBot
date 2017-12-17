@@ -574,14 +574,14 @@ bool Util::UnitCanBuildTypeNow(const sc2::Unit * unit, const sc2::UnitTypeID & t
     return false;
 }
 
-bool Util::canHitMe(const sc2::Unit * unit, const sc2::Unit * enemy, CCBot & bot)
+bool Util::canHitMe(const sc2::Unit * me, const sc2::Unit * hitter, CCBot & bot)
 {
-	if (enemy->build_progress != 1.0f)
+	if (hitter->build_progress != 1.0f)
 	{
 		return false;
 	}
-	std::vector<sc2::Weapon> weapons = bot.Observation()->GetUnitTypeData()[enemy->unit_type].weapons;
-	if (unit->is_flying)
+	std::vector<sc2::Weapon> weapons = bot.Observation()->GetUnitTypeData()[hitter->unit_type].weapons;
+	if (me->is_flying)
 	{
 		for (auto & weapon : weapons)
 		{
@@ -594,7 +594,7 @@ bool Util::canHitMe(const sc2::Unit * unit, const sc2::Unit * enemy, CCBot & bot
 	else
 	{
 		//Banelings have no weapon?
-		if (enemy->unit_type.ToType() == sc2::UNIT_TYPEID::ZERG_BANELING)
+		if (hitter->unit_type.ToType() == sc2::UNIT_TYPEID::ZERG_BANELING)
 		{
 			return true;
 		}
