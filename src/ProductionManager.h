@@ -18,6 +18,7 @@ class ProductionManager
 	int m_armor;
 
 	bool m_scoutRequested;
+	bool m_vikingRequested;
 
     const sc2::Unit * getClosestUnitToPosition(const std::vector<const sc2::Unit *> & units, sc2::Point2D closestTo);
     bool    meetsReservedResources(const BuildType & type);
@@ -45,6 +46,7 @@ public:
     const sc2::Unit * getProducer(const BuildType & type, sc2::Point2D closestTo = sc2::Point2D(0, 0));
 
 	void requestScout();
+	void requestVikings();
 	int buildingsFinished(sc2::Units units);
 	int howOftenQueued(sc2::UnitTypeID type);
 };

@@ -115,7 +115,16 @@ const std::vector<const sc2::Unit *> & MicroManager::getUnits() const
 
 void MicroManager::regroup(const sc2::Point2D & regroupPosition) const
 {
-	Micro::SmartAttackMove(m_units, regroupPosition, m_bot);
+	sc2::Units regroupUnits;
+	for (auto & unit : m_units)
+	{
+		if (Util::Dist(unit->pos, regroupPosition) > 8.0f)
+		{
+			regroupUnits.push_back(unit);
+		}
+	}
+	
+	Micro::SmartAttackMove(regroupUnits, regroupPosition, m_bot);
 }
 
 void MicroManager::trainSubUnits(const sc2::Unit * unit) const

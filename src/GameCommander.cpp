@@ -166,7 +166,7 @@ void GameCommander::setHarassUnits()
 	
 	//We only start harassing after we saw two bases. Otherwise it might be a 1 base allin
 	//We should only can add units, if we are not under attack or if we have many units already
-	if (m_bot.Bases().getOccupiedBaseLocations(Players::Self).size() && ( !m_combatCommander.underAttack() || m_validUnits.size() > manyUnits))
+	if (m_bot.Bases().getOccupiedBaseLocations(Players::Self).size()>1 && ( !m_combatCommander.underAttack() || m_validUnits.size() > manyUnits))
 	{
 		sc2::Units enemies = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
 		for (auto & unit : m_validUnits)
@@ -219,10 +219,6 @@ void GameCommander::setCombatUnits()
         BOT_ASSERT(unit, "Have a null unit in our valid units\n");
         if (!isAssigned(unit) && Util::IsCombatUnitType(unit->unit_type, m_bot))
         {
-			if (unit->cargo_space_taken > 0)
-			{
-				int a = 1;
-			}
             assignUnit(unit, m_combatUnits);
         }
     }
@@ -276,7 +272,13 @@ void GameCommander::onUnitDestroy(const sc2::Unit * unit)
     //_productionManager.onUnitDestroy(unit);
 }
 
-
+void GameCommander::OnUnitEnterVision(const sc2::Unit * unit)
+{
+	if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_LIBERATOR || unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_BANSHEE || unit->unit_type.ToType() == sc2::UNIT_TYPEID::PROTOSS_COLOSSUS)
+	{
+		m_productionManager.requestVikings();
+	}
+}
 
 void GameCommander::assignUnit(const sc2::Unit * unit, std::vector<const sc2::Unit *> & units)
 {

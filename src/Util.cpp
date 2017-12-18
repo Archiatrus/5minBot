@@ -267,6 +267,24 @@ bool Util::IsDetectorType(const sc2::UnitTypeID & type)
     }
 }
 
+bool Util::IsBurrowedType(const sc2::UnitTypeID & type)
+{
+	switch (type.ToType())
+	{
+	case sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED: return true;
+	case sc2::UNIT_TYPEID::ZERG_BANELINGBURROWED: return true;
+	case sc2::UNIT_TYPEID::ZERG_DRONEBURROWED: return true;
+	case sc2::UNIT_TYPEID::ZERG_HYDRALISKBURROWED: return true;
+	case sc2::UNIT_TYPEID::ZERG_INFESTORBURROWED: return true;
+	case sc2::UNIT_TYPEID::ZERG_LURKERMPBURROWED: return true;
+	case sc2::UNIT_TYPEID::ZERG_QUEENBURROWED: return true;
+	case sc2::UNIT_TYPEID::ZERG_ROACHBURROWED: return true;
+	case sc2::UNIT_TYPEID::ZERG_SWARMHOSTBURROWEDMP: return true;
+	case sc2::UNIT_TYPEID::ZERG_ZERGLINGBURROWED: return true;
+	default: return false;
+	}
+}
+
 int Util::GetPlayer(const sc2::Unit * unit)
 {
     BOT_ASSERT(unit, "Unit pointer was null");
@@ -311,6 +329,9 @@ bool Util::IsSupplyProviderType(const sc2::UnitTypeID & type)
     switch (type.ToType()) 
     {
         case sc2::UNIT_TYPEID::ZERG_OVERLORD                : return true;
+		case sc2::UNIT_TYPEID::ZERG_OVERLORDCOCOON			: return true;
+		case sc2::UNIT_TYPEID::ZERG_OVERLORDTRANSPORT		: return true;
+		case sc2::UNIT_TYPEID::ZERG_TRANSPORTOVERLORDCOCOON	: return true;
         case sc2::UNIT_TYPEID::PROTOSS_PYLON                : return true;
         case sc2::UNIT_TYPEID::PROTOSS_PYLONOVERCHARGED     : return true;
         case sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT           : return true;

@@ -248,7 +248,7 @@ void ScoutManager::moveScouts()
 				}
 				// move to the enemy region
 				int scoutDistanceToEnemy = m_bot.Map().getGroundDistance(scout->pos, m_targetBasesPositions.front());
-				if (scoutDistanceToEnemy <= 3 && scoutDistanceToEnemy>=0)
+				if (scoutDistanceToEnemy <= 4 && scoutDistanceToEnemy>=0)
 				{
 					m_scoutStatus = "Nothing here yet";
 					m_targetBasesPositions.pop();

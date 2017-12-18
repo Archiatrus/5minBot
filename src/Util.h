@@ -27,6 +27,7 @@ namespace Util
     bool IsRefineryType(const sc2::UnitTypeID & type);
     bool IsDetector(const sc2::Unit * type);
     bool IsDetectorType(const sc2::UnitTypeID & type);
+	bool IsBurrowedType(const sc2::UnitTypeID & type);
     bool IsGeyser(const sc2::Unit * unit);
     bool IsMineral(const sc2::Unit * unit);
     bool IsWorker(const sc2::Unit * unit);

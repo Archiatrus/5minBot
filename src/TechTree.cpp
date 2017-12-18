@@ -274,7 +274,42 @@ const TypeData & TechTree::getData(const sc2::UnitTypeID & type) const
     {
         //std::cout << "WARNING: Unit type not found: " << sc2::UnitTypeToName(type) << "\n";
 		BOT_ASSERT(m_unitTypeData.size() > 0, "Techtree not initialized");
-		if (type != sc2::UNIT_TYPEID::TERRAN_KD8CHARGE && type!= sc2::UNIT_TYPEID::TERRAN_REACTOR && type != sc2::UNIT_TYPEID::PROTOSS_ARCHON && type != sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED && type != sc2::UNIT_TYPEID::PROTOSS_ADEPTPHASESHIFT && type != sc2::UNIT_TYPEID::TERRAN_TECHLAB)
+		//Collect all the unknown types for now
+		if (type != sc2::UNIT_TYPEID::TERRAN_KD8CHARGE
+			&& type != sc2::UNIT_TYPEID::TERRAN_REACTOR
+			&& type != sc2::UNIT_TYPEID::PROTOSS_ARCHON
+			&& type != sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED
+			&& type != sc2::UNIT_TYPEID::PROTOSS_ADEPTPHASESHIFT
+			&& type != sc2::UNIT_TYPEID::TERRAN_TECHLAB
+			&& type != sc2::UNIT_TYPEID::TERRAN_VIKINGASSAULT
+			&& type != sc2::UNIT_TYPEID::TERRAN_AUTOTURRET
+			&& type != sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED
+			&& type != sc2::UNIT_TYPEID::TERRAN_HELLIONTANK
+			&& type != sc2::UNIT_TYPEID::TERRAN_LIBERATORAG
+			&& type != sc2::UNIT_TYPEID::ZERG_BANELINGCOCOON
+			&& type != sc2::UNIT_TYPEID::ZERG_RAVAGER
+			&& type != sc2::UNIT_TYPEID::ZERG_OVERLORDCOCOON
+			&& type != sc2::UNIT_TYPEID::ZERG_OVERSEER
+			&& type != sc2::UNIT_TYPEID::ZERG_CHANGELING
+			&& type != sc2::UNIT_TYPEID::ZERG_CHANGELINGMARINESHIELD
+			&& type != sc2::UNIT_TYPEID::ZERG_ZERGLINGBURROWED
+			&& type != sc2::UNIT_TYPEID::ZERG_ROACHBURROWED
+			&& type != sc2::UNIT_TYPEID::ZERG_OVERLORDTRANSPORT
+			&& type != sc2::UNIT_TYPEID::ZERG_DRONEBURROWED
+			&& type != sc2::UNIT_TYPEID::ZERG_BANELINGBURROWED
+			&& type != sc2::UNIT_TYPEID::ZERG_HYDRALISKBURROWED
+			&& type != sc2::UNIT_TYPEID::ZERG_INFESTORBURROWED
+			&& type != sc2::UNIT_TYPEID::ZERG_INFESTEDTERRANSEGG
+			&& type != sc2::UNIT_TYPEID::ZERG_INFESTORTERRAN
+			&& type != sc2::UNIT_TYPEID::ZERG_PARASITICBOMBDUMMY
+			&& type != sc2::UNIT_TYPEID::ZERG_LURKERMP
+			&& type != sc2::UNIT_TYPEID::ZERG_LURKERMPBURROWED
+			&& type != sc2::UNIT_TYPEID::ZERG_BROODLORD
+			&& type != sc2::UNIT_TYPEID::ZERG_BROODLING
+			&& type != sc2::UNIT_TYPEID::ZERG_QUEENBURROWED
+			&& type != sc2::UNIT_TYPEID::ZERG_SPINECRAWLERUPROOTED
+			&& type != sc2::UNIT_TYPEID::ZERG_LURKERDENMP
+			)
 		{
 			int a = 1;
 		}

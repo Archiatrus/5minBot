@@ -273,6 +273,7 @@ const char * WorkerData::getJobCode(const sc2::Unit * unit)
 
 void WorkerData::drawDepotDebugInfo()
 {
+	return;
     for (auto depot: m_depots)
     {
         std::stringstream ss;

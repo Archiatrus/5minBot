@@ -44,7 +44,8 @@ const float pathPlaning::calcThreatLvl(sc2::Point2D pos) const
 			//Get its weapon
 			std::vector<sc2::Weapon> weapons = m_bot.Observation()->GetUnitTypeData()[ui.type].weapons;
 			float dps = 0.0f;
-			float range = 0.0f;
+			//float range = 0.0f;
+			float range = Util::GetUnitTypeSight(ui.type, m_bot);
 			for (auto & weapon : weapons)
 			{
 				//At the moment its only used for medivacs
@@ -52,14 +53,15 @@ const float pathPlaning::calcThreatLvl(sc2::Point2D pos) const
 				{
 					//I ignore bonus dmg for now.
 					dps = weapon.attacks * weapon.damage_ / weapon.speed;
-					range = weapon.range;
+					//range = weapon.range + 2; //just to be sure +2
 				}
 			}
+
 			//If we are in range.
 			float dist = Util::Dist(ui.lastPosition, pos);
-			if (dist < range + 1) //just to be sure +1
+			if (dist < range) 
 			{
-				threatLvl += dps*(range + 1 - dist) / (range+1);
+				threatLvl += dps*(range - dist) / range;
 			}
 		}
 	}

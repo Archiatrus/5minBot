@@ -32,7 +32,7 @@ void UnitInfoManager::updateUnitInfo()
 	{
 		for (auto& kv : getUnitData(Players::Enemy).getUnitInfoMap())
 		{
-			if (!Util::IsBuildingType(kv.second.type, m_bot) && m_bot.Observation()->GetVisibility(kv.second.lastPosition) == sc2::Visibility::Visible)
+			if (!Util::IsBuildingType(kv.second.type, m_bot) && !Util::IsBurrowedType(kv.second.type) && m_bot.Observation()->GetVisibility(kv.second.lastPosition) == sc2::Visibility::Visible)
 			{
 				m_unitData[Players::Enemy].lostPosition(kv.first);
 			}

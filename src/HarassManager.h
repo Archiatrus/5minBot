@@ -7,7 +7,7 @@ class CCBot;
 
 namespace HarassStatus
 {
-	enum { Idle, Loading, OnMyWay, Unloading, Harass, Fleeing, Refueling, Doomed };
+	enum { Idle, Loading, OnMyWay, Harass, Fleeing, Refueling, GoingHome, Doomed };
 }
 
 class Hitsquad

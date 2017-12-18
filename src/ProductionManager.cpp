@@ -23,6 +23,8 @@ ProductionManager::ProductionManager(CCBot & bot)
 	, m_queue(bot)
 	, m_weapons(0)
 	, m_armor(0)
+	, m_scoutRequested(false)
+	, m_vikingRequested(false)
 {
 
 }
@@ -47,12 +49,11 @@ void ProductionManager::onStart()
 
 void ProductionManager::onFrame()
 {
-	//Proxy Check
 
 	defaultMacro();
 	
 	detectBuildOrderDeadlock();
-	//ADD THINGS TO THE QUEUE BEFORE THIS! IT WILL BE TAKEN FROM THE QUEUE BUT ONLY APPLIED AT THE END OF THE FRAME!!
+	//ADD THINGS TO THE QUEUE BEFORE THIS POINT! IT WILL BE TAKEN FROM THE QUEUE BUT ONLY APPLIED AT THE END OF THE FRAME!!
 
 
 	
@@ -710,7 +711,7 @@ void ProductionManager::defaultMacro()
 							return;
 						}
 					}
-					else
+					else if (Starports.size()>0 && Starports.front()->add_on_tag)
 					{
 						if (minerals >= 50 && gas >= 25)
 						{
@@ -769,15 +770,38 @@ void ProductionManager::defaultMacro()
 				}
 				else
 				{
-					if (minerals >= 100 && gas >= 100 && supply<=200-m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
+					int numVikings;
+						int numMedivacs;
+					if (m_vikingRequested)
 					{
-						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_MEDIVAC);
-						if (minerals >= 200 && gas >= 200 && unit->orders.size()==1 && supply <= 200 - 2*m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
+						numMedivacs = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_MEDIVAC)).size();
+						numVikings = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER,sc2::UNIT_TYPEID::TERRAN_VIKINGASSAULT })).size();
+					}
+					if (!m_vikingRequested || numMedivacs - 2 < numVikings)
+					{
+						if (minerals >= 100 && gas >= 100 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
 						{
 							m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_MEDIVAC);
+							if (minerals >= 200 && gas >= 200 && unit->orders.size() == 1 && supply <= 200 - 2 * m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
+							{
+								m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_MEDIVAC);
+							}
+							std::cout << "Medivac" << std::endl;
+							return;
 						}
-						std::cout << "Medivac" << std::endl;
-						return;
+					}
+					else
+					{
+						if (minerals >= 150 && gas >= 75 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER).supplyCost)
+						{
+							m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_VIKINGFIGHTER);
+							if (minerals >= 300 && gas >= 150 && unit->orders.size() == 1 && supply <= 200 - 2 * m_bot.Data(sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER).supplyCost)
+							{
+								m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_VIKINGFIGHTER);
+							}
+							std::cout << "Viking" << std::endl;
+							return;
+						}
 					}
 				}
 			}
@@ -885,6 +909,11 @@ void ProductionManager::defaultMacro()
 void ProductionManager::requestScout()
 {
 	m_scoutRequested = true;
+}
+
+void ProductionManager::requestVikings()
+{
+	m_vikingRequested = true;
 }
 
 int ProductionManager::buildingsFinished(sc2::Units units)

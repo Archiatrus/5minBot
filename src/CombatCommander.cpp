@@ -121,6 +121,7 @@ void CombatCommander::updateAttackSquads()
 
     Squad & mainAttackSquad = m_squadData.getSquad("MainAttack");
 
+	//We reassign every frame. Otherwise we can not change the jobs aka Harass, scout etc
 	mainAttackSquad.clear();
 
     for (auto unit : m_combatUnits)
@@ -350,6 +351,9 @@ void CombatCommander::updateDefenseSquads()
 
 void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t & flyingDefendersNeeded, const size_t & groundDefendersNeeded)
 {
+	//We remove all units and reassign, so that workers can repair. It would be probably also be fine to just remove workers?
+	defenseSquad.clear();
+
     auto & squadUnits = defenseSquad.getUnits();
 
     // TODO: right now this will assign arbitrary defenders, change this so that we make sure they can attack air/ground
@@ -381,7 +385,7 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
     }
 	// Emergency draft of workers
 	
-	while (defendersNeeded > defendersAdded)
+	while (defendersNeeded > defendersAdded && m_bot.UnitInfo().getNumCombatUnits(Players::Self)<20)
 	{
 		const sc2::Unit * workerDefender = findClosestWorkerTo(m_bot.Workers().getMineralWorkers(),defenseSquad.getSquadOrder().getPosition());
 

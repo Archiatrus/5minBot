@@ -5,7 +5,7 @@
 #include "pathPlaning.h"
 
 
-const int updateRatePathplaning = 5;
+const int updateRatePathplaning = 10;
 
 
 Hitsquad::Hitsquad(CCBot & bot, const sc2::Unit * medivac) : m_bot(bot), m_status(HarassStatus::Idle), m_medivac(medivac), m_pathPlanCounter(updateRatePathplaning+1)
@@ -14,21 +14,10 @@ Hitsquad::Hitsquad(CCBot & bot, const sc2::Unit * medivac) : m_bot(bot), m_statu
 
 void Hitsquad::escapePathPlaning()
 {
-	sc2::Point2D currentPos = m_medivac->pos;
-	std::vector<const BaseLocation *> bases = m_bot.Bases().getBaseLocations();
-	//We use that it is ordered
-	std::map<float, const BaseLocation *> allTargetBases;
-	int numBasesEnemy = 0;
-	for (auto & base : bases)
-	{
-		if (!(base->isOccupiedByPlayer(Players::Enemy)))
-		{
-			allTargetBases[Util::Dist(base->getBasePosition(), currentPos)] = base;
-		}
-	}
-	sc2::Point2D targetPos = allTargetBases.begin()->second->getBasePosition();
+	const BaseLocation * saveBase = getSavePosition();
+	sc2::Point2D targetPos = saveBase->getBasePosition();
 	
-	pathPlaning escapePlan(m_bot, currentPos, targetPos, m_bot.Map().width(), m_bot.Map().height(), 1.0f);
+	pathPlaning escapePlan(m_bot, m_medivac->pos, targetPos, m_bot.Map().width(), m_bot.Map().height(), 1.0f);
 	
 	std::vector<sc2::Point2D> escapePath=escapePlan.planPath();
 	for (sc2::Point2D pos : escapePath)
@@ -90,6 +79,8 @@ bool isDead(const sc2::Unit * unit)
 
 void Hitsquad::checkForCasualties()
 {
+	//Last game loop check prevents units in bunker... but this is also true for in medivac
+	//m_marines.erase(std::remove_if(m_marines.begin(), m_marines.end(), [this](const sc2::Unit * unit) {return !(unit->is_alive && unit->last_seen_game_loop == m_bot.Observation()->GetGameLoop()); }), m_marines.end());
 	m_marines.erase(std::remove_if(m_marines.begin(), m_marines.end(), &isDead), m_marines.end());
 	if (m_medivac && !m_medivac->is_alive)
 	{
@@ -106,7 +97,7 @@ void Hitsquad::harass(const BaseLocation * target)
 	switch (m_status)
 	{
 	case HarassStatus::Idle:
-		//We get here if we have a brand new hit squad
+		//We get here if we have a brand new hit squad or want to restart from home
 		if (m_medivac)
 		{
 			if (m_medivac->health == m_medivac->health_max)
@@ -134,7 +125,7 @@ void Hitsquad::harass(const BaseLocation * target)
 			{
 				m_status = HarassStatus::Fleeing;
 			}
-			if (m_medivac->cargo_space_taken != m_marines.size())
+			if (m_medivac->cargo_space_taken < m_marines.size())
 			{
 				Micro::SmartRightClick(m_marines, m_medivac, m_bot);
 				Micro::SmartRightClick(m_medivac, m_marines, m_bot);
@@ -160,30 +151,8 @@ void Hitsquad::harass(const BaseLocation * target)
 			m_status = HarassStatus::Fleeing;
 		}
 		break;
-	case HarassStatus::Unloading:
-		//We dont go here anymore I think
-		if (m_medivac->health < 0.5*m_medivac->health_max || shouldWeFlee(getNearbyEnemyUnits()))
-		{
-			while (!m_wayPoints.empty())
-			{
-				m_wayPoints.pop();
-			}
-			m_status = HarassStatus::Fleeing;
-		}
-		if (m_medivac->cargo_space_taken > 0 )
-		{
-			sc2::Point2D unloadPos = m_medivac->pos;
-			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, unloadPos,m_bot);
-		}
-		else
-		{
-			m_status = HarassStatus::Harass;
-		}
-		// NO break here, so that unloaded mariens already attack
-		// break;
 	case HarassStatus::Harass:
 	{
-		
 		sc2::Units targetUnits = getNearbyEnemyUnits();
 		if (m_medivac->health < 0.5*m_medivac->health_max || shouldWeFlee(targetUnits))
 		{
@@ -194,6 +163,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		{
 			sc2::Point2D unloadPos = m_medivac->pos;
 			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, unloadPos, m_bot);
+			//Marines dropped from medivac trigger onUnitCreate ....
 			Micro::SmartAbility(m_marines, sc2::ABILITY_ID::STOP, m_bot);
 		}
 		const sc2::Unit * targetUnit = getTargetMarines(targetUnits);
@@ -221,6 +191,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		}
 		for (auto & m : m_marines)
 		{
+			//This is still buggy since we can not drop individual marines
 			if (m->health <= 5)
 			{
 				Micro::SmartRightClick(m, m_medivac, m_bot);
@@ -250,9 +221,9 @@ void Hitsquad::harass(const BaseLocation * target)
 				targetUnitsCanHitMedivac.push_back(unit);
 			}
 		}
-		if (targetUnitsCanHitMedivac.size()>0 )
+		if (targetUnitsCanHitMedivac.size() > 0 || m_wayPoints.empty())
 		{
-			if (m_pathPlanCounter>updateRatePathplaning || m_wayPoints.empty())
+			if (m_pathPlanCounter > updateRatePathplaning || m_wayPoints.empty())
 			{
 				while (!m_wayPoints.empty())
 				{
@@ -261,53 +232,23 @@ void Hitsquad::harass(const BaseLocation * target)
 				escapePathPlaning();
 				m_pathPlanCounter = 0;
 			}
-			else
-			{
-				m_pathPlanCounter++;
-				if (Util::Dist(m_medivac->pos, m_wayPoints.front()) < 0.95f)
-				{
-					m_wayPoints.pop();
-				}
-				else
-				{
-					//Micro::SmartMove(m_medivac, m_wayPoints.front(), m_bot);
-					Micro::SmartCDAbility(m_medivac, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
-					m_bot.Actions()->UnitCommand(m_medivac, sc2::ABILITY_ID::MOVE, m_wayPoints.front());
-				}
-			}
-			/*
-			if (m_firstEncounter || m_wayPoints.empty())
-			{
-				while (!m_wayPoints.empty())
-				{
-					m_wayPoints.pop();
-				}
-				const BaseLocation * savePos = Hitsquad::getSavePosition();
-				escapePathPlaning(m_medivac->pos, savePos->getBasePosition());
-				m_firstEncounter = false;
-			}
-			else
-			{
-				if (Util::Dist(m_medivac->pos, m_wayPoints.front()) < 0.95f)
-				{
-					m_wayPoints.pop();
-				}
-				else
-				{
-					//Micro::SmartMove(m_medivac, m_wayPoints.front(), m_bot);
-					m_bot.Actions()->UnitCommand(m_medivac, sc2::ABILITY_ID::MOVE, m_wayPoints.front());
-				}
-			}
-			*/
+		}
+		m_pathPlanCounter++;
+		if (Util::Dist(m_medivac->pos, m_wayPoints.front()) < 0.95f)
+		{
+			m_wayPoints.pop();
 		}
 		else
 		{
-			m_pathPlanCounter = updateRatePathplaning+1;
-			const BaseLocation * savePos = Hitsquad::getSavePosition();
-			if (manhattenMove(savePos))
-			{
-				m_status = HarassStatus::Refueling;
-			}
+			//Micro::SmartMove(m_medivac, m_wayPoints.front(), m_bot);
+			Micro::SmartCDAbility(m_medivac, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
+			m_bot.Actions()->UnitCommand(m_medivac, sc2::ABILITY_ID::MOVE, m_wayPoints.front());
+		}
+		//I probably could also just see if m_wayPoints is empty?!
+		const BaseLocation * savePos = Hitsquad::getSavePosition();
+		if (Util::Dist(m_medivac->pos, savePos->getBasePosition()) < 0.95f)
+		{
+			m_status = HarassStatus::Refueling;
 		}
 		break;
 	}
@@ -321,16 +262,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		else
 		{
 			Micro::SmartCDAbility(m_marines, sc2::ABILITY_ID::STOP, m_bot);
-			//if the medivac is home, repair it
-			if (m_medivac->health != m_medivac->health_max)
-			{
-				const sc2::Unit * worker = m_bot.Workers().getClosestMineralWorkerTo(m_medivac->pos);
-				if (worker && Util::Dist(m_medivac->pos, worker->pos) < 20)
-				{
-					m_bot.Workers().setRepairWorker(m_medivac);
-					m_status = HarassStatus::Idle;
-				}
-			}
+
 			for (auto & marine : m_marines)
 			{
 				if (marine->health != marine->health_max)
@@ -342,17 +274,39 @@ void Hitsquad::harass(const BaseLocation * target)
 					return;
 				}
 			}
-			//At home we can also get new marines.
-			if (Util::Dist(m_medivac->pos, m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getBasePosition()) < 20)
+			if (m_medivac->health < 0.5*m_medivac->health_max || m_marines.size() < 6)
 			{
-				m_status = HarassStatus::Idle;
+				m_status = HarassStatus::GoingHome;
 			}
 			else
 			{
 				m_status = HarassStatus::Loading;
 			}
 		}
-
+		break;
+	case HarassStatus::GoingHome:
+	{
+		if (m_medivac->cargo_space_taken != m_marines.size())
+		{
+			Micro::SmartRightClick(m_marines, m_medivac, m_bot);
+			Micro::SmartRightClick(m_medivac, m_marines, m_bot);
+			Micro::SmartCDAbility(m_medivac, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
+			return;
+		}
+		const sc2::Unit * worker = m_bot.Workers().getClosestMineralWorkerTo(m_medivac->pos);
+		if (worker)
+		{
+			if (m_bot.Bases().getBaseLocation(worker->pos))
+			{
+				if (manhattenMove(m_bot.Bases().getBaseLocation(worker->pos)))
+				{
+					m_status = HarassStatus::Idle;
+				}
+			}
+		}
+		//If there are no mineral workers left, we are probably dead anyway
+		break;
+	}
 	default:
 		break;
 	}
@@ -360,23 +314,21 @@ void Hitsquad::harass(const BaseLocation * target)
 
 const BaseLocation * Hitsquad::getSavePosition() const
 {
-	//If we just need to evade enemies.
-	if (m_medivac->health > 0.5*m_medivac->health_max && m_marines.size() >= 6)
+	//
+	sc2::Point2D pos = m_medivac->pos;
+	std::vector<const BaseLocation *> bases = m_bot.Bases().getBaseLocations();
+	//We use that it is ordered
+	std::map<float, const BaseLocation *> allTargetBases;
+	int numBasesEnemy = 0;
+	for (auto & base : bases)
 	{
-		sc2::Point2D pos = m_medivac->pos;
-		std::vector<const BaseLocation *> bases = m_bot.Bases().getBaseLocations();
-		//We use that it is ordered
-		std::map<float, const BaseLocation *> allTargetBases;
-		int numBasesEnemy = 0;
-		for (auto & base : bases)
+		if (!(base->isOccupiedByPlayer(Players::Enemy)))
 		{
-			if (!(base->isOccupiedByPlayer(Players::Enemy)))
-			{
-				allTargetBases[Util::Dist(base->getBasePosition(), pos)] = base;
-			}
+			allTargetBases[Util::Dist(base->getBasePosition(), pos)] = base;
 		}
-		return allTargetBases.begin()->second;
 	}
+	return allTargetBases.begin()->second;
+	/*
 	//If we are damaged or lost too many marines
 	else
 	{
@@ -390,7 +342,7 @@ const BaseLocation * Hitsquad::getSavePosition() const
 		}
 		//If there are no mineral workers left, we are probably dead anyway
 		return m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
-	}
+	}*/
 }
 
 const bool Hitsquad::shouldWeFlee(sc2::Units targets) const
@@ -479,9 +431,14 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 		return false;
 	}
 	sc2::Point2D posEnd = target->getPosition() + 1.2*(target->getPosition() - target->getBasePosition());
-	if (Util::Dist(posEnd, m_medivac->pos)>0.75f)
+	float dist = Util::Dist(posEnd, m_medivac->pos);
+	if (dist>0.75f)
 	{
-		Micro::SmartCDAbility(m_medivac, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
+		//Save boost for escape
+		if (!(m_status == HarassStatus::OnMyWay && dist < 50.0f))
+		{
+			Micro::SmartCDAbility(m_medivac, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
+		}
 		if (m_wayPoints.empty())
 		{
 			float test = Util::Dist(posEnd, m_medivac->pos);

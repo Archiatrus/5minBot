@@ -25,6 +25,7 @@ void BuildingManager::onStart()
 // gets called every frame from GameCommander
 void BuildingManager::onFrame()
 {
+	/*
     for (auto unit : m_bot.UnitInfo().getUnits(Players::Self))
     {
         // filter out units which aren't buildings under construction
@@ -35,7 +36,7 @@ void BuildingManager::onFrame()
             m_bot.Map().drawText(unit->pos, ss.str());
         }
     }
-
+	*/
     validateWorkersAndBuildings();          // check to see if assigned workers have died en route or while constructing
     assignWorkersToUnassignedBuildings();   // assign workers to the unassigned buildings and label them 'planned'    
     constructAssignedBuildings();           // for each planned building, if the worker isn't constructing, send the command    
@@ -304,6 +305,10 @@ void BuildingManager::checkForDeadTerranBuilders()
 					b.builderUnit = builderUnit;
 					Micro::SmartRightClick(builderUnit, b.buildingUnit, m_bot);
 				}
+			}
+			if (b.builderUnit && (b.builderUnit->orders.empty() || b.builderUnit->orders.front().ability_id == sc2::ABILITY_ID::HARVEST_GATHER))
+			{
+				Micro::SmartRightClick(b.builderUnit, b.buildingUnit, m_bot);
 			}
 		}
 		if (b.status == BuildingStatus::Assigned)
