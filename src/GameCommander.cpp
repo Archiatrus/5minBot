@@ -238,6 +238,13 @@ void GameCommander::onUnitCreate(const sc2::Unit * unit)
 			}
 			else
 			{
+				std::map<const sc2::Unit *, UnitInfo> knownUnits = m_bot.UnitInfo().getUnitInfoMap(Players::Self);
+				if (knownUnits.find(unit) != knownUnits.end())
+				{
+					//We have seen this one already
+					return;
+				}
+
 				const sc2::Units Bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_BUNKER }));
 				for (auto & b : Bunker)
 				{

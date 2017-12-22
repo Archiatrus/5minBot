@@ -147,6 +147,7 @@ void BaseLocationManager::onFrame()
     {
         baseLocation.setPlayerOccupying(Players::Self, false);
         baseLocation.setPlayerOccupying(Players::Enemy, false);
+		baseLocation.resetNumEnemyCombatUnits();
     }
 
     // for each unit on the map, update which base location it may be occupying
@@ -167,11 +168,6 @@ void BaseLocationManager::onFrame()
 
 		if (baseLocation != nullptr)
 		{
-			if (Util::IsTownHallType(ui.type))
-			{
-				int a = 1;
-			}
-			m_bot.Debug()->DebugSphereOut(ui.lastPosition, 3.0f,sc2::Colors::Red);
 			baseLocation->setPlayerOccupying(Players::Enemy, true);
 		}
 	}
@@ -257,7 +253,24 @@ void BaseLocationManager::onFrame()
         }
     }
 
-    // draw the debug information for each base location
+    // We want to assign the number of enemy combat units to each base to determine which one is the safest to attack
+	for (const auto & kv : m_bot.UnitInfo().getUnitInfoMap(Players::Enemy))
+	{
+		const UnitInfo & ui = kv.second;
+		if (!Util::IsCombatUnitType(ui.type,m_bot) || ui.lastHealth == 0)
+		{
+			continue;
+		}
+
+		BaseLocation * baseLocation = getBaseLocation(ui.lastPosition);
+
+
+
+		if (baseLocation != nullptr && baseLocation->isOccupiedByPlayer(Players::Enemy))
+		{
+			baseLocation->incrementNumEnemyCombatUnits();
+		}
+	}
     
 }
 

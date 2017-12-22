@@ -309,6 +309,7 @@ const TypeData & TechTree::getData(const sc2::UnitTypeID & type) const
 			&& type != sc2::UNIT_TYPEID::ZERG_QUEENBURROWED
 			&& type != sc2::UNIT_TYPEID::ZERG_SPINECRAWLERUPROOTED
 			&& type != sc2::UNIT_TYPEID::ZERG_LURKERDENMP
+			&& type != sc2::UNIT_TYPEID::ZERG_RAVAGERCOCOON
 			)
 		{
 			int a = 1;

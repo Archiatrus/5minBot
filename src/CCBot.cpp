@@ -43,10 +43,11 @@ void CCBot::OnGameStart()
     m_gameCommander.onStart();
 	Actions()->SendChat("gl hf (business)");
 }
+bool test = true;
 
 void CCBot::OnStep()
 {
-    Control()->GetObservation();
+	Control()->GetObservation();
 
     m_map.onFrame();
     m_unitInfo.onFrame();

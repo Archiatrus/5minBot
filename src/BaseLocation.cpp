@@ -7,13 +7,14 @@
 const int NearBaseLocationTileDistance = 20;
 
 BaseLocation::BaseLocation(CCBot & bot, int baseID, const std::vector<const sc2::Unit *> & resources)
-    : m_bot(bot)
-    , m_baseID               (baseID)
-    , m_isStartLocation      (false)
-    , m_left                 (std::numeric_limits<float>::max())
-    , m_right                (std::numeric_limits<float>::lowest())
-    , m_top                  (std::numeric_limits<float>::lowest())
-    , m_bottom               (std::numeric_limits<float>::max())
+	: m_bot(bot)
+	, m_baseID(baseID)
+	, m_isStartLocation(false)
+	, m_left(std::numeric_limits<float>::max())
+	, m_right(std::numeric_limits<float>::lowest())
+	, m_top(std::numeric_limits<float>::lowest())
+	, m_bottom(std::numeric_limits<float>::max())
+	, m_numEnemyCombatUnits(0)
 {
     m_isPlayerStartLocation[0] = false;
     m_isPlayerStartLocation[1] = false;
@@ -138,7 +139,7 @@ bool BaseLocation::isOccupiedByPlayer(int player) const
 
 bool BaseLocation::isExplored() const
 {
-    return false;
+    return m_bot.Map().isExplored(m_centerOfBase);
 }
 
 bool BaseLocation::isPlayerStartLocation(int player) const
@@ -277,4 +278,19 @@ void BaseLocation::draw()
 bool BaseLocation::isMineralOnly() const
 {
     return getGeysers().empty();
+}
+
+void BaseLocation::resetNumEnemyCombatUnits()
+{
+	m_numEnemyCombatUnits = 0;
+}
+
+void BaseLocation::incrementNumEnemyCombatUnits()
+{
+	++m_numEnemyCombatUnits;
+}
+
+const int BaseLocation::getNumEnemyCombatUnits() const
+{
+	return m_numEnemyCombatUnits;
 }

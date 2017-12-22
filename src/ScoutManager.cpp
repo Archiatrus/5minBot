@@ -562,7 +562,6 @@ void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos,int player)
 	{
 		if (base->isOccupiedByPlayer(player))
 		{
-			m_bot.Debug()->DebugSphereOut(base->getMinerals().front()->pos, 3.0f, sc2::Colors::Red);
 			numBasesEnemy++;
 		}
 		if (!(base->isOccupiedByPlayer(Players::Enemy)) && !(base->isOccupiedByPlayer(Players::Self)))

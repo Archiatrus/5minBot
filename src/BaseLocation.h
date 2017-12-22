@@ -31,7 +31,7 @@ class BaseLocation
     float                       m_top;
     float                       m_bottom;
     bool                        m_isStartLocation;
-    
+	int							m_numEnemyCombatUnits;
 public:
 
     BaseLocation(CCBot & bot, int baseID, const std::vector<const sc2::Unit *> & resources);
@@ -40,6 +40,9 @@ public:
     bool isStartLocation() const;
     bool isPlayerStartLocation(int player) const;
     bool isMineralOnly() const;
+	void resetNumEnemyCombatUnits();
+	void incrementNumEnemyCombatUnits();
+	const int  getNumEnemyCombatUnits() const;
     bool containsPosition(const sc2::Point2D & pos) const;
     const sc2::Point2D & getDepotPosition() const;
     const sc2::Point2D & getPosition() const;

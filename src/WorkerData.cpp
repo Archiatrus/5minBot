@@ -293,7 +293,7 @@ std::vector<const sc2::Unit *> WorkerData::getMineralWorkers() const
 	std::vector<const sc2::Unit *> mineralWorkers;
 	for (auto & unitjob : m_workerJobMap)
 	{
-		if (unitjob.second == WorkerJobs::Minerals)
+		if (unitjob.first && unitjob.second == WorkerJobs::Minerals)
 		{
 			mineralWorkers.push_back(unitjob.first);
 		}

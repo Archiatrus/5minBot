@@ -74,6 +74,7 @@ const int Hitsquad::getStatus() const
 
 bool isDead(const sc2::Unit * unit)
 {
+	//!unit->buffs.empty() && unit->buffs.front().ToType()==sc2::BUFF_ID::
 	return !(unit->is_alive);
 }
 
@@ -163,8 +164,6 @@ void Hitsquad::harass(const BaseLocation * target)
 		{
 			sc2::Point2D unloadPos = m_medivac->pos;
 			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, unloadPos, m_bot);
-			//Marines dropped from medivac trigger onUnitCreate ....
-			Micro::SmartAbility(m_marines, sc2::ABILITY_ID::STOP, m_bot);
 		}
 		const sc2::Unit * targetUnit = getTargetMarines(targetUnits);
 		if (targetUnit)
@@ -257,12 +256,9 @@ void Hitsquad::harass(const BaseLocation * target)
 		{
 			sc2::Point2D unloadPos = m_medivac->pos;
 			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, unloadPos, m_bot);
-			Micro::SmartCDAbility(m_marines, sc2::ABILITY_ID::STOP, m_bot);
 		}
 		else
 		{
-			Micro::SmartCDAbility(m_marines, sc2::ABILITY_ID::STOP, m_bot);
-
 			for (auto & marine : m_marines)
 			{
 				if (marine->health != marine->health_max)
@@ -364,7 +360,8 @@ const bool Hitsquad::shouldWeFlee(sc2::Units targets) const
 
 sc2::Units Hitsquad::getNearbyEnemyUnits() const
 {
-	sc2::Units enemyUnits = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
+	//sc2::Units enemyUnits = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
+	sc2::Units enemyUnits = m_bot.UnitInfo().getUnits(Players::Enemy);
 	sc2::Units nearbyEnemyUnits;
 	sc2::Point2D pos = m_medivac->pos;
 	float range = Util::GetUnitTypeSight(m_medivac->unit_type.ToType(), m_bot);

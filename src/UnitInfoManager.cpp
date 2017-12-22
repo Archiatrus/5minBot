@@ -27,17 +27,7 @@ void UnitInfoManager::updateUnitInfo()
     m_units[Players::Self].clear();
     m_units[Players::Enemy].clear();
 
-	// Update the location of units we only have snapshots of and the position is visible
-	if (m_unitData.size() > 1)
-	{
-		for (auto& kv : getUnitData(Players::Enemy).getUnitInfoMap())
-		{
-			if (!Util::IsBuildingType(kv.second.type, m_bot) && !Util::IsBurrowedType(kv.second.type) && m_bot.Observation()->GetVisibility(kv.second.lastPosition) == sc2::Visibility::Visible)
-			{
-				m_unitData[Players::Enemy].lostPosition(kv.first);
-			}
-		}
-	}
+
 
 	for (auto & unit : m_bot.Observation()->GetUnits())
 	{
@@ -47,6 +37,19 @@ void UnitInfoManager::updateUnitInfo()
 			m_units[Util::GetPlayer(unit)].push_back(unit);
 		}
 	}
+
+	// Update the location of units we can not see now and the last seen position is visible
+	if (m_unitData.size() > 1)
+	{
+		for (auto& kv : getUnitData(Players::Enemy).getUnitInfoMap())
+		{
+			if (kv.first->last_seen_game_loop!=m_bot.Observation()->GetGameLoop() && !Util::IsBuildingType(kv.second.type, m_bot) && !Util::IsBurrowedType(kv.second.type) && m_bot.Observation()->GetVisibility(kv.second.lastPosition) == sc2::Visibility::Visible)
+			{
+				m_unitData[Players::Enemy].lostPosition(kv.first);
+			}
+		}
+	}
+
 	// remove bad enemy units
     m_unitData[Players::Self].removeBadUnits();
     m_unitData[Players::Enemy].removeBadUnits();
@@ -269,6 +272,11 @@ void UnitInfoManager::updateUnit(const sc2::Unit * unit)
     {
         return;
     }
+	//KD8 charges are not really our units
+	if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
+	{
+		return;
+	}
 	//If it is not just a snap shot
 	if (unit->display_type != sc2::Unit::DisplayType::Snapshot)
 	{
