@@ -11,7 +11,7 @@ class BuildingPlacer
     CCBot & m_bot;
 
     std::vector< std::vector<bool> > m_reserveMap;
-
+	std::map<const float,std::map<const int, std::vector<sc2::Point2D>::const_iterator>> m_buildLocationIterator;
     // queries for various BuildingPlacer data
     bool			buildable(const Building & b, int x, int y) const;
     bool			isReserved(int x, int y) const;
@@ -30,8 +30,8 @@ public:
     bool			canBuildHereWithSpace(int bx, int by, const Building & b, int buildDist) const;
 
     // returns a build location near a building's desired location
-    sc2::Point2D	getBuildLocationNear(const Building & b, int buildDist) const;
-	sc2::Point2D	getTownHallLocationNear(const Building & b) const;
+    sc2::Point2D	getBuildLocationNear(const Building & b, int buildDist);
+	sc2::Point2D	getTownHallLocationNear(const Building & b);
 
     void			drawReservedTiles();
 

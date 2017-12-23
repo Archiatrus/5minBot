@@ -52,7 +52,7 @@ class UnitData
     std::vector<int>        m_numUnits;
     int                     m_mineralsLost;
     int	                    m_gasLost;
-
+	std::unordered_map<sc2::UNIT_TYPEID,sc2::Units> m_buildings;
     bool badUnitInfo(const UnitInfo & ui) const;
 
 public:

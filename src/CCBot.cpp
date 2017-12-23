@@ -3,6 +3,10 @@
 #include "CCBot.h"
 #include "Util.h"
 
+int lvl85 = 0;
+int lvl1000 = 0;
+int lvl10000 = 0;
+
 CCBot::CCBot()
     : m_map(*this)
     , m_bases(*this)
@@ -47,6 +51,9 @@ bool test = true;
 
 void CCBot::OnStep()
 {
+	Timer t;
+	t.start();
+
 	Control()->GetObservation();
 
     m_map.onFrame();
@@ -57,7 +64,22 @@ void CCBot::OnStep()
 
     m_gameCommander.onFrame();
 
-    Debug()->SendDebug();
+	double ms = t.getElapsedTimeInMilliSec();
+	if (ms > 85)
+	{
+		++lvl85;
+		if (ms > 1000)
+		{
+			++lvl1000;
+			if (ms > 10000)
+			{
+				++lvl10000;
+			}
+		}
+	}
+	//printf("OnStep Took %lf ms\n", ms);
+	std::cout << "#Frames > 85: " << lvl85 << ",    #Frames > 1000: " << lvl1000 << ",    #Frames > 10000ms: " << lvl10000 << std::endl;
+	Debug()->SendDebug();
 }
 
 void CCBot::OnUnitCreated(const sc2::Unit * unit)

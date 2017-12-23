@@ -364,7 +364,6 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
         defenseSquad.clear();
         return;
     }
-
     size_t defendersNeeded = flyingDefendersNeeded + groundDefendersNeeded;
     size_t defendersAdded = squadUnits.size();
 

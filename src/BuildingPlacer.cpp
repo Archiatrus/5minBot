@@ -117,31 +117,36 @@ bool BuildingPlacer::canBuildHereWithSpace(int bx, int by, const Building & b, i
 }
 
 //We will never speak of this again....
-sc2::Point2D BuildingPlacer::getTownHallLocationNear(const Building & b) const
+sc2::Point2D BuildingPlacer::getTownHallLocationNear(const Building & b)
 {
 	return getBuildLocationNear(b, 0);
 }
 
-sc2::Point2D BuildingPlacer::getBuildLocationNear(const Building & b, int buildDist) const
+sc2::Point2D BuildingPlacer::getBuildLocationNear(const Building & b, int buildDist)
 {
     Timer t;
     t.start();
 
     // get the precomputed vector of tile positions which are sorted closes to this location
-    auto & closestToBuilding = m_bot.Map().getClosestTilesTo(b.desiredPosition);
+	const std::vector<sc2::Point2D> & closestToBuilding = m_bot.Map().getClosestTilesTo(b.desiredPosition);
 
-    double ms1 = t.getElapsedTimeInMilliSec();
-
+	std::vector<sc2::Point2D>::const_iterator it(closestToBuilding.begin());
+	const float pointHash = b.desiredPosition.x * 1000 + b.desiredPosition.y;
+	const int buildingHash = Util::GetUnitTypeWidth(b.type, m_bot)*Util::GetUnitTypeHeight(b.type, m_bot);
+	if (m_buildLocationIterator.count(pointHash) > 0 && m_buildLocationIterator.at(pointHash).count(buildingHash) > 0)
+	{
+		it = m_buildLocationIterator.at(pointHash).at(buildingHash);
+	}
     // iterate through the list until we've found a suitable location
-    for (size_t i(0); i < closestToBuilding.size(); ++i)
+    for (; it != closestToBuilding.end(); ++it)
     {
-        auto & pos = closestToBuilding[i];
+        auto & pos = *it;
 
         if (canBuildHereWithSpace((int)pos.x, (int)pos.y, b, buildDist))
         {
             double ms = t.getElapsedTimeInMilliSec();
             //printf("Building Placer Took %d iterations, lasting %lf ms @ %lf iterations/ms, %lf setup ms\n", (int)i, ms, (i / ms), ms1);
-
+			m_buildLocationIterator[pointHash][buildingHash] = it;
             return pos;
         }
     }
