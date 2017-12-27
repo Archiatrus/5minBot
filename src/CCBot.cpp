@@ -82,26 +82,22 @@ void CCBot::OnStep()
 	}
 	//std::cout << "#Frames > 85: " << lvl85 << ",    #Frames > 1000: " << lvl1000 << ",    #Frames > 10000ms: " << lvl10000 << std::endl;
 	Debug()->SendDebug();
-	std::cout << std::endl;
 }
 
 void CCBot::OnUnitCreated(const sc2::Unit * unit)
 {
-	std::cout << "Create!" << std::endl;
 	m_gameCommander.onUnitCreate(unit);
 	m_cameraModule.moveCameraUnitCreated(unit);
 }
 
 void CCBot::OnBuildingConstructionComplete(const sc2::Unit * unit)
 {
-	std::cout << "Build!" << std::endl;
 	m_gameCommander.OnBuildingConstructionComplete(unit);
 }
 
 
 void CCBot::OnUnitEnterVision(const sc2::Unit * unit)
 {
-	std::cout << "Vision!" << std::endl;
 	m_gameCommander.OnUnitEnterVision(unit);
 }
 

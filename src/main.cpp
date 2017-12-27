@@ -15,7 +15,7 @@
 int main(int argc, char* argv[]) 
 {
     
-    
+    /*
     rapidjson::Document doc;
     std::string config = JSONTools::ReadFile("BotConfig.txt");
     if (config.length() == 0)
@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
     std::string botRaceString;
     std::string enemyRaceString;
     std::string mapString;
-    int stepSize = 1;
+    
     sc2::Difficulty enemyDifficulty = sc2::Difficulty::VeryHard;
 
     if (doc.HasMember("Game Info") && doc["Game Info"].IsObject())
@@ -54,8 +54,8 @@ int main(int argc, char* argv[])
         std::cerr << "Please read the instructions and try again\n";
         exit(-1);
     }
-
-
+	*/
+	int stepSize = 1;
 	while (true)
 	{
 		// Add the custom bot, it will control the players.
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 		coordinator.SetRealtime(false);
 		coordinator.SetMultithreaded(true);
 		coordinator.SetParticipants({
-			CreateParticipant(Util::GetRaceFromString(botRaceString), &bot),
+			CreateParticipant(sc2::Race::Terran, &bot),
 			//sc2::PlayerSetup(sc2::PlayerType::Observer,Util::GetRaceFromString(enemyRaceString)),
 			CreateComputer(sc2::Race::Zerg, sc2::Difficulty::CheatInsane)
 		});
