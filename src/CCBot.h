@@ -12,6 +12,7 @@
 #include "StrategyManager.h"
 #include "TechTree.h"
 #include "BuildType.h"
+#include "AutoObserver\CameraModule.h"
 
 class CCBot : public sc2::Agent 
 {
@@ -26,6 +27,7 @@ class CCBot : public sc2::Agent
     TechTree                m_techTree;
 
     GameCommander           m_gameCommander;
+	CameraModule			m_cameraModule;
 
     void OnError(const std::vector<sc2::ClientError> & client_errors, 
                  const std::vector<std::string> & protocol_errors = {}) override;

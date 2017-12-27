@@ -164,7 +164,6 @@ void BaseLocationManager::onFrame()
 
 		BaseLocation * baseLocation = getBaseLocation(ui.lastPosition);
 
-		
 
 		if (baseLocation != nullptr)
 		{
@@ -234,6 +233,7 @@ void BaseLocationManager::onFrame()
         {
             m_playerStartingBaseLocations[Players::Enemy] = unexplored;
             unexplored->setPlayerOccupying(Players::Enemy, true);
+			
         }
     }
 

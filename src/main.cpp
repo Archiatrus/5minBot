@@ -73,7 +73,6 @@ int main(int argc, char* argv[])
 		coordinator.SetStepSize(stepSize);
 		coordinator.SetRealtime(false);
 		coordinator.SetMultithreaded(true);
-
 		coordinator.SetParticipants({
 			CreateParticipant(Util::GetRaceFromString(botRaceString), &bot),
 			//sc2::PlayerSetup(sc2::PlayerType::Observer,Util::GetRaceFromString(enemyRaceString)),
@@ -81,7 +80,7 @@ int main(int argc, char* argv[])
 		});
 		// Start the game.
 		coordinator.LaunchStarcraft();
-		coordinator.StartGame("Odyssey LE");
+		coordinator.StartGame("Interloper LE");
 
 
 		// Step forward the game simulation.

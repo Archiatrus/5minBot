@@ -104,6 +104,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>C:\Users\D\Desktop\SC2 AI\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
     <IncludePath>C:\Users\D\Desktop\SC2 AI\s2client-api\project\include;$(IncludePath)</IncludePath>
+    <SourcePath>C:\Users\D\Desktop\SC2 AI\5min\src\AutoObserver;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LibraryPath>C:\Users\D\Desktop\SC2 AI\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
@@ -355,6 +356,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\AutoObserver\CameraModule.cpp" />
     <ClCompile Include="..\src\CCBot.cpp" />
     <ClCompile Include="..\src\BaseLocation.cpp" />
     <ClCompile Include="..\src\BaseLocationManager.cpp" />
@@ -393,6 +395,7 @@
     <ClCompile Include="..\src\WorkerManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\AutoObserver\CameraModule.h" />
     <ClInclude Include="..\src\CCBot.h" />
     <ClInclude Include="..\src\BaseLocation.h" />
     <ClInclude Include="..\src\BaseLocationManager.h" />

@@ -17,6 +17,8 @@ const int maxAddonCounter = 5;
 
 bool startedResearch = false;
 
+std::vector<int> abilityCount = { 0,0,0,0,0,0,0 };
+
 ProductionManager::ProductionManager(CCBot & bot)
 	: m_bot(bot)
 	, m_buildingManager(bot)
@@ -543,6 +545,7 @@ void ProductionManager::defaultMacro()
 					std::cout << "Armor++" << std::endl;
 					return;
 				}
+				
 				/*
 				//THE METHOD BELOW WOULD BE MUCH NICER... BUT THERE IS A BUG :/
 				std::vector<sc2::AvailableAbility> abilities = m_bot.Query()->GetAbilitiesForUnit(unit).abilities;

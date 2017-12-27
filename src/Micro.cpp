@@ -41,6 +41,16 @@ void Micro::SmartAttackUnit(const sc2::Units & attacker, const sc2::Unit * targe
 		{
 			continue;
 		}
+		/* ToDO: Attack move if you have to move and weapon cd is 0
+		//Distance to target
+		float dist = Util::Dist((*iter)->pos, target->pos);
+		//Our range
+		float range = Util::GetAttackRange((*iter)->unit_type, bot);
+		if ((*iter)->weapon_cooldown == 0.0f && dist>range + 0.5f)
+		{
+			SmartAttackUnit(rangedUnit, target, bot, queue);
+		}
+		*/
 		attackerThatNeedToAttack.push_back((*iter));
 	}
 	if (attackerThatNeedToAttack.size() > 0)
@@ -84,10 +94,6 @@ void Micro::SmartMove(const sc2::Unit * attacker, const sc2::Point2D & targetPos
 	}
 	if (!attacker->is_flying)
 	{
-		if (attacker->cargo_space_taken > 0)
-		{
-			int a = 1;
-		}
 		sc2::Point2D validWalkableTargetPosition = targetPosition;
 		if (!(bot.Map().isWalkable(targetPosition) && bot.Map().isValid(targetPosition)))
 		{
@@ -248,10 +254,6 @@ void Micro::SmartKiteTarget(const sc2::Unit * rangedUnit, const sc2::Unit * targ
     BOT_ASSERT(rangedUnit != nullptr, "RangedUnit is null");
     BOT_ASSERT(target != nullptr, "Target is null");
 	//Distance to target
-	if (rangedUnit->is_selected)
-	{
-		int a = 1;
-	}
 	float dist = Util::Dist(rangedUnit->pos, target->pos);
 	//Our range
 	float range = Util::GetAttackRange(rangedUnit->unit_type, bot);

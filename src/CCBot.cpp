@@ -2,6 +2,7 @@
 
 #include "CCBot.h"
 #include "Util.h"
+#include "AutoObserver\CameraModule.h"
 
 int lvl85 = 0;
 int lvl1000 = 0;
@@ -15,6 +16,7 @@ CCBot::CCBot()
     , m_gameCommander(*this)
     , m_strategy(*this)
     , m_techTree(*this)
+	, m_cameraModule(*this)
 {
     
 }
@@ -22,8 +24,8 @@ CCBot::CCBot()
 void CCBot::OnGameStart() 
 {
     m_config.readConfigFile();
-    
-    // get my race
+	
+	// get my race
     auto playerID = Observation()->GetPlayerID();
     for (auto & playerInfo : Observation()->GetGameInfo().player_info)
     {
@@ -45,24 +47,25 @@ void CCBot::OnGameStart()
     m_workers.onStart();
 
     m_gameCommander.onStart();
+
+	
+	m_cameraModule.onStart();
+
 	Actions()->SendChat("gl hf (business)");
 }
-bool test = true;
 
 void CCBot::OnStep()
 {
 	Timer t;
 	t.start();
-
 	Control()->GetObservation();
-
     m_map.onFrame();
     m_unitInfo.onFrame();
     m_bases.onFrame();
     m_workers.onFrame();
     m_strategy.onFrame();
-
     m_gameCommander.onFrame();
+	m_cameraModule.onFrame();
 
 	double ms = t.getElapsedTimeInMilliSec();
 	if (ms > 85)
@@ -77,24 +80,28 @@ void CCBot::OnStep()
 			}
 		}
 	}
-	//printf("OnStep Took %lf ms\n", ms);
-	std::cout << "#Frames > 85: " << lvl85 << ",    #Frames > 1000: " << lvl1000 << ",    #Frames > 10000ms: " << lvl10000 << std::endl;
+	//std::cout << "#Frames > 85: " << lvl85 << ",    #Frames > 1000: " << lvl1000 << ",    #Frames > 10000ms: " << lvl10000 << std::endl;
 	Debug()->SendDebug();
+	std::cout << std::endl;
 }
 
 void CCBot::OnUnitCreated(const sc2::Unit * unit)
 {
+	std::cout << "Create!" << std::endl;
 	m_gameCommander.onUnitCreate(unit);
+	m_cameraModule.moveCameraUnitCreated(unit);
 }
 
 void CCBot::OnBuildingConstructionComplete(const sc2::Unit * unit)
 {
+	std::cout << "Build!" << std::endl;
 	m_gameCommander.OnBuildingConstructionComplete(unit);
 }
 
 
 void CCBot::OnUnitEnterVision(const sc2::Unit * unit)
 {
+	std::cout << "Vision!" << std::endl;
 	m_gameCommander.OnUnitEnterVision(unit);
 }
 
