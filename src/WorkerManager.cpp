@@ -21,6 +21,7 @@ void WorkerManager::onFrame()
     m_workerData.updateAllWorkerData();
     handleGasWorkers();
 	handleMineralWorkers();
+	handleRepairWorkers();
     handleIdleWorkers();
 
     drawResourceDebugInfo();
@@ -28,7 +29,6 @@ void WorkerManager::onFrame()
 
     m_workerData.drawDepotDebugInfo();
 
-    handleRepairWorkers();
 }
 
 void WorkerManager::setRepairWorker(const sc2::Unit * unitToRepair,int numWorkers)
@@ -40,6 +40,15 @@ void WorkerManager::setRepairWorker(const sc2::Unit * unitToRepair,int numWorker
 		if (worker)
 		{
 			m_workerData.setWorkerJob(worker, WorkerJobs::Repair, unitToRepair);
+		}
+		//Repair has higher priority than combat
+		else
+		{
+			const sc2::Unit * worker = getClosestCombatWorkerTo(unitToRepair->pos);
+			if (worker)
+			{
+				m_workerData.setWorkerJob(worker, WorkerJobs::Repair, unitToRepair);
+			}
 		}
 	}
 }
@@ -148,8 +157,8 @@ void WorkerManager::handleIdleWorkers()
     {
         if (!worker) { continue; }
 
-        // if it's a scout, don't handle it here
-        if (m_workerData.getWorkerJob(worker) == WorkerJobs::Scout)
+        // if it's a scout or combat, don't handle it here
+        if (m_workerData.getWorkerJob(worker) == WorkerJobs::Scout || m_workerData.getWorkerJob(worker) == WorkerJobs::Combat)
         {
             continue;
         }
@@ -203,6 +212,33 @@ const sc2::Unit * WorkerManager::getClosestMineralWorkerTo(const sc2::Point2D & 
     }
 
     return closestMineralWorker;
+}
+
+const sc2::Unit * WorkerManager::getClosestCombatWorkerTo(const sc2::Point2D & pos) const
+{
+	const sc2::Unit * closestMineralWorker = nullptr;
+	double closestDist = std::numeric_limits<double>::max();
+
+	// for each of our workers
+	for (auto & worker : m_workerData.getWorkers())
+	{
+		if (!worker) { continue; }
+
+		// if it is a mineral worker
+		if (m_workerData.getWorkerJob(worker) == WorkerJobs::Combat && worker->unit_type != sc2::UNIT_TYPEID::TERRAN_MULE)
+		{
+			//do not use worker if he carries minerals
+			double dist = Util::Dist(worker->pos, pos);
+
+			if (!closestMineralWorker || dist < closestDist)
+			{
+				closestMineralWorker = worker;
+				closestDist = dist;
+			}
+		}
+	}
+
+	return closestMineralWorker;
 }
 
 const size_t WorkerManager::isBeingRepairedNum(const sc2::Unit * unit) const
@@ -340,6 +376,12 @@ bool WorkerManager::isWorkerScout(const sc2::Unit * worker) const
 {
     return (m_workerData.getWorkerJob(worker) == WorkerJobs::Scout);
 }
+
+bool WorkerManager::isRepairWorker(const sc2::Unit * worker) const
+{
+	return (m_workerData.getWorkerJob(worker) == WorkerJobs::Repair);
+}
+
 
 bool WorkerManager::isBuilder(const sc2::Unit * worker) const
 {

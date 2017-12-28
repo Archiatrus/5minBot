@@ -714,7 +714,7 @@ void ProductionManager::defaultMacro()
 							return;
 						}
 					}
-					else if (Starports.size()>0 && Starports.front()->add_on_tag)
+					else if (Starports.size()>0 && (Starports.front()->add_on_tag || (Starports.front()->orders.size()>0 && Starports.front()->orders.front().ability_id==sc2::ABILITY_ID::BUILD_REACTOR)))
 					{
 						if (minerals >= 50 && gas >= 25)
 						{
@@ -759,7 +759,7 @@ void ProductionManager::defaultMacro()
 						else
 						{
 							//Something went wrong. The Factory has a techlab. Build the reactor yourself.
-							if (factory->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORY && factory->orders.empty() && factory->add_on_tag && m_bot.Observation()->GetUnit(factory->add_on_tag)->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORYTECHLAB)
+							if (factory->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORY && factory->orders.empty() && (!factory->add_on_tag || (m_bot.Observation()->GetUnit(factory->add_on_tag)->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORYTECHLAB)))
 							{
 								if (minerals >= 50 && gas >= 25)
 								{

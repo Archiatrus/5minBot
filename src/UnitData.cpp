@@ -79,7 +79,8 @@ void UnitData::removeBadUnits()
 
 bool UnitData::badUnitInfo(const UnitInfo & ui) const
 {
-	if (!ui.unit->is_alive)
+	//!ui.unit->is_alive does not seem to work for spines and spores?!
+	if (!ui.unit->is_alive || ui.lastHealth==0.0f)
 	{
 		return true;
 	}

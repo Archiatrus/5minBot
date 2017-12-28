@@ -351,11 +351,21 @@ void CombatCommander::updateDefenseSquads()
 
 void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t & flyingDefendersNeeded, const size_t & groundDefendersNeeded)
 {
-	//We remove all units and reassign, so that workers can repair. It would be probably also be fine to just remove workers?
-	defenseSquad.clear();
-
     auto & squadUnits = defenseSquad.getUnits();
 
+	// Remove repair worker
+	sc2::Units repairWorkers;
+	for (auto & unit : squadUnits)
+	{
+		if (Util::IsWorkerType(unit->unit_type)&& m_bot.Workers().isRepairWorker(unit))
+		{
+			repairWorkers.push_back(unit);
+		}
+	}
+	for (auto & rw : repairWorkers)
+	{
+		defenseSquad.removeUnit(rw);
+	}
     // TODO: right now this will assign arbitrary defenders, change this so that we make sure they can attack air/ground
 
     // if there's nothing left to defend, clear the squad

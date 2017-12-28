@@ -41,6 +41,7 @@ public:
     int         getNumMineralWorkers();
     int         getNumGasWorkers();
     bool        isWorkerScout(const sc2::Unit * worker) const;
+	bool		isRepairWorker(const sc2::Unit * worker) const;
     bool        isFree(const sc2::Unit * worker) const;
     bool        isBuilder(const sc2::Unit * worker) const;
 
@@ -50,6 +51,8 @@ public:
     const sc2::Unit * getClosestDepot(const sc2::Unit * worker) const;
     const sc2::Unit * getGasWorker(const sc2::Unit * refinery) const;
     const sc2::Unit * getClosestMineralWorkerTo(const sc2::Point2D & pos) const;
+
+	const sc2::Unit * getClosestCombatWorkerTo(const sc2::Point2D & pos) const;
 
 	const size_t WorkerManager::isBeingRepairedNum(const sc2::Unit * unit) const;
 };

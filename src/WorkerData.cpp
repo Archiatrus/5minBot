@@ -337,13 +337,22 @@ void WorkerData::checkRepairedBuildings()
 			targetsToDelete.push_back(m.first);
 			continue;
 		}
-		auto workers = m.second;
+		sc2::Units & workers = m.second;
+		sc2::Units deadWorker;
 		for (auto & w : workers)
 		{
 			if (w->orders.empty() || w->orders.front().target_unit_tag != m.first)
 			{
 				m_bot.Actions()->UnitCommand(w, sc2::ABILITY_ID::EFFECT_REPAIR, target);
 			}
+			if (!w->is_alive)
+			{
+				deadWorker.push_back(w);
+			}
+		}
+		for (auto & deadW : deadWorker)
+		{
+			workers.erase(std::remove(workers.begin(), workers.end(), deadW), workers.end());
 		}
 	}
 	for (auto & t : targetsToDelete)
