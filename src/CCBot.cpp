@@ -7,7 +7,7 @@
 int lvl85 = 0;
 int lvl1000 = 0;
 int lvl10000 = 0;
-
+double maxStepTime = -1.0;
 bool useAutoObserver = false;
 CCBot::CCBot()
     : m_map(*this)
@@ -74,6 +74,10 @@ void CCBot::OnStep()
 	}
 
 	double ms = t.getElapsedTimeInMilliSec();
+	if (maxStepTime < ms)
+	{
+		maxStepTime = ms;
+	}
 	if (ms > 85)
 	{
 		++lvl85;
@@ -86,6 +90,7 @@ void CCBot::OnStep()
 			}
 		}
 	}
+	Debug()->DebugTextOut("Step time: "+std::to_string(int(std::round(ms)))+"ms\nMax step time: "+std::to_string(int(std::round(maxStepTime)))+"ms\n"+ "#Frames >    85ms: " + std::to_string(lvl85) + "\n#Frames >  1000ms: " + std::to_string(lvl1000) + "\n#Frames > 10000ms: " + std::to_string(lvl10000), sc2::Point2D(0.85, 0.6), sc2::Colors::White,16);
 	//std::cout << "#Frames > 85: " << lvl85 << ",    #Frames > 1000: " << lvl1000 << ",    #Frames > 10000ms: " << lvl10000 << std::endl;
 	Debug()->SendDebug();
 }

@@ -385,7 +385,7 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
         if (defenderToAdd)
         {
             m_squadData.assignUnitToSquad(defenderToAdd, defenseSquad);
-            defendersAdded++;
+            defendersAdded+=2;
         }
         else
         {

@@ -318,12 +318,24 @@ const BaseLocation * Hitsquad::getSavePosition() const
 	std::vector<const BaseLocation *> bases = m_bot.Bases().getBaseLocations();
 	//We use that it is ordered
 	std::map<float, const BaseLocation *> allTargetBases;
-	int numBasesEnemy = 0;
+	sc2::Units enemyUnits = m_bot.UnitInfo().getUnits(Players::Enemy);
 	for (auto & base : bases)
 	{
 		if (!(base->isOccupiedByPlayer(Players::Enemy)))
 		{
-			allTargetBases[Util::Dist(base->getBasePosition(), pos)] = base;
+			bool actuallySafe = true;
+			for (auto & enemy:enemyUnits)
+			{
+				if (Util::Dist(enemy->pos, base->getBasePosition()) < 15.0f)
+				{
+					actuallySafe = false;
+					break;
+				}
+			}
+			if (actuallySafe)
+			{
+				allTargetBases[Util::Dist(base->getBasePosition(), pos)] = base;
+			}
 		}
 	}
 	return allTargetBases.begin()->second;
