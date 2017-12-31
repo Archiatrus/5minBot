@@ -1,7 +1,7 @@
 # 5minBot
 The Terran bot plays macro bio. A notable feature is the drop play.
 
-At this stage the bot has a fair chance to beat the inbuilt insane AI (sc2::Difficulty::CheatInsane). It won season 3 of the SC2 AI ladder.
+At this stage the bot has a fair chance to beat the inbuilt insane AI (sc2::Difficulty::CheatInsane). It won season 3 of the Starcraft 2 AI Ladder.
 
 The bot is always work in progress. I can not guarantee that it is always working as intended. The list of known bugs is still growing with every game...
 

@@ -428,7 +428,15 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 		return false;
 	}
 	sc2::Point2D posEnd = target->getPosition() + 1.2*(target->getPosition() - target->getBasePosition());
-	float dist = Util::Dist(posEnd, m_medivac->pos);
+	float dist;
+	if (m_wayPoints.empty())
+	{
+		dist = Util::Dist(posEnd, m_medivac->pos);
+	}
+	else
+	{
+		dist = Util::Dist(m_wayPoints.back(), m_medivac->pos);
+	}
 	if (dist>0.75f)
 	{
 		//Save boost for escape
@@ -438,7 +446,6 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 		}
 		if (m_wayPoints.empty())
 		{
-			float test = Util::Dist(posEnd, m_medivac->pos);
 			//WAYPOINTS QUEUE
 			sc2::Point2D posStart = m_medivac->pos;
 			int margin = 5;
@@ -493,8 +500,8 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 			m_wayPoints.push(posB);
 			m_wayPoints.push(posEnd);
 		}
-		//If we found a new base
-		else if (Util::Dist(m_wayPoints.back(),posEnd)>10.0f)
+		//If we found a new base and it is closer to us then our current target
+		else if (Util::Dist(m_wayPoints.back(),posEnd)>10.0f && Util::Dist(m_medivac->pos, posEnd)<Util::Dist(m_medivac->pos, m_wayPoints.back()))
 		{
 			while (!m_wayPoints.empty())
 			{

@@ -11,7 +11,7 @@ const float cameraJumpThreshold = 30.0f;
 //When is a unit near a start location
 const float nearStartLocationDistance = 50.0f;
 
-CameraModule::CameraModule(sc2::Agent & bot):
+CameraModule::CameraModule(sc2::Client & bot):
 	m_bot(bot), 
 	cameraMoveTime(150),
 	cameraMoveTimeMin(50),

@@ -4,7 +4,7 @@
 class CameraModule
 {
 private:
-  sc2::Agent m_bot;
+  sc2::Client m_bot;
   std::vector<int> m_playerIDs;
   std::map<int,sc2::Point2D> m_startLocations;
 
@@ -46,7 +46,7 @@ private:
   const int getOpponent(const int player) const;
 
 public:
-	CameraModule(sc2::Agent & bot);
+	CameraModule(sc2::Client & bot);
 	void onStart();
 	void onFrame();
 	void moveCameraUnitCreated(const sc2::Unit * unit);
