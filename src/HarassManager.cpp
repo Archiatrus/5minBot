@@ -95,6 +95,7 @@ void Hitsquad::checkForCasualties()
 void Hitsquad::harass(const BaseLocation * target)
 {
 	checkForCasualties();
+	std::cout << m_status << std::endl;
 	switch (m_status)
 	{
 	case HarassStatus::Idle:
@@ -162,8 +163,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		}
 		if (m_medivac->cargo_space_taken > 0)
 		{
-			sc2::Point2D unloadPos = m_medivac->pos;
-			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, unloadPos, m_bot);
+			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, m_medivac, m_bot);
 		}
 		const sc2::Unit * targetUnit = getTargetMarines(targetUnits);
 		if (targetUnit)
@@ -252,10 +252,13 @@ void Hitsquad::harass(const BaseLocation * target)
 		break;
 	}
 	case HarassStatus::Refueling:
+		while (!m_wayPoints.empty())
+		{
+			m_wayPoints.pop();
+		}
 		if (m_medivac->cargo_space_taken > 0)
 		{
-			sc2::Point2D unloadPos = m_medivac->pos;
-			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, unloadPos, m_bot);
+			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, m_medivac, m_bot);
 		}
 		else
 		{

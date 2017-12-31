@@ -25,6 +25,7 @@ namespace Micro
     void SmartAbility       (const sc2::Unit * builder,   const sc2::AbilityID & abilityID, CCBot & bot);
 	void SmartAbility(sc2::Units units, const sc2::AbilityID & abilityID, CCBot & bot, bool queue=false);
 	void SmartAbility		(const sc2::Unit * unit, const sc2::AbilityID & abilityID, const sc2::Point2D pos, CCBot & bot, bool queue=false);
+	void SmartAbility(const sc2::Unit * unit, const sc2::AbilityID & abilityID, const sc2::Unit * target, CCBot & bot, bool queue=false);
 	void SmartCDAbility		(const sc2::Unit * builder, const sc2::AbilityID & abilityID, CCBot & bot,bool queue=false);
 	void SmartCDAbility(sc2::Units units, const sc2::AbilityID & abilityID, CCBot & bot, bool queue=false);
 	void SmartStim(sc2::Units units, CCBot & bot, bool queue=false);

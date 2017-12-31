@@ -343,6 +343,15 @@ void Micro::SmartAbility(const sc2::Unit * unit, const sc2::AbilityID & abilityI
 	}
 }
 
+void Micro::SmartAbility(const sc2::Unit * unit, const sc2::AbilityID & abilityID, const sc2::Unit * target, CCBot & bot, bool queue)
+{
+	BOT_ASSERT(unit != nullptr, "Builder is null");
+	if (unit->orders.empty() || unit->orders.back().ability_id != abilityID || unit->orders.back().target_unit_tag != target->tag)
+	{
+		bot.Actions()->UnitCommand(unit, abilityID, target, queue);
+	}
+}
+
 
 void Micro::SmartCDAbility(const sc2::Unit * builder, const sc2::AbilityID & abilityID, CCBot & bot, bool queue)
 {

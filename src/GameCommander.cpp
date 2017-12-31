@@ -166,7 +166,7 @@ void GameCommander::setHarassUnits()
 	
 	//We only start harassing after we saw two bases. Otherwise it might be a 1 base allin
 	//We should only can add units, if we are not under attack or if we have many units already
-	if (m_bot.Bases().getOccupiedBaseLocations(Players::Self).size()>1 && ( !m_combatCommander.underAttack() || m_validUnits.size() > manyUnits))
+	if (m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size()>1 || ( !m_combatCommander.underAttack() || m_validUnits.size() > manyUnits))
 	{
 		sc2::Units enemies = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
 		for (auto & unit : m_validUnits)

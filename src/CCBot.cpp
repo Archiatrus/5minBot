@@ -8,6 +8,7 @@ int lvl85 = 0;
 int lvl1000 = 0;
 int lvl10000 = 0;
 
+bool useAutoObserver = false;
 CCBot::CCBot()
     : m_map(*this)
     , m_bases(*this)
@@ -48,8 +49,10 @@ void CCBot::OnGameStart()
 
     m_gameCommander.onStart();
 
-	
-	m_cameraModule.onStart();
+	if (useAutoObserver)
+	{
+		m_cameraModule.onStart();
+	}
 
 	Actions()->SendChat("gl hf (business)");
 }
@@ -65,7 +68,10 @@ void CCBot::OnStep()
     m_workers.onFrame();
     m_strategy.onFrame();
     m_gameCommander.onFrame();
-	m_cameraModule.onFrame();
+	if (useAutoObserver)
+	{
+		m_cameraModule.onFrame();
+	}
 
 	double ms = t.getElapsedTimeInMilliSec();
 	if (ms > 85)
@@ -87,7 +93,10 @@ void CCBot::OnStep()
 void CCBot::OnUnitCreated(const sc2::Unit * unit)
 {
 	m_gameCommander.onUnitCreate(unit);
-	m_cameraModule.moveCameraUnitCreated(unit);
+	if (useAutoObserver)
+	{
+		m_cameraModule.moveCameraUnitCreated(unit);
+	}
 }
 
 void CCBot::OnBuildingConstructionComplete(const sc2::Unit * unit)
