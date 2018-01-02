@@ -102,17 +102,25 @@
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>C:\Users\D\Desktop\SC2 AI\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\Users\D\Desktop\SC2 AI\s2client-api\project\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\..\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\..\s2client-api\project\include;$(IncludePath)</IncludePath>
     <SourcePath>C:\Users\D\Desktop\SC2 AI\5min\src\AutoObserver;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>C:\Users\D\Desktop\SC2 AI\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\Users\D\Desktop\SC2 AI\s2client-api\project\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\..\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\..\s2client-api\project\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">
-    <LibraryPath>C:\Users\D\Desktop\SC2 AI\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\Users\D\Desktop\SC2 AI\s2client-api\project\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\..\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\..\s2client-api\project\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <IncludePath>$(SolutionDir)..\..\s2client-api\project\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\..\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <IncludePath>$(SolutionDir)..\..\s2client-api\project\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\..\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
