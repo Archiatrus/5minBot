@@ -648,13 +648,21 @@ const sc2::Unit * Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 	for (auto & baseMap : orderedBases)
 	{
 		const std::vector<const sc2::Unit *> mineralPatches = baseMap.second->getMinerals();
+		std::map<int, const sc2::Unit *> orderedMinerals;
 		for (auto & mineralPatch : mineralPatches)
 		{
+			int distance = bot.Map().getGroundDistance(mineralPatch->pos, pos);
+
 			//Bad things happen if it is not alive or just snapshot
-			if (mineralPatch->is_alive && mineralPatch->display_type==sc2::Unit::DisplayType::Visible && mineralPatch->mineral_contents > 200)
+			if (mineralPatch->is_alive && mineralPatch->display_type == sc2::Unit::DisplayType::Visible && mineralPatch->mineral_contents > 200)
 			{
-				return mineralPatch;
+				orderedMinerals[distance] = mineralPatch;
 			}
+			
+		}
+		for (auto & mineralPatch : orderedMinerals )
+		{
+			return mineralPatch.second;
 		}
 	}
 	//If we get till here its time to long distance mine
