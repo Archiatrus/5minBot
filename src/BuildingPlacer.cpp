@@ -15,6 +15,14 @@ void BuildingPlacer::onStart()
     m_reserveMap = std::vector< std::vector<bool> >(m_bot.Map().width(), std::vector<bool>(m_bot.Map().height(), false));
 }
 
+void BuildingPlacer::onFrame()
+{
+	//for (auto & pos : m_buildLocationIterator)
+	//{
+	//	for (auto & )
+	//}
+}
+
 bool BuildingPlacer::isInResourceBox(int x, int y) const
 {
     return false;

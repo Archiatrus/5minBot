@@ -25,6 +25,8 @@ public:
 
     void onStart();
 
+	void onFrame();
+
     // determines whether we can build at a given location
     bool			canBuildHere(int bx, int by, const Building & b) const;
     bool			canBuildHereWithSpace(int bx, int by, const Building & b, int buildDist) const;
