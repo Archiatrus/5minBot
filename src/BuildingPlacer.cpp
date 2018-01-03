@@ -4,6 +4,8 @@
 #include "Building.h"
 #include "Util.h"
 
+
+
 BuildingPlacer::BuildingPlacer(CCBot & bot)
     : m_bot(bot)
 {
@@ -13,14 +15,42 @@ BuildingPlacer::BuildingPlacer(CCBot & bot)
 void BuildingPlacer::onStart()
 {
     m_reserveMap = std::vector< std::vector<bool> >(m_bot.Map().width(), std::vector<bool>(m_bot.Map().height(), false));
+	
+	sc2::Point2D buildingSeedPosition = m_bot.Bases().getBuildingLocation();
+	const std::vector<sc2::Point2D> & closestToBuilding = m_bot.Map().getClosestTilesTo(buildingSeedPosition);
+	std::vector<sc2::Point2D>::const_iterator it(closestToBuilding.begin());
+	buildingPlace depots(buildingSeedPosition,4,Building(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT,sc2::Point2D()),it);
+	buildingPlace production(buildingSeedPosition, 9, Building(sc2::UNIT_TYPEID::TERRAN_BARRACKS, sc2::Point2D()), it);
+	m_buildLocationTester.push_back(depots);
+	m_buildLocationTester.push_back(production);
 }
 
 void BuildingPlacer::onFrame()
 {
-	//for (auto & pos : m_buildLocationIterator)
-	//{
-	//	for (auto & )
-	//}
+	expandBuildingTesterOnce();
+}
+
+void BuildingPlacer::expandBuildingTesterOnce()
+{
+	for (auto & buildLocationTester : m_buildLocationTester)
+	{
+		//We don't need to find another base right next to the old one
+		if (buildLocationTester.m_canBuildHere || buildLocationTester.m_footPrintArea==25)
+		{
+			continue;
+		}
+		auto & pos = *(buildLocationTester.m_it);
+
+		if (canBuildHereWithSpace((int)pos.x, (int)pos.y, buildLocationTester.m_building, m_bot.Config().BuildingSpacing))
+		{
+			buildLocationTester.m_canBuildHere = true;
+		}
+		else
+		{
+			++buildLocationTester.m_it;
+		}
+		break;
+	}
 }
 
 bool BuildingPlacer::isInResourceBox(int x, int y) const
@@ -137,13 +167,21 @@ sc2::Point2D BuildingPlacer::getBuildLocationNear(const Building & b, int buildD
 
     // get the precomputed vector of tile positions which are sorted closes to this location
 	const std::vector<sc2::Point2D> & closestToBuilding = m_bot.Map().getClosestTilesTo(b.desiredPosition);
-
-	std::vector<sc2::Point2D>::const_iterator it(closestToBuilding.begin());
-	const float pointHash = b.desiredPosition.x * 1000 + b.desiredPosition.y;
+	std::vector<sc2::Point2D>::const_iterator it;
 	const int buildingHash = Util::GetUnitTypeWidth(b.type, m_bot)*Util::GetUnitTypeHeight(b.type, m_bot);
-	if (m_buildLocationIterator.count(pointHash) > 0 && m_buildLocationIterator.at(pointHash).count(buildingHash) > 0)
+	buildingPlace newBuildingPlace(b.desiredPosition, buildingHash,b);
+	auto idx = std::find(m_buildLocationTester.begin(), m_buildLocationTester.end(),newBuildingPlace);
+
+	if (idx == m_buildLocationTester.end())
 	{
-		it = m_buildLocationIterator.at(pointHash).at(buildingHash);
+
+		it = closestToBuilding.begin();
+		m_buildLocationTester.push_back(newBuildingPlace);
+		idx = std::prev(m_buildLocationTester.end());
+	}
+	else
+	{
+		it = idx->m_it;
 	}
     // iterate through the list until we've found a suitable location
     for (; it != closestToBuilding.end(); ++it)
@@ -154,7 +192,12 @@ sc2::Point2D BuildingPlacer::getBuildLocationNear(const Building & b, int buildD
         {
             double ms = t.getElapsedTimeInMilliSec();
             //printf("Building Placer Took %d iterations, lasting %lf ms @ %lf iterations/ms, %lf setup ms\n", (int)i, ms, (i / ms), ms1);
-			m_buildLocationIterator[pointHash][buildingHash] = it;
+			idx->m_it = it;
+			//We are building a building. So all building places are invalid
+			for (auto & buildPlace : m_buildLocationTester)
+			{
+				buildPlace.m_canBuildHere = false;
+			}
             return pos;
         }
     }

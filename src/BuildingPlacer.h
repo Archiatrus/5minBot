@@ -6,12 +6,42 @@
 class CCBot;
 class BaseLocation;
 
+struct buildingPlace
+{
+	const sc2::Point2D m_seed;
+	const int m_footPrintArea;
+	const Building m_building;
+	std::vector<sc2::Point2D>::const_iterator m_it;
+	bool m_canBuildHere;
+
+	buildingPlace(const sc2::Point2D seed, const int footPrintArea, const Building building) :m_seed(seed), m_footPrintArea(footPrintArea), m_building(building), m_it(std::vector<sc2::Point2D>::const_iterator()), m_canBuildHere(false)
+	{
+	}
+
+	buildingPlace(const sc2::Point2D seed, const int footPrintArea, const Building building, const std::vector<sc2::Point2D>::const_iterator it) :m_seed(seed), m_footPrintArea(footPrintArea), m_building(building), m_it(it), m_canBuildHere(false)
+	{
+	}
+
+	const bool operator==(const buildingPlace & rhs) const
+	{
+		if (this->m_seed.x == rhs.m_seed.x
+			&& this->m_seed.y == rhs.m_seed.y
+			&& this->m_footPrintArea == rhs.m_footPrintArea)
+		{
+			return true;
+		}
+		return false;
+	}
+};
+
 class BuildingPlacer
 {
     CCBot & m_bot;
 
     std::vector< std::vector<bool> > m_reserveMap;
-	std::map<const float,std::map<const int, std::vector<sc2::Point2D>::const_iterator>> m_buildLocationIterator;
+	std::vector<buildingPlace> m_buildLocationTester;
+
+	void expandBuildingTesterOnce();
     // queries for various BuildingPlacer data
     bool			buildable(const Building & b, int x, int y) const;
     bool			isReserved(int x, int y) const;
