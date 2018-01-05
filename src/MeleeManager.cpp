@@ -45,7 +45,7 @@ void MeleeManager::assignTargets(const std::vector<const sc2::Unit *> & targets)
                 Micro::SmartMove(meleeUnit, fleeTo, m_bot);
             }
             // if there are targets
-            else if (!meleeUnitTargets.empty())
+            else if (!meleeUnitTargets.empty() || (order.getType() == SquadOrderTypes::Defend && Util::Dist(meleeUnit->pos, order.getPosition()) > 7))
             {
                 // find the best target for this meleeUnit
                 const sc2::Unit * target = getTarget(meleeUnit, meleeUnitTargets);
@@ -124,7 +124,7 @@ bool MeleeManager::meleeUnitShouldRetreat(const sc2::Unit * meleeUnit, const std
 	for (auto & target : targets)
 	{
 		//It would be better if we have one sacrifice.
-		if (target->unit_type.ToType() == sc2::UNIT_TYPEID::ZERG_BANELING && Util::Dist(meleeUnit->pos, target->pos) <= 3.2f)
+		if (target->unit_type.ToType() == sc2::UNIT_TYPEID::ZERG_BANELING && Util::Dist(meleeUnit->pos, target->pos) <= 5.2f)
 		{
 			return true;
 		}

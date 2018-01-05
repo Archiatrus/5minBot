@@ -3,7 +3,7 @@
 #include "Util.h"
 
 //Only harass if we have more than
-const int manyUnits = 50;
+const int manyUnits = 25;
 
 
 GameCommander::GameCommander(CCBot & bot)

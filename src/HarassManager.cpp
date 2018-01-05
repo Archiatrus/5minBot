@@ -95,7 +95,6 @@ void Hitsquad::checkForCasualties()
 void Hitsquad::harass(const BaseLocation * target)
 {
 	checkForCasualties();
-	std::cout << m_status << std::endl;
 	switch (m_status)
 	{
 	case HarassStatus::Idle:

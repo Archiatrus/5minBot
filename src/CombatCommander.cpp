@@ -238,7 +238,7 @@ void CombatCommander::updateDefenseSquads()
                 continue;
             }
 
-            if (Util::Dist(basePosition,unit->pos)<25)
+            if (Util::Dist(basePosition,unit->pos)<20)
             {
                 enemyUnitsInRegion.push_back(unit);
             }
@@ -393,8 +393,8 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
         }
     }
 	// Emergency draft of workers
-	
-	while (defendersNeeded > defendersAdded && m_bot.UnitInfo().getNumCombatUnits(Players::Self)<20)
+	const sc2::Units Bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_BUNKER }));
+	while (defendersNeeded > defendersAdded && m_bot.UnitInfo().getNumCombatUnits(Players::Self)<20 && (Bunker.empty() || Bunker.front()->cargo_space_taken==0))
 	{
 		const sc2::Unit * workerDefender = findClosestWorkerTo(m_bot.Workers().getMineralWorkers(),defenseSquad.getSquadOrder().getPosition());
 

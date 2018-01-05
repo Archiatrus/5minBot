@@ -810,7 +810,7 @@ void ProductionManager::defaultMacro()
 			}
 		}
 	}
-	if (minerals >= 100 && m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Zerg && numBases == 2)
+	if (minerals >= 100 && m_bot.GetPlayerRace(Players::Enemy) != sc2::Race::Terran && numBases == 2)
 	{
 		const sc2::Units Bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_BUNKER }));
 		if (Bunker.size() + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BUNKER) < 1)
@@ -877,11 +877,23 @@ void ProductionManager::defaultMacro()
 	//On one base save a little to get an expansion
 	if (numBases == 1)
 	{
-		if (Depots.size() > 0 && minerals >= 150 && numRax + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 1)
+		if (m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
 		{
-			m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
-			//std::cout << "Barracks" << std::endl;
-			return;
+			if (Depots.size() > 0 && minerals >= 150 && numRax + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 1)
+			{
+				m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
+				//std::cout << "Barracks" << std::endl;
+				return;
+			}
+		}
+		else
+		{
+			if (Depots.size() > 0 && minerals >= 150 && numRax + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 1)
+			{
+				m_queue.queueItem(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
+				//std::cout << "Barracks" << std::endl;
+				return;
+			}
 		}
 	}
 	//On two bases let the starport start first

@@ -9,6 +9,8 @@ int lvl1000 = 0;
 int lvl10000 = 0;
 double maxStepTime = -1.0;
 bool useAutoObserver = false;
+
+
 CCBot::CCBot()
     : m_map(*this)
     , m_bases(*this)
@@ -17,7 +19,7 @@ CCBot::CCBot()
     , m_gameCommander(*this)
     , m_strategy(*this)
     , m_techTree(*this)
-	, m_cameraModule(*this)
+	, m_cameraModule(this)
 {
     
 }

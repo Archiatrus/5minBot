@@ -13,7 +13,7 @@ node::node(sc2::Point2D pos,int status, float travelCost,float heuristicToGoal,f
 }
 
 pathPlaning::pathPlaning(CCBot & bot, sc2::Point2D startPos, sc2::Point2D endPos, int mapWidth, int mapHeight, float stepSize):m_bot(bot),m_endPos(endPos),m_stepSize(stepSize),
-	m_map(std::vector<std::vector<std::shared_ptr<node>>>(float(m_bot.Map().width()) / stepSize, std::vector<std::shared_ptr<node>>(float(m_bot.Map().height()) / stepSize, nullptr)))
+	m_map(std::vector<std::vector<std::shared_ptr<node>>>(float(m_bot.Map().width()+1) / stepSize, std::vector<std::shared_ptr<node>>(float(m_bot.Map().height()+1) / stepSize, nullptr)))
 {
 	int status = 0;
 	float travelCost = 0.0f;

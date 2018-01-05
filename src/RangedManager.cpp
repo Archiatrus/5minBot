@@ -77,6 +77,8 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 		Micro::SmartMove(rangedUnits, m_bot.Bases().getRallyPoint(),m_bot);
 		return;
 	}
+
+	
     // for each Unit
     for (auto rangedUnit : rangedUnits)
     {
@@ -88,10 +90,6 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 			//medivacs have the other ranged units as target.
 			if (rangedUnit->unit_type == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 			{
-				if (rangedUnit->is_selected)
-				{
-					int a = 1;
-				}
 				//find the nearest enemy
 				const sc2::Unit * nearestEnemy = nullptr;
 				float minDistTarget = std::numeric_limits<float>::max();
@@ -147,13 +145,26 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 			}
 			else
 			{
-				if (!rangedUnitTargets.empty())
+				if (!rangedUnitTargets.empty() || (order.getType() == SquadOrderTypes::Defend && Util::Dist(rangedUnit->pos, order.getPosition()) > 7))
 				{
 					const sc2::Unit * target = getTarget(rangedUnit, rangedUnitTargets);
 					//if something goes wrong
 					if (!target)
 					{
 						return;
+					}
+					if (order.getType() == SquadOrderTypes::Defend)
+					{
+						const sc2::Units Bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_BUNKER }));
+						if (Bunker.size() > 0 && Bunker.front()->cargo_space_taken != Bunker.front()->cargo_space_max)
+						{
+							if (Util::Dist(rangedUnit->pos, Bunker.front()->pos) < Util::Dist(rangedUnit->pos, target->pos))
+							{
+								Micro::SmartRightClick(rangedUnit, Bunker.front(), m_bot);
+								m_bot.Actions()->UnitCommand(Bunker.front(), sc2::ABILITY_ID::LOAD, rangedUnit);
+								continue;
+							}
+						}
 					}
 					//We only need fancy micro if we are in range and its not a building
 					if (!m_bot.Data(target->unit_type).isBuilding && Util::Dist(rangedUnit->pos, target->pos) <= Util::GetAttackRange(rangedUnit->unit_type.ToType(), m_bot))

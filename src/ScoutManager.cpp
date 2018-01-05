@@ -93,14 +93,22 @@ void ScoutManager::checkOurBases()
 		//}
 		//if there are combat units that can not attack us, but we can attack them, attack the weakest one.
 		//else 
-		if (attackEnemyCombat(enemyUnitsInSight))
+		if (!Util::IsWorkerType(m_scoutUnit->unit_type.ToType()))
 		{
+			if (attackEnemyCombat(enemyUnitsInSight))
+			{
 
-		}
-		//if there are workers attack the weakest one
-		else if (attackEnemyWorker(enemyUnitsInSight))
-		{
+			}
+			//if there are workers attack the weakest one
+			else if (attackEnemyWorker(enemyUnitsInSight))
+			{
 
+			}
+			// otherwise keep moving to the enemy base location
+			else
+			{
+				Micro::SmartMove(m_scoutUnit, m_targetBasesPositions.front(), m_bot);
+			}
 		}
 		// otherwise keep moving to the enemy base location
 		else
@@ -381,7 +389,7 @@ bool ScoutManager::enemyTooClose(std::vector<const sc2::Unit *> enemyUnitsInSigh
 	for (auto & unit : enemyUnitsInSight)
 	{
 		float dist = Util::Dist(unit->pos, m_scoutUnit->pos);
-		if (dist < Util::GetUnitTypeRange(unit->unit_type, m_bot) + 1) //+1 to be on the save side
+		if (dist < Util::GetUnitTypeRange(unit->unit_type, m_bot) + 2) //+1 to be on the save side
 		{
 			enemyPositions.push_back(unit);
 			tooClose = true;
