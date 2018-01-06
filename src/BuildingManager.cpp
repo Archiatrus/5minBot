@@ -127,6 +127,7 @@ void BuildingManager::assignWorkersToUnassignedBuildings()
 // STEP 3: ISSUE CONSTRUCTION ORDERS TO ASSIGN BUILDINGS AS NEEDED
 void BuildingManager::constructAssignedBuildings()
 {
+	std::vector<Building> toRemove;
     for (auto & b : m_buildings)
     {
         if (b.status != BuildingStatus::Assigned)
@@ -166,6 +167,8 @@ void BuildingManager::constructAssignedBuildings()
             // it must be the case that something was in the way of building
             else if (b.buildCommandGiven)
             {
+				Micro::SmartMove(b.builderUnit, b.finalPosition,m_bot);
+				Micro::SmartBuild(b.builderUnit, b.type, b.finalPosition, m_bot);
                 // TODO: in here is where we would check to see if the builder died on the way
                 //       or if things are taking too long, or the build location is no longer valid
             }
@@ -174,6 +177,21 @@ void BuildingManager::constructAssignedBuildings()
                 // if it's a refinery, the build command has to be on the geyser unit tag
                 if (Util::IsRefineryType(b.type))
                 {
+					//For some reason the bot sometimes wants to build two refinaries at once
+					bool doubleRefinary = false;
+					for (auto & b2 : m_buildings)
+					{
+						if (b2.buildCommandGiven && Util::IsRefineryType(b2.type))
+						{
+							doubleRefinary = true;
+							break;
+						}
+					}
+					if (doubleRefinary)
+					{
+						toRemove.push_back(b);
+						continue;
+					}
                     // first we find the geyser at the desired location
                     const sc2::Unit * geyser = nullptr;
                     for (auto unit : m_bot.Observation()->GetUnits())
@@ -208,6 +226,7 @@ void BuildingManager::constructAssignedBuildings()
             }
         }
     }
+	removeBuildings(toRemove);
 }
 
 // STEP 4: UPDATE DATA STRUCTURES FOR BUILDINGS STARTING CONSTRUCTION

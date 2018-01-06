@@ -137,6 +137,10 @@ void ScoutManager::setWorkerScout(const sc2::Unit * tag)
 
 void ScoutManager::setScout(const sc2::Unit * tag)
 {
+	if (m_scoutUnit && Util::IsWorkerType(m_scoutUnit->unit_type))
+	{
+		m_bot.Workers().finishedWithWorker(m_scoutUnit);
+	}
 	m_numScouts=1;
 	m_scoutUnit = tag;
 }

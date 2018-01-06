@@ -314,6 +314,7 @@ bool Util::IsCombatUnitType(const sc2::UnitTypeID & type, CCBot & bot)
 
     if (type == sc2::UNIT_TYPEID::ZERG_EGG) { return false; }
     if (type == sc2::UNIT_TYPEID::ZERG_LARVA) { return false; }
+	if (type == sc2::UNIT_TYPEID::PROTOSS_ADEPTPHASESHIFT) { return false; }
 
     return true;
 }

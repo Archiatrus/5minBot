@@ -13,6 +13,7 @@ class ProductionManager
 
     BuildingManager m_buildingManager;
     BuildOrderQueue m_queue;
+	std::deque<BuildOrderItem> m_newQueue;
 
 	int m_weapons;
 	int m_armor;
@@ -25,7 +26,7 @@ class ProductionManager
     bool    canMakeNow(const sc2::Unit * producer, const BuildType & type);
     bool    detectBuildOrderDeadlock();
     void    setBuildOrder(const BuildOrder & buildOrder);
-    void    create(const sc2::Unit * producer, BuildOrderItem & item);
+    void    create(BuildOrderItem item);
     void    manageBuildOrderQueue();
     int     getFreeMinerals();
     int     getFreeGas();

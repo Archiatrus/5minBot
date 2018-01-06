@@ -53,6 +53,11 @@ void Squad::onFrame()
         //_detectorManager.setUnitClosestToEnemy(unitClosestToEnemy());
         //_detectorManager.execute(_order);
     }
+	for (auto & unit : m_units)
+	{
+		m_bot.Debug()->DebugSphereOut(unit->pos, 0.5f);
+		m_bot.Debug()->DebugTextOut(m_order.getStatus(), unit->pos);
+	}
 }
 
 bool Squad::isEmpty() const
