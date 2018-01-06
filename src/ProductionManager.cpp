@@ -22,7 +22,6 @@ std::vector<int> abilityCount = { 0,0,0,0,0,0,0 };
 ProductionManager::ProductionManager(CCBot & bot)
 	: m_bot(bot)
 	, m_buildingManager(bot)
-	, m_queue(bot)
 	, m_weapons(0)
 	, m_armor(0)
 	, m_scoutRequested(false)
@@ -31,21 +30,9 @@ ProductionManager::ProductionManager(CCBot & bot)
 
 }
 
-void ProductionManager::setBuildOrder(const BuildOrder & buildOrder)
-{
-    m_queue.clearAll();
-
-    for (size_t i(0); i<buildOrder.size(); ++i)
-    {
-        m_queue.queueAsLowestPriority(buildOrder[i], true);
-    }
-}
-
-
 void ProductionManager::onStart()
 {
     m_buildingManager.onStart();
-    setBuildOrder(m_bot.Strategy().getOpeningBookBuildOrder());
 }
 
 void ProductionManager::onFrame()
@@ -89,84 +76,8 @@ void ProductionManager::manageBuildOrderQueue()
 		create(m_newQueue.front());
 		m_newQueue.pop_front();
 	}
-	//We only build buildings here
-	/*
-    // if there is nothing in the queue, oh well
-    if (m_queue.isEmpty())
-    {
-        return;
-    }
-
-    // the current item to be used
-    BuildOrderItem & currentItem = m_queue.getHighestPriorityItem();
-
-    // while there is still something left in the queue
-    while (!m_queue.isEmpty())
-    {
-        // this is the unit which can produce the currentItem
-        const sc2::Unit * producer = getProducer(currentItem.type);
-
-        // check to see if we can make it right now
-        bool canMake = canMakeNow(producer, currentItem.type);
-
-        // TODO: if it's a building and we can't make it yet, predict the worker movement to the location
-
-        // if we can make the current item
-        if (producer && canMake)
-        {
-            // create it and remove it from the _queue
-            create(producer, currentItem);
-            m_queue.removeCurrentHighestPriorityItem();
-
-            // don't actually loop around in here
-            break;
-        }
-        // otherwise, if we can skip the current item
-        else if (m_queue.canSkipItem())
-        {
-            // skip it
-            m_queue.skipItem();
-
-            // and get the next one
-            currentItem = m_queue.getNextHighestPriorityItem();
-        }
-        else
-        {
-            // so break out
-            break;
-        }
-    }
-	*/
 }
 
-const sc2::Unit * ProductionManager::getClosestUnitToPosition(const std::vector<const sc2::Unit *> & units, sc2::Point2D closestTo)
-{
-    if (units.size() == 0)
-    {
-        return 0;
-    }
-
-    // if we don't care where the unit is return the first one we have
-    if (closestTo.x == 0 && closestTo.y == 0)
-    {
-        return units[0];
-    }
-
-    const sc2::Unit * closestUnit = nullptr;
-    double minDist = std::numeric_limits<double>::max();
-
-    for (auto & unit : units)
-    {
-        double distance = Util::Dist(unit->pos, closestTo);
-        if (!closestUnit || distance < minDist)
-        {
-            closestUnit = unit;
-            minDist = distance;
-        }
-    }
-
-    return closestUnit;
-}
 
 // this function will check to see if all preconditions are met and then create a unit
 void ProductionManager::create(BuildOrderItem item)
@@ -229,13 +140,7 @@ void ProductionManager::create(BuildOrderItem item)
 bool ProductionManager::detectBuildOrderDeadlock()
 {
     // TODO: detect build order deadlocks here
-
-	//I really dont get it
-	if (m_queue.size() == 2 && m_queue[0].type.getUnitTypeID() == sc2::UNIT_TYPEID::TERRAN_REFINERY&&m_queue[1].type.getUnitTypeID() == sc2::UNIT_TYPEID::TERRAN_REFINERY)
-	{
-		m_queue.removeHighestPriorityItem();
-	}
-		return false;
+	return false;
 }
 
 int ProductionManager::getFreeMinerals()
@@ -250,29 +155,6 @@ int ProductionManager::getFreeMinerals()
 int ProductionManager::getFreeGas()
 {
     return m_bot.Observation()->GetVespene() - m_buildingManager.getReservedGas();
-}
-
-void ProductionManager::drawProductionInformation()
-{
-    if (!m_bot.Config().DrawProductionInfo)
-    {
-        return;
-    }
-
-    std::stringstream ss;
-    ss << "Production Information\n\n";
-
-    for (auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
-    {
-        if (unit->build_progress < 1.0f)
-        {
-            //ss << sc2::UnitTypeToName(unit.unit_type) << " " << unit.build_progress << "\n";
-        }
-    }
-
-    ss << m_queue.getQueueInformation();
-
-    m_bot.Map().drawTextScreen(sc2::Point2D(0.01f, 0.01f), ss.str(), sc2::Colors::Yellow);
 }
 
 void ProductionManager::defaultMacro()
@@ -875,5 +757,38 @@ int ProductionManager::buildingsFinished(sc2::Units units)
 
 int ProductionManager::howOftenQueued(sc2::UnitTypeID type)
 {
-	return m_queue.howOftenQueued(type) + m_buildingManager.getNumBuildingsQueued(type);
+	int numQueued = 0;
+	for (auto & b : m_newQueue)
+	{
+		if (b.type.getUnitTypeID() == type)
+		{
+			numQueued++;
+		}
+	}
+	return numQueued + m_buildingManager.getNumBuildingsQueued(type);
+}
+
+
+void ProductionManager::drawProductionInformation()
+{
+	if (!m_bot.Config().DrawProductionInfo)
+	{
+		return;
+	}
+
+	std::stringstream ss;
+	ss << "Production Information\n";
+
+	for (auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
+	{
+		if (unit->build_progress < 1.0f)
+		{
+			//ss << sc2::UnitTypeToName(unit.unit_type) << " " << unit.build_progress << "\n";
+		}
+	}
+	for (auto & b : m_newQueue)
+	{
+		ss << "\n" << sc2::UnitTypeToName(b.type.getUnitTypeID());
+	}
+	m_bot.Map().drawTextScreen(sc2::Point2D(0.01f, 0.01f), ss.str(), sc2::Colors::Yellow);
 }

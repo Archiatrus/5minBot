@@ -12,7 +12,6 @@ class ProductionManager
     CCBot &       m_bot;
 
     BuildingManager m_buildingManager;
-    BuildOrderQueue m_queue;
 	std::deque<BuildOrderItem> m_newQueue;
 
 	int m_weapons;
