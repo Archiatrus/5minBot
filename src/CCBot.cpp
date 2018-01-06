@@ -8,7 +8,7 @@ int lvl85 = 0;
 int lvl1000 = 0;
 int lvl10000 = 0;
 double maxStepTime = -1.0;
-bool useAutoObserver = false;
+bool useAutoObserver = true;
 
 
 CCBot::CCBot()

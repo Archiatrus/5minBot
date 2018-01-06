@@ -10,14 +10,12 @@ const int BUILDING = 3;
 
 //it seems to many commands confuse the engine
 int defaultMacroSleep = 0;
-const int defaultMacroSleepMax = 20;
+const int defaultMacroSleepMax = 5;
 bool canBuildAddon = true;
 int addonCounter = 0;
 const int maxAddonCounter = 5;
 
 bool startedResearch = false;
-
-std::vector<int> abilityCount = { 0,0,0,0,0,0,0 };
 
 ProductionManager::ProductionManager(CCBot & bot)
 	: m_bot(bot)

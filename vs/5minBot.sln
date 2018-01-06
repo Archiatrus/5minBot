@@ -10,6 +10,7 @@ Global
 		Debug|x64 = Debug|x64
 		MinSizeRel|x64 = MinSizeRel|x64
 		Release|x64 = Release|x64
+		ReleaseExe|x64 = ReleaseExe|x64
 		RelWithDebInfo|x64 = RelWithDebInfo|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
@@ -19,6 +20,8 @@ Global
 		{D4AC5062-8BEA-46D8-9231-57241C214F1C}.MinSizeRel|x64.Build.0 = MinSizeRel|x64
 		{D4AC5062-8BEA-46D8-9231-57241C214F1C}.Release|x64.ActiveCfg = Release|x64
 		{D4AC5062-8BEA-46D8-9231-57241C214F1C}.Release|x64.Build.0 = Release|x64
+		{D4AC5062-8BEA-46D8-9231-57241C214F1C}.ReleaseExe|x64.ActiveCfg = ReleaseExe|x64
+		{D4AC5062-8BEA-46D8-9231-57241C214F1C}.ReleaseExe|x64.Build.0 = ReleaseExe|x64
 		{D4AC5062-8BEA-46D8-9231-57241C214F1C}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
 		{D4AC5062-8BEA-46D8-9231-57241C214F1C}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
 	EndGlobalSection
