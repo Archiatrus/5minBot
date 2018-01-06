@@ -167,7 +167,6 @@ void BuildingManager::constructAssignedBuildings()
             // it must be the case that something was in the way of building
             else if (b.buildCommandGiven)
             {
-				Micro::SmartMove(b.builderUnit, b.finalPosition,m_bot);
 				Micro::SmartBuild(b.builderUnit, b.type, b.finalPosition, m_bot);
                 // TODO: in here is where we would check to see if the builder died on the way
                 //       or if things are taking too long, or the build location is no longer valid

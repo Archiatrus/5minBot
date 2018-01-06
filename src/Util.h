@@ -65,6 +65,8 @@ namespace Util
     float DistSq(const sc2::Point2D & p1, const sc2::Point2D & p2);
 	float DistSq(const sc2::Point2D & p1);
     
+	sc2::Point3D get3DPoint(sc2::Point2D pos, CCBot & bot);
+
     // Kevin-provided helper functions
     void    VisualizeGrids(const sc2::ObservationInterface* obs, sc2::DebugInterface* debug);
     float   TerainHeight(const sc2::GameInfo& info, const sc2::Point2D& point);

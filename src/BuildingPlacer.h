@@ -11,14 +11,15 @@ struct buildingPlace
 	const sc2::Point2D m_seed;
 	const int m_footPrintArea;
 	const Building m_building;
-	std::vector<sc2::Point2D>::const_iterator m_it;
+	const std::vector<sc2::Point2D> m_closestTiles;
+	int m_idx;
 	bool m_canBuildHere;
 
-	buildingPlace(const sc2::Point2D seed, const int footPrintArea, const Building building) :m_seed(seed), m_footPrintArea(footPrintArea), m_building(building), m_it(std::vector<sc2::Point2D>::const_iterator()), m_canBuildHere(false)
+	buildingPlace(const sc2::Point2D seed, const int footPrintArea, const Building building, const std::vector<sc2::Point2D> closestTiles) :m_seed(seed), m_footPrintArea(footPrintArea), m_building(building), m_closestTiles(closestTiles), m_idx(0), m_canBuildHere(false)
 	{
 	}
 
-	buildingPlace(const sc2::Point2D seed, const int footPrintArea, const Building building, const std::vector<sc2::Point2D>::const_iterator it) :m_seed(seed), m_footPrintArea(footPrintArea), m_building(building), m_it(it), m_canBuildHere(false)
+	buildingPlace(const sc2::Point2D seed, const int footPrintArea) :m_seed(seed), m_footPrintArea(footPrintArea)
 	{
 	}
 

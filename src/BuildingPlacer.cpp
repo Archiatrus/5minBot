@@ -17,10 +17,9 @@ void BuildingPlacer::onStart()
     m_reserveMap = std::vector< std::vector<bool> >(m_bot.Map().width(), std::vector<bool>(m_bot.Map().height(), false));
 	
 	sc2::Point2D buildingSeedPosition = m_bot.Bases().getBuildingLocation();
-	const std::vector<sc2::Point2D> & closestToBuilding = m_bot.Map().getClosestTilesTo(buildingSeedPosition);
-	std::vector<sc2::Point2D>::const_iterator it(closestToBuilding.begin());
-	buildingPlace depots(buildingSeedPosition,4,Building(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT,sc2::Point2D()),it);
-	buildingPlace production(buildingSeedPosition, 9, Building(sc2::UNIT_TYPEID::TERRAN_BARRACKS, sc2::Point2D()), it);
+	const std::vector<sc2::Point2D> closestToBuilding = m_bot.Map().getClosestTilesTo(buildingSeedPosition);
+	buildingPlace depots(buildingSeedPosition,4,Building(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT,sc2::Point2D()), closestToBuilding);
+	buildingPlace production(buildingSeedPosition, 9, Building(sc2::UNIT_TYPEID::TERRAN_BARRACKS, sc2::Point2D()), closestToBuilding);
 	m_buildLocationTester.push_back(depots);
 	m_buildLocationTester.push_back(production);
 }
@@ -34,12 +33,19 @@ void BuildingPlacer::expandBuildingTesterOnce()
 {
 	for (auto & buildLocationTester : m_buildLocationTester)
 	{
+		if (buildLocationTester.m_canBuildHere && buildLocationTester.m_footPrintArea != 25)
+		{
+			auto newPos = buildLocationTester.m_closestTiles[buildLocationTester.m_idx];
+			auto newPos3D = Util::get3DPoint(newPos, m_bot);
+			m_bot.Debug()->DebugSphereOut(newPos3D, std::sqrt(buildLocationTester.m_footPrintArea)/2.0,sc2::Colors::Yellow);
+			m_bot.Debug()->DebugTextOut(sc2::UnitTypeToName(buildLocationTester.m_building.type), newPos);
+		}
 		//We don't need to find another base right next to the old one
 		if (buildLocationTester.m_canBuildHere || buildLocationTester.m_footPrintArea==25)
 		{
 			continue;
 		}
-		auto & pos = *(buildLocationTester.m_it);
+		sc2::Point2D pos = buildLocationTester.m_closestTiles[buildLocationTester.m_idx];
 
 		if (canBuildHereWithSpace((int)pos.x, (int)pos.y, buildLocationTester.m_building, m_bot.Config().BuildingSpacing))
 		{
@@ -47,7 +53,7 @@ void BuildingPlacer::expandBuildingTesterOnce()
 		}
 		else
 		{
-			++buildLocationTester.m_it;
+			++buildLocationTester.m_idx;
 		}
 		break;
 	}
@@ -166,33 +172,27 @@ sc2::Point2D BuildingPlacer::getBuildLocationNear(const Building & b, int buildD
     t.start();
 
     // get the precomputed vector of tile positions which are sorted closes to this location
-	const std::vector<sc2::Point2D> & closestToBuilding = m_bot.Map().getClosestTilesTo(b.desiredPosition);
-	std::vector<sc2::Point2D>::const_iterator it;
-	const int buildingHash = Util::GetUnitTypeWidth(b.type, m_bot)*Util::GetUnitTypeHeight(b.type, m_bot);
-	buildingPlace newBuildingPlace(b.desiredPosition, buildingHash,b);
-	auto idx = std::find(m_buildLocationTester.begin(), m_buildLocationTester.end(),newBuildingPlace);
 
+	const int buildingHash = Util::GetUnitTypeWidth(b.type, m_bot)*Util::GetUnitTypeHeight(b.type, m_bot);
+	buildingPlace newBuildingPlacePrototype(b.desiredPosition, buildingHash);
+	auto idx = std::find(m_buildLocationTester.begin(), m_buildLocationTester.end(),newBuildingPlacePrototype);
 	if (idx == m_buildLocationTester.end())
 	{
-
-		it = closestToBuilding.begin();
+		const std::vector<sc2::Point2D> & closestToBuilding = m_bot.Map().getClosestTilesTo(b.desiredPosition);
+		buildingPlace newBuildingPlace(b.desiredPosition, buildingHash,b, closestToBuilding);
 		m_buildLocationTester.push_back(newBuildingPlace);
 		idx = std::prev(m_buildLocationTester.end());
 	}
-	else
-	{
-		it = idx->m_it;
-	}
     // iterate through the list until we've found a suitable location
-    for (; it != closestToBuilding.end(); ++it)
-    {
-        auto & pos = *it;
+	for (int i = idx->m_idx; i != idx->m_closestTiles.size(); ++i)
+	{
+		sc2::Point2D pos = idx->m_closestTiles[i];
 
         if (canBuildHereWithSpace((int)pos.x, (int)pos.y, b, buildDist))
         {
             double ms = t.getElapsedTimeInMilliSec();
             //printf("Building Placer Took %d iterations, lasting %lf ms @ %lf iterations/ms, %lf setup ms\n", (int)i, ms, (i / ms), ms1);
-			idx->m_it = it;
+			idx->m_idx = i;
 			//We are building a building. So all building places are invalid
 			for (auto & buildPlace : m_buildLocationTester)
 			{

@@ -724,3 +724,9 @@ const sc2::UpgradeID Util::abilityIDToUpgradeID(const sc2::ABILITY_ID id)
 	}
 	return 0;
 }
+
+
+sc2::Point3D Util::get3DPoint(const sc2::Point2D pos,CCBot & bot)
+{
+	return sc2::Point3D(pos.x,pos.y,bot.Observation()->TerrainHeight(pos));
+}
