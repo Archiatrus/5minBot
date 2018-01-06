@@ -73,12 +73,15 @@ void WorkerManager::handleGasWorkers()
 	{
 		for (auto &gasWorker : m_workerData.getGasWorkers())
 		{
-			setMineralWorker(gasWorker);
-			minWorker++;
-			gasWorker--;
-			if (minWorker > 14)
+			if (gasWorker->orders.empty() || gasWorker->orders[0].ability_id != sc2::ABILITY_ID::HARVEST_RETURN)
 			{
-				return;
+				setMineralWorker(gasWorker);
+				minWorker++;
+				gasWorker--;
+				if (minWorker > 14)
+				{
+					return;
+				}
 			}
 		}
 	}
@@ -88,7 +91,7 @@ void WorkerManager::handleGasWorkers()
 		for (auto unit : m_bot.UnitInfo().getUnits(Players::Self))
 		{
 			// if that unit is a refinery
-			if (Util::IsRefinery(unit) && Util::IsCompleted(unit))
+			if (Util::IsRefinery(unit) && Util::IsCompleted(unit) && unit->vespene_contents > 0 )
 			{
 				// get the number of workers currently assigned to it
 				int numAssigned = m_workerData.getNumAssignedWorkers(unit);
