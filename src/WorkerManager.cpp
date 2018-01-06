@@ -114,7 +114,7 @@ void WorkerManager::handleMineralWorkers()
 {
 	const sc2::Units CommandCenters = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER , sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND , sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS }));
 	// for each unit we have
-	for (auto unit : CommandCenters)
+	for (auto & unit : CommandCenters)
 	{
 		// if that unit is a townhall
 		if (Util::IsCompleted(unit))

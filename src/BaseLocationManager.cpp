@@ -321,20 +321,7 @@ const std::set<const BaseLocation *> & BaseLocationManager::getOccupiedBaseLocat
 }
 const sc2::Point2D BaseLocationManager::getBuildingLocation() const
 {
-	sc2::Point2D homePos = m_bot.GetStartLocation();
-	const std::set<const BaseLocation *> bases = getOccupiedBaseLocations(Players::Self);
-	float minDist = std::numeric_limits<float>::max();
-	sc2::Point2D buildPos = homePos;
-	for (auto & base : bases)
-	{
-		float dist = Util::Dist(base->getBasePosition(), homePos);
-		if (minDist > dist)
-		{
-			minDist = dist;
-			buildPos = base->getBasePosition();
-		}
-	}
-	return buildPos;
+	return m_bot.GetStartLocation();
 }
 const sc2::Point2D BaseLocationManager::getRallyPoint() const
 {

@@ -601,6 +601,10 @@ bool Util::canHitMe(const sc2::Unit * me, const sc2::Unit * hitter, CCBot & bot)
 	{
 		return false;
 	}
+	if (me->unit_type.ToType() == sc2::UNIT_TYPEID::PROTOSS_COLOSSUS)
+	{
+		return true;
+	}
 	std::vector<sc2::Weapon> weapons = bot.Observation()->GetUnitTypeData()[hitter->unit_type].weapons;
 	if (me->is_flying)
 	{
