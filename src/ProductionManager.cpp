@@ -729,7 +729,7 @@ void ProductionManager::defaultMacro()
 	{
 		if (numRax==1 || numStarport>0)
 		{
-			if (minerals >= 150 && numRax + 2 + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 3 * numBases - 2)
+			if (minerals >= 150 && numRax + 2 + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 3 * numBases - 2 && numRax<=12)
 			{
 				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
 				std::cout << "Barracks" << std::endl;

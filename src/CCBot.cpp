@@ -9,10 +9,14 @@ int lvl1000 = 0;
 int lvl10000 = 0;
 double maxStepTime = -1.0;
 
+
+
 #ifndef LADDEREXE
+bool useDebug = true;
 bool useAutoObserver = false;
 #else
-bool useAutoObserver = true;
+bool useDebug = false;
+bool useAutoObserver = false;
 #endif
 
 
@@ -46,7 +50,6 @@ void CCBot::OnGameStart()
             m_playerRace[Players::Enemy] = playerInfo.race_requested;
         }
     }
-    
     m_techTree.onStart();
     m_strategy.onStart();
     m_map.onStart();
@@ -55,12 +58,10 @@ void CCBot::OnGameStart()
     m_workers.onStart();
 
     m_gameCommander.onStart();
-
 	if (useAutoObserver)
 	{
 		m_cameraModule.onStart();
 	}
-
 	Actions()->SendChat("gl hf (business)");
 }
 
@@ -69,17 +70,18 @@ void CCBot::OnStep()
 	Timer t;
 	t.start();
 	Control()->GetObservation();
+
     m_map.onFrame();
     m_unitInfo.onFrame();
     m_bases.onFrame();
     m_workers.onFrame();
     m_strategy.onFrame();
     m_gameCommander.onFrame();
+
 	if (useAutoObserver)
 	{
 		m_cameraModule.onFrame();
 	}
-
 	double ms = t.getElapsedTimeInMilliSec();
 	if (maxStepTime < ms)
 	{
@@ -99,7 +101,11 @@ void CCBot::OnStep()
 	}
 	Debug()->DebugTextOut("Step time: "+std::to_string(int(std::round(ms)))+"ms\nMax step time: "+std::to_string(int(std::round(maxStepTime)))+"ms\n"+ "#Frames >    85ms: " + std::to_string(lvl85) + "\n#Frames >  1000ms: " + std::to_string(lvl1000) + "\n#Frames > 10000ms: " + std::to_string(lvl10000), sc2::Point2D(0.85, 0.6), sc2::Colors::White,16);
 	//std::cout << "#Frames > 85: " << lvl85 << ",    #Frames > 1000: " << lvl1000 << ",    #Frames > 10000ms: " << lvl10000 << std::endl;
-	Debug()->SendDebug();
+	if (useDebug)
+	{
+		Debug()->SendDebug();
+	}
+
 }
 
 void CCBot::OnUnitCreated(const sc2::Unit * unit)

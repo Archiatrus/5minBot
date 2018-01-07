@@ -169,7 +169,7 @@ void Squad::addUnitsToMicroManagers()
 
 const bool Squad::needsToRegroup()
 {
-	if (m_order.getType() != SquadOrderTypes::Attack || m_units.size()==0 || m_bot.Observation()->GetFoodUsed()==200)
+	if (m_order.getType() != SquadOrderTypes::Attack || m_units.size()==0 || m_bot.Observation()->GetFoodUsed()>=180)
 	{
 		return false;
 	}
