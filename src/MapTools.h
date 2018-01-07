@@ -87,5 +87,6 @@ public:
     const std::vector<sc2::Point2D> & getClosestTilesTo(const sc2::Point2D & pos) const;
 	const sc2::Point2D getClosestWalkableTo(const sc2::Point2D & pos) const;
 	const sc2::Point2D MapTools::getClosestBorderPoint(sc2::Point2D pos,int margin) const;
+	const bool hasPocketBase() const;
 };
 

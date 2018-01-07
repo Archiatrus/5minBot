@@ -151,7 +151,14 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 					//if something goes wrong
 					if (!target)
 					{
-						return;
+						//This can happen with vikings
+						if (Util::Dist(rangedUnit->pos, order.getPosition()) > 4)
+						{
+							// move to it
+							m_bot.Map().drawLine(rangedUnit->pos, order.getPosition(), sc2::Colors::White);
+							moveToPosition.push_back(rangedUnit);
+						}
+						continue;
 					}
 					if (order.getType() == SquadOrderTypes::Defend)
 					{
@@ -184,16 +191,12 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 					if (Util::Dist(rangedUnit->pos, order.getPosition()) > 4)
 					{
 						// move to it
+						m_bot.Map().drawLine(rangedUnit->pos, order.getPosition(), sc2::Colors::White);
 						moveToPosition.push_back(rangedUnit);
 					}
 				}
 			}
 		}
-
-        if (m_bot.Config().DrawUnitTargetInfo)
-        {
-            // TODO: draw the line to the unit's target
-        }
     }
 	//Grouped by target attack command
 	for (auto & t : targetsAttackedBy)

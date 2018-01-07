@@ -95,6 +95,12 @@ void GameCommander::setScoutUnits()
 		// if it exists
 		if (shouldSendInitialScout())
 		{
+			//We only need the worker scout for pocket bases
+			if (!m_bot.Map().hasPocketBase())
+			{
+				m_initialScoutSet = true;
+				return;
+			}
 			// grab the closest worker to the supply provider to send to scout
 			const sc2::Unit * workerScout = m_bot.Workers().getClosestMineralWorkerTo(m_bot.GetStartLocation());
 
@@ -136,7 +142,7 @@ bool GameCommander::shouldSendInitialScout()
 	switch (m_bot.GetPlayerRace(Players::Enemy))
 	{
 	case sc2::Race::Terran:  return false;
-	case sc2::Race::Protoss: return m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER, false) == 2;
+	case sc2::Race::Protoss: return m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKS, true) == 1;
 	case sc2::Race::Zerg:    return false;
 	default: return false;
 	}

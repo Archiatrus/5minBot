@@ -101,31 +101,50 @@ void ProductionManager::create(BuildOrderItem item)
 	}
 	else if (item.type.getUnitTypeID().ToType() == sc2::UNIT_TYPEID::TERRAN_BUNKER)
 	{
-		//Just because of pocket bases-.-
-		sc2::Point2D bPoint(m_bot.Bases().getRallyPoint());
-		const BaseLocation * homeBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
-		//Any enemy base is fine
-		std::vector<const BaseLocation *> startBases = m_bot.Bases().getStartingBaseLocations();
-		const BaseLocation * enemyBase;
-		//size = 0 should not happen but who knows
-		if (startBases.size() >= 2)
+		sc2::Point2D bPoint;
+		if (m_bot.Map().hasPocketBase())
 		{
-			if (startBases[0]->isPlayerStartLocation(Players::Self))
+			const sc2::Point2D startPoint(m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getBasePosition());
+			const float startHeight = m_bot.Observation()->TerrainHeight(startPoint);
+			sc2::Point2D currentPos(startPoint);
+			const sc2::Point2D enemyPoint = m_bot.Observation()->GetGameInfo().enemy_start_locations.front();
+			BaseLocation * const enemyBaseLocation = m_bot.Bases().getBaseLocation(enemyPoint);
+			const float stepSize = 2.0;
+			const sc2::Point2D xMove(stepSize, 0.0f);
+			const sc2::Point2D yMove(0.0f, stepSize);
+			int currentWalkingDistance = enemyBaseLocation->getGroundDistance(startPoint);
+			bool foundNewPos = true;
+			while (foundNewPos)
 			{
-				enemyBase = startBases[1];
-			}
-			else
-			{
-				enemyBase = startBases[0];
-			}
-			if (homeBase && enemyBase)
-			{
-				sc2::Point2D homeBasePos = homeBase->getBasePosition();
-				if (enemyBase->getGroundDistance(bPoint) > enemyBase->getGroundDistance(homeBasePos))
+				foundNewPos = false;
+				for (float i = -1.0f; i <= 1.0f; ++i)
 				{
-					bPoint = homeBasePos;
+					for (float j = -1.0f; j <= 1.0f; ++j)
+					{
+						if (i != 0.0f || j != 0.0f)
+						{
+							const sc2::Point2D newPos = currentPos + i*xMove + j*yMove;
+							const int dist = enemyBaseLocation->getGroundDistance(newPos);
+							if (m_bot.Observation()->TerrainHeight(newPos) == startHeight && dist > 0 && currentWalkingDistance > dist)
+							{
+								currentWalkingDistance = dist;
+								currentPos = newPos;
+								foundNewPos = true;
+								break;
+							}
+						}
+					}
+					if (foundNewPos)
+					{
+						break;
+					}
 				}
 			}
+			bPoint = currentPos;
+		}
+		else
+		{
+			bPoint = m_bot.Bases().getRallyPoint();
 		}
 		m_buildingManager.addBuildingTask(item.type.getUnitTypeID(), bPoint);
 	}

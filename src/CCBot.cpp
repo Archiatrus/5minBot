@@ -8,7 +8,12 @@ int lvl85 = 0;
 int lvl1000 = 0;
 int lvl10000 = 0;
 double maxStepTime = -1.0;
+
+#ifndef LADDEREXE
+bool useAutoObserver = false;
+#else
 bool useAutoObserver = true;
+#endif
 
 
 CCBot::CCBot()

@@ -581,11 +581,21 @@ void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos,int player)
 			allTargetBases[base->getGroundDistance(pos)] = base;
 		}
 	}
-	for (auto & base : allTargetBases)
+	if (Util::IsWorkerType(m_scoutUnit->unit_type))
 	{
-		if (m_targetBasesPositions.size() < numBasesEnemy || numBasesEnemy==0)
+		auto & baseIt = allTargetBases.begin();
+		baseIt++;
+		m_targetBasesPositions.push(baseIt->second->getBasePosition());
+	}
+	else
+	{
+		for (auto & base : allTargetBases)
 		{
-			m_targetBasesPositions.push(base.second->getBasePosition());
+
+			if (m_targetBasesPositions.size() < numBasesEnemy || numBasesEnemy == 0)
+			{
+				m_targetBasesPositions.push(base.second->getBasePosition());
+			}
 		}
 	}
 }

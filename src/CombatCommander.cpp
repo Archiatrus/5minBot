@@ -238,7 +238,7 @@ void CombatCommander::updateDefenseSquads()
                 continue;
             }
 
-            if (Util::Dist(basePosition,unit->pos)<20)
+            if (Util::Dist(basePosition,unit->pos)<25)
             {
                 enemyUnitsInRegion.push_back(unit);
             }

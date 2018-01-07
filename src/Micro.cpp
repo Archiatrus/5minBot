@@ -35,27 +35,35 @@ void Micro::SmartAttackUnit(const sc2::Units & attacker, const sc2::Unit * targe
 	BOT_ASSERT(target != nullptr, "Target is null");
 	//if we are already attack it, we do not need to spam the attack
 	sc2::Units attackerThatNeedToAttack;
+	sc2::Units attackerThatNeedToAttackMove;
 	for (auto iter = attacker.begin(); iter != attacker.end(); ++iter)
 	{
 		if (!((*iter)->orders.empty()) && (*iter)->orders.back().target_unit_tag == target->tag)
 		{
 			continue;
 		}
-		/* ToDO: Attack move if you have to move and weapon cd is 0
 		//Distance to target
 		float dist = Util::Dist((*iter)->pos, target->pos);
 		//Our range
 		float range = Util::GetAttackRange((*iter)->unit_type, bot);
 		if ((*iter)->weapon_cooldown == 0.0f && dist>range + 0.5f)
 		{
-			SmartAttackUnit(rangedUnit, target, bot, queue);
+			bot.Map().drawLine((*iter)->pos, target->pos, sc2::Colors::Yellow);
+			attackerThatNeedToAttackMove.push_back((*iter));
 		}
-		*/
-		attackerThatNeedToAttack.push_back((*iter));
+		else
+		{
+			bot.Map().drawLine((*iter)->pos, target->pos, sc2::Colors::Red);
+			attackerThatNeedToAttack.push_back((*iter));
+		}
 	}
 	if (attackerThatNeedToAttack.size() > 0)
 	{
-		bot.Actions()->UnitCommand(attacker, sc2::ABILITY_ID::ATTACK_ATTACK, target, queue);
+		bot.Actions()->UnitCommand(attackerThatNeedToAttack, sc2::ABILITY_ID::ATTACK_ATTACK, target, queue);
+	}
+	if (attackerThatNeedToAttackMove.size() > 0)
+	{
+		bot.Actions()->UnitCommand(attackerThatNeedToAttackMove, sc2::ABILITY_ID::ATTACK_ATTACK, target->pos, queue);
 	}
 }
 
@@ -288,7 +296,7 @@ void Micro::SmartKiteTarget(const sc2::Unit * rangedUnit, const sc2::Unit * targ
 		{
 			targetPos += (dist - (range - 1))*RunningVector;
 		}
-		else if (Util::GetAttackRange(target->unit_type, bot) >= range || !Util::canHitMe(rangedUnit,target,bot))
+		else if (Util::GetAttackRange(target->unit_type, bot) >= range || (!Util::canHitMe(rangedUnit,target,bot) && rangedUnit->unit_type.ToType()!=sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER))
 		{
 			targetPos = target->pos;
 		}

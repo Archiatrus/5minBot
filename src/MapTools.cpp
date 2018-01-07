@@ -388,7 +388,7 @@ const std::vector<sc2::Point2D> & MapTools::getClosestTilesTo(const sc2::Point2D
 const sc2::Point2D MapTools::getClosestWalkableTo(const sc2::Point2D & pos) const
 {
 	// get the precomputed vector of tile positions which are sorted closes to this location
-	auto & closestToPos = m_bot.Map().getClosestTilesTo(pos);
+	auto & closestToPos = getClosestTilesTo(pos);
 
 
 	// iterate through the list until we've found a suitable location
@@ -570,4 +570,28 @@ const sc2::Point2D MapTools::getClosestBorderPoint(sc2::Point2D pos,int margin) 
 			}
 		}
 	}
+}
+
+const bool MapTools::hasPocketBase() const
+{
+	const BaseLocation * homeBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
+	const BaseLocation * firstExe = nullptr;
+	int minDistance = std::numeric_limits<int>::max();
+	for (auto & base : m_bot.Bases().getBaseLocations())
+	{
+		auto tile = base->getDepotPosition();
+		int distanceFromHome = homeBase->getGroundDistance(tile);
+		if (distanceFromHome <= 0)
+		{
+			continue;
+		}
+		if (!firstExe || distanceFromHome < minDistance)
+		{
+			firstExe = base;
+			minDistance = distanceFromHome;
+		}
+	}
+	//Any enemy base is fine
+	const sc2::Point2D enemyStartBase = m_bot.Observation()->GetGameInfo().enemy_start_locations.front();
+	return homeBase->getGroundDistance(enemyStartBase) <= firstExe->getGroundDistance(enemyStartBase);
 }
