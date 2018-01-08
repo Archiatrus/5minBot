@@ -90,3 +90,5 @@ public:
 	const bool hasPocketBase() const;
 };
 
+
+extern bool useDebug;

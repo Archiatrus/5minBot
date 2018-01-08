@@ -210,6 +210,10 @@ bool MapTools::isValid(const sc2::Point2D & pos) const
 
 void MapTools::draw() const
 {
+	if (!useDebug)
+	{
+		return;
+	}
     sc2::Point2D camera = m_bot.Observation()->GetCameraPos();
     for (float x = camera.x - 16.0f; x < camera.x + 16.0f; ++x)
     {
@@ -243,16 +247,28 @@ void MapTools::draw() const
 
 void MapTools::drawLine(float x1, float y1, float x2, float y2, const sc2::Color & color) const
 {
+	if (!useDebug)
+	{
+		return;
+	}
     m_bot.Debug()->DebugLineOut(sc2::Point3D(x1, y1, m_maxZ + 0.2f), sc2::Point3D(x2, y2, m_maxZ + 0.2f), color);
 }
 
 void MapTools::drawLine(const sc2::Point2D & min, const sc2::Point2D max, const sc2::Color & color) const
 {
+	if (!useDebug)
+	{
+		return;
+	}
     m_bot.Debug()->DebugLineOut(sc2::Point3D(min.x, min.y, m_maxZ + 0.2f), sc2::Point3D(max.x, max.y, m_maxZ + 0.2f), color);
 }
 
 void MapTools::drawSquare(float x1, float y1, float x2, float y2, const sc2::Color & color) const
 {
+	if (!useDebug)
+	{
+		return;
+	}
     m_bot.Debug()->DebugLineOut(sc2::Point3D(x1, y1, m_maxZ), sc2::Point3D(x1+1, y1, m_maxZ), color);
     m_bot.Debug()->DebugLineOut(sc2::Point3D(x1, y1, m_maxZ), sc2::Point3D(x1, y1+1, m_maxZ), color);
     m_bot.Debug()->DebugLineOut(sc2::Point3D(x1+1, y1+1, m_maxZ), sc2::Point3D(x1+1, y1, m_maxZ), color);
@@ -261,31 +277,55 @@ void MapTools::drawSquare(float x1, float y1, float x2, float y2, const sc2::Col
 
 void MapTools::drawBox(float x1, float y1, float x2, float y2, const sc2::Color & color) const
 {
+	if (!useDebug)
+	{
+		return;
+	}
     m_bot.Debug()->DebugBoxOut(sc2::Point3D(x1, y1, m_maxZ + 2.0f), sc2::Point3D(x2, y2, m_maxZ-5.0f), color);
 }
 
 void MapTools::drawBox(const sc2::Point2D & min, const sc2::Point2D max, const sc2::Color & color) const
 {
+	if (!useDebug)
+	{
+		return;
+	}
     m_bot.Debug()->DebugBoxOut(sc2::Point3D(min.x, min.y, m_maxZ + 2.0f), sc2::Point3D(max.x, max.y, m_maxZ-5.0f), color);
 }
 
 void MapTools::drawSphere(const sc2::Point2D & pos, float radius, const sc2::Color & color) const
 {
+	if (!useDebug)
+	{
+		return;
+	}
     m_bot.Debug()->DebugSphereOut(sc2::Point3D(pos.x, pos.y, m_maxZ), radius, color);
 }
 
 void MapTools::drawSphere(float x, float y, float radius, const sc2::Color & color) const
 {
+	if (!useDebug)
+	{
+		return;
+	}
     m_bot.Debug()->DebugSphereOut(sc2::Point3D(x, y, m_maxZ), radius, color);
 }
 
 void MapTools::drawText(const sc2::Point2D & pos, const std::string & str, const sc2::Color & color) const
 {
+	if (!useDebug)
+	{
+		return;
+	}
     m_bot.Debug()->DebugTextOut(str, sc2::Point3D(pos.x, pos.y, m_maxZ), color);
 }
 
 void MapTools::drawTextScreen(const sc2::Point2D & pos, const std::string & str, const sc2::Color & color) const
 {
+	if (!useDebug)
+	{
+		return;
+	}
     m_bot.Debug()->DebugTextOut(str, pos, color);
 }
 

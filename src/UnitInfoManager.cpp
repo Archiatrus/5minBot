@@ -4,6 +4,7 @@
 
 #include <sstream>
 
+
 UnitInfoManager::UnitInfoManager(CCBot & bot)
     : m_bot(bot)
 {
@@ -105,6 +106,10 @@ static std::string GetAbilityText(sc2::AbilityID ability_id) {
 
 void UnitInfoManager::drawSelectedUnitDebugInfo()
 {
+	if (!useDebug)
+	{
+		return;
+	}
     const sc2::Unit * unit = nullptr;
     for (auto u : m_bot.Observation()->GetUnits()) 
     {
@@ -237,6 +242,10 @@ size_t UnitInfoManager::getUnitTypeCount(int player, sc2::UnitTypeID type, bool 
 
 void UnitInfoManager::drawUnitInformation(float x,float y) const
 {
+	if (!useDebug)
+	{
+		return;
+	}
     if (!m_bot.Config().DrawEnemyUnitInfo)
     {
         //return;

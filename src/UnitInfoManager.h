@@ -44,3 +44,5 @@ public:
 	const int UnitInfoManager::getNumCombatUnits(int player) const;
 
 };
+
+extern bool useDebug;

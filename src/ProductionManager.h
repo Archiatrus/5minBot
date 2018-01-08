@@ -20,11 +20,11 @@ class ProductionManager
 	bool m_scoutRequested;
 	bool m_vikingRequested;
 
-    const sc2::Unit * getClosestUnitToPosition(const std::vector<const sc2::Unit *> & units, sc2::Point2D closestTo);
-    bool    meetsReservedResources(const BuildType & type);
-    bool    canMakeNow(const sc2::Unit * producer, const BuildType & type);
+    //const sc2::Unit * getClosestUnitToPosition(const std::vector<const sc2::Unit *> & units, sc2::Point2D closestTo);
+    //bool    meetsReservedResources(const BuildType & type);
+    //bool    canMakeNow(const sc2::Unit * producer, const BuildType & type);
     bool    detectBuildOrderDeadlock();
-    void    setBuildOrder(const BuildOrder & buildOrder);
+    //void    setBuildOrder(const BuildOrder & buildOrder);
     void    create(BuildOrderItem item);
     void    manageBuildOrderQueue();
     int     getFreeMinerals();
@@ -43,7 +43,7 @@ public:
 
 	void defaultMacro();
 
-    const sc2::Unit * getProducer(const BuildType & type, sc2::Point2D closestTo = sc2::Point2D(0, 0));
+    //const sc2::Unit * getProducer(const BuildType & type, sc2::Point2D closestTo = sc2::Point2D(0, 0));
 
 	void requestScout();
 	void requestVikings();

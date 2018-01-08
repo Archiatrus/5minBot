@@ -75,4 +75,7 @@ namespace Util
 	const sc2::Unit * getClostestMineral(sc2::Point2D pos, CCBot & bot);
 	std::vector<sc2::UNIT_TYPEID> getMineralTypes();
 	const sc2::UpgradeID abilityIDToUpgradeID(const sc2::ABILITY_ID id);
+
 };
+
+extern bool useDebug;

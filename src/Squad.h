@@ -58,3 +58,5 @@ public:
     const std::set<const sc2::Unit *> & getUnits() const;
     const SquadOrder & getSquadOrder() const;
 };
+
+extern bool useDebug;

@@ -4,6 +4,7 @@
 #include "CCBot.h"
 #include <iostream>
 
+
 Util::IsUnit::IsUnit(sc2::UNIT_TYPEID type) 
     : m_type(type) 
 {
@@ -437,6 +438,10 @@ float Util::TerainHeight(const sc2::GameInfo & info, const sc2::Point2D & point)
 
 void Util::VisualizeGrids(const sc2::ObservationInterface * obs, sc2::DebugInterface * debug) 
 {
+	if (!useDebug)
+	{
+		return;
+	}
     const sc2::GameInfo& info = obs->GetGameInfo();
 
     sc2::Point2D camera = obs->GetCameraPos();
@@ -456,7 +461,6 @@ void Util::VisualizeGrids(const sc2::ObservationInterface * obs, sc2::DebugInter
         }
     }
 
-    debug->SendDebug();
 }
 
 std::string Util::GetStringFromRace(const sc2::Race & race)

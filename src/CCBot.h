@@ -57,6 +57,9 @@ public:
 	const ProductionManager & Production();
 };
 
+extern bool useDebug;
+extern bool useAutoObserver;
+
 __declspec(dllexport) void *CreateNewAgent(); // Returns a pointer to a class deriving from sc2::Agent
 
 __declspec(dllexport) const char *GetAgentName(); // Returns a string identifier for the agent name

@@ -73,3 +73,5 @@ public:
 	void			freeTiles();
     sc2::Point2D	getRefineryPosition();
 };
+
+extern bool useDebug;

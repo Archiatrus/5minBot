@@ -53,6 +53,10 @@ void Squad::onFrame()
         //_detectorManager.setUnitClosestToEnemy(unitClosestToEnemy());
         //_detectorManager.execute(_order);
     }
+	if (!useDebug)
+	{
+		return;
+	}
 	for (auto & unit : m_units)
 	{
 		m_bot.Debug()->DebugSphereOut(unit->pos, 0.5f);

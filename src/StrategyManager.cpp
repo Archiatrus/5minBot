@@ -8,7 +8,7 @@ Strategy::Strategy()
 {
 
 }
-
+/*
 Strategy::Strategy(const std::string & name, const sc2::Race & race, const BuildOrder & buildOrder)
     : m_name(name)
     , m_race(race)
@@ -18,6 +18,7 @@ Strategy::Strategy(const std::string & name, const sc2::Race & race, const Build
 {
 
 }
+*/
 
 // constructor
 StrategyManager::StrategyManager(CCBot & bot)

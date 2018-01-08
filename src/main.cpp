@@ -13,6 +13,15 @@
 
 #include "CCBot.h"
 
+
+#ifndef LADDEREXE
+bool useDebug = true;
+bool useAutoObserver = false;
+#else
+bool useDebug = false;
+bool useAutoObserver = false;
+#endif
+
 #ifndef LADDEREXE
 
 int main(int argc, char* argv[]) 

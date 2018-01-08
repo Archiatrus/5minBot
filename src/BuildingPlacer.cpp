@@ -4,8 +4,6 @@
 #include "Building.h"
 #include "Util.h"
 
-
-
 BuildingPlacer::BuildingPlacer(CCBot & bot)
     : m_bot(bot)
 {
@@ -33,7 +31,7 @@ void BuildingPlacer::expandBuildingTesterOnce()
 {
 	for (auto & buildLocationTester : m_buildLocationTester)
 	{
-		if (buildLocationTester.m_canBuildHere && buildLocationTester.m_footPrintArea != 25)
+		if (useDebug && buildLocationTester.m_canBuildHere && buildLocationTester.m_footPrintArea != 25)
 		{
 			auto newPos = buildLocationTester.m_closestTiles[buildLocationTester.m_idx];
 			auto newPos3D = Util::get3DPoint(newPos, m_bot);

@@ -20,4 +20,3 @@ public:
     const BuildType & operator [] (const size_t & index) const;
     BuildType & operator [] (const size_t & index);
 };
-

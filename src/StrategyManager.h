@@ -44,6 +44,6 @@ public:
     void onEnd(const bool isWinner);
     void addStrategy(const std::string & name, const Strategy & strategy);
     const UnitPairVector getBuildOrderGoal() const;
-    const BuildOrder & getOpeningBookBuildOrder() const;
+	const BuildOrder & getOpeningBookBuildOrder() const;
     void readStrategyFile(const std::string & str);
 };
