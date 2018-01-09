@@ -569,7 +569,7 @@ void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos,int player)
 {
 	std::vector<const BaseLocation *> bases = m_bot.Bases().getBaseLocations();
 	//We use that it is ordered
-	std::map<float,const BaseLocation *> allTargetBases;
+	std::map<int,const BaseLocation *> allTargetBases;
 	int numBasesEnemy = 0;
 	for (auto & base : bases)
 	{

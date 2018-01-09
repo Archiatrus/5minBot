@@ -107,10 +107,10 @@ void Micro::SmartMove(const sc2::Unit * attacker, const sc2::Point2D & targetPos
 	else
 	{
 		sc2::Point2D targetPositionNew = targetPosition;
-		int x_min = bot.Observation()->GetGameInfo().playable_min.x;
-		int x_max = bot.Observation()->GetGameInfo().playable_max.x;
-		int y_min = bot.Observation()->GetGameInfo().playable_min.y;
-		int y_max = bot.Observation()->GetGameInfo().playable_max.y;
+		float x_min = static_cast<float>(bot.Observation()->GetGameInfo().playable_min.x);
+		float x_max = static_cast<float>(bot.Observation()->GetGameInfo().playable_max.x);
+		float y_min = static_cast<float>(bot.Observation()->GetGameInfo().playable_min.y);
+		float y_max = static_cast<float>(bot.Observation()->GetGameInfo().playable_max.y);
 
 		if (targetPosition.x < x_min)
 		{

@@ -202,32 +202,32 @@ void ProductionManager::defaultMacro()
 	int32_t gas = getFreeGas();
 	//for every production building we need 2 supply free
 	int32_t supply = m_bot.Observation()->GetFoodUsed();
-	int32_t supplyCap=m_bot.Observation()->GetFoodCap();
+	int32_t supplyCap = m_bot.Observation()->GetFoodCap();
 	
 
 	//Maybe it would be smarter to search for all buildings first and then search through the resulting vector
 	const sc2::Units Depots = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT , sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOTLOWERED }));
-	const int numDepots = Depots.size();
+	const int numDepots = static_cast<int>(Depots.size());
 	const int numDepotsFinished = buildingsFinished(Depots);
 
 	const sc2::Units CommandCenters = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER , sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND , sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS }));
-	const int numBases = CommandCenters.size();
+	const int numBases = static_cast<int>(CommandCenters.size());
 	const int numBasesFinished = buildingsFinished(CommandCenters);
 
 	const sc2::Units Rax = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit( sc2::UNIT_TYPEID::TERRAN_BARRACKS));
-	const int numRax = Rax.size();
+	const int numRax = static_cast<int>(Rax.size());
 	const int numRaxFinished = buildingsFinished(Rax);
 
 	const sc2::Units Starports = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_STARPORT , sc2::UNIT_TYPEID::TERRAN_STARPORTFLYING }));
-	const int numStarport = Starports.size();
+	const int numStarport = static_cast<int>(Starports.size());
 	const int numStarportFinished = buildingsFinished(Starports);
 
 	const sc2::Units Factories = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_FACTORY , sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING }));
-	const int numFactory = Factories.size();
+	const int numFactory = static_cast<int>(Factories.size());
 	const int numFactoryFinished = buildingsFinished(Factories);
 
 	const sc2::Units Engibays = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit( sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY));
-	const int numEngibays = Engibays.size();
+	const int numEngibays = static_cast<int>(Engibays.size());
 	const int numEngibaysFinished = buildingsFinished(Engibays);
 
 	//const sc2::Units mineralNodes = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral, sc2::IsUnits(Util::getMineralTypes()));
@@ -273,7 +273,7 @@ void ProductionManager::defaultMacro()
 				std::cout << "OC" << std::endl;
 				return;
 			}
-			int numOfRefinaries = m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_REFINERY, false) + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_REFINERY);
+			int numOfRefinaries = static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_REFINERY, false) + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_REFINERY));
 			if (numRax > 0 && minerals >= 75 && ((m_bot.Observation()->GetFoodWorkers() >= 15 && numOfRefinaries == 0) || (m_bot.Observation()->GetFoodWorkers() >= 21 && numOfRefinaries == 1) || (m_bot.Observation()->GetFoodWorkers() >= 40 && numOfRefinaries <= 3)))
 			{
 				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_REFINERY), BUILDING, false));
@@ -343,7 +343,7 @@ void ProductionManager::defaultMacro()
 
 	//upgrades
 	const sc2::Units Armories = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_ARMORY));
-	const int numArmories = Armories.size();
+	const int numArmories = static_cast<int>(Armories.size());
 	const int numArmoriesFinished = buildingsFinished(Armories);
 	for (auto & unit : Engibays)
 	{
@@ -602,11 +602,11 @@ void ProductionManager::defaultMacro()
 				else
 				{
 					int numVikings;
-						int numMedivacs;
+					int numMedivacs;
 					if (m_vikingRequested)
 					{
-						numMedivacs = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_MEDIVAC)).size();
-						numVikings = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER,sc2::UNIT_TYPEID::TERRAN_VIKINGASSAULT })).size();
+						numMedivacs = static_cast<int>(m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_MEDIVAC)).size());
+						numVikings = static_cast<int>(m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER,sc2::UNIT_TYPEID::TERRAN_VIKINGASSAULT })).size());
 					}
 					if (!m_vikingRequested || numMedivacs - 2 < numVikings)
 					{

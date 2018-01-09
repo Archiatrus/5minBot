@@ -353,7 +353,7 @@ sc2::Point2D MapTools::getWallPosition(sc2::UnitTypeID type) const
 		for (int y(0); y < m_height; ++y)
 		{
 			//We do not need to check anything if it is not the correct height anyway.
-			float height = terrainHeight(x, y);
+			float height = terrainHeight(static_cast<float>(x), static_cast<float>(y));
 			if (height == startBaseHeight)
 			{
 				//We do not need to check anything else if it is too far away anyway.
@@ -388,10 +388,10 @@ bool MapTools::isNextToRamp(int x, int y) const
 
 const sc2::Point2D MapTools::getClosestBorderPoint(sc2::Point2D pos,int margin) const
 {
-	int x_min = m_bot.Observation()->GetGameInfo().playable_min.x + margin;
-	int x_max = m_bot.Observation()->GetGameInfo().playable_max.x - margin;
-	int y_min = m_bot.Observation()->GetGameInfo().playable_min.y + margin;
-	int y_max = m_bot.Observation()->GetGameInfo().playable_max.y - margin;
+	float x_min = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_min.x + margin);
+	float x_max = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_max.x - margin);
+	float y_min = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_min.y + margin);
+	float y_max = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_max.y - margin);
 	if (pos.x < x_max - pos.x)
 	{
 		if (pos.y < y_max - pos.y)

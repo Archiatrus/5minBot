@@ -54,7 +54,7 @@ const bool Hitsquad::addMarine(const sc2::Unit * marine)
 
 const int Hitsquad::getNumMarines() const
 {
-	return m_marines.size();
+	return static_cast<int>(m_marines.size());
 }
 
 sc2::Units Hitsquad::getMarines() const
@@ -441,7 +441,7 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 	{
 		return false;
 	}
-	sc2::Point2D posEnd = target->getPosition() + 1.2*(target->getPosition() - target->getBasePosition());
+	sc2::Point2D posEnd = target->getPosition() + 1.2f*(target->getPosition() - target->getBasePosition());
 	float dist;
 	if (m_wayPoints.empty())
 	{
@@ -467,10 +467,10 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 			sc2::Point2D posB = m_bot.Map().getClosestBorderPoint(posEnd,margin);
 
 
-			int x_min = m_bot.Observation()->GetGameInfo().playable_min.x + margin;
-			int x_max = m_bot.Observation()->GetGameInfo().playable_max.x - margin;
-			int y_min = m_bot.Observation()->GetGameInfo().playable_min.y + margin;
-			int y_max = m_bot.Observation()->GetGameInfo().playable_max.y - margin;
+			float x_min = m_bot.Observation()->GetGameInfo().playable_min.x + margin;
+			float x_max = m_bot.Observation()->GetGameInfo().playable_max.x - margin;
+			float y_min = m_bot.Observation()->GetGameInfo().playable_min.y + margin;
+			float y_max = m_bot.Observation()->GetGameInfo().playable_max.y - margin;
 
 			//we are at the same side
 			if (posA.x == posB.x || posA.y == posB.y)
@@ -590,7 +590,7 @@ std::vector<const BaseLocation *> HarassManager::getPotentialTargets(size_t n) c
 	std::map<float, const BaseLocation *> targetsWithDistance;
 	for (auto & base : bases)
 	{
-		float dist = base->getGroundDistance(homePos);
+		float dist = static_cast<float>(base->getGroundDistance(homePos));
 		targetsWithDistance[-dist] = base;
 	}
 	for (auto & tb : targetsWithDistance)

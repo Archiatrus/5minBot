@@ -32,7 +32,7 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 	sc2::Units moveToPosition;
 	//For the medivac we need either
 	//Either the most injured
-	std::map<int, const sc2::Unit *> injuredUnits;
+	std::map<float, const sc2::Unit *> injuredUnits;
 	//Or the soldier in the front
 	const sc2::Unit * frontSoldier = nullptr;
 	sc2::Point2D orderPos = order.getPosition();
@@ -58,7 +58,7 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 		//We can only heal biological units
 		if (std::find(attributes.begin(), attributes.end(), sc2::Attribute::Biological) != attributes.end())
 		{
-			int healthMissing = injured->health_max - injured->health;
+			float healthMissing = injured->health_max - injured->health;
 			if (healthMissing>0)
 			{
 				injuredUnits[healthMissing] = injured;
