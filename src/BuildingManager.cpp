@@ -3,6 +3,7 @@
 #include "Micro.h"
 #include "CCBot.h"
 #include "Util.h"
+#include "Drawing.h"
 
 
 int frames = 60;
@@ -445,7 +446,7 @@ void BuildingManager::drawBuildingInformation()
         if (b.buildingUnit)
         {
             dss << "Building: " << b.buildingUnit->tag << "\n" << b.buildingUnit->build_progress;
-            m_bot.Map().drawText(b.buildingUnit->pos, dss.str());
+            Drawing::drawText(m_bot,b.buildingUnit->pos, dss.str());
         }
 
 
@@ -463,7 +464,7 @@ void BuildingManager::drawBuildingInformation()
             float x2 = b.finalPosition.x + Util::GetUnitTypeWidth(b.type, m_bot);
             float y2 = b.finalPosition.y + Util::GetUnitTypeHeight(b.type, m_bot);
 
-            m_bot.Map().drawSquare(x1, y1, x2, y2, sc2::Colors::Red);
+            Drawing::drawSquare(m_bot,x1, y1, x2, y2, sc2::Colors::Red);
             //m_bot.Map().drawLine(b.finalPosition, m_bot.GetUnit(b.builderUnitTag)->pos, sc2::Colors::Yellow);
         }
         else if (b.status == BuildingStatus::UnderConstruction)
@@ -472,7 +473,7 @@ void BuildingManager::drawBuildingInformation()
         }
     }
 
-    m_bot.Map().drawTextScreen(sc2::Point2D(0.05f, 0.05f), ss.str());
+    Drawing::drawTextScreen(m_bot,sc2::Point2D(0.05f, 0.05f), ss.str());
 }
 
 std::vector<sc2::UnitTypeID> BuildingManager::buildingsQueued() const

@@ -155,7 +155,7 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 						if (Util::Dist(rangedUnit->pos, order.getPosition()) > 4)
 						{
 							// move to it
-							m_bot.Map().drawLine(rangedUnit->pos, order.getPosition(), sc2::Colors::White);
+							Drawing::drawLine(m_bot,rangedUnit->pos, order.getPosition(), sc2::Colors::White);
 							moveToPosition.push_back(rangedUnit);
 						}
 						continue;
@@ -191,7 +191,7 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 					if (Util::Dist(rangedUnit->pos, order.getPosition()) > 4)
 					{
 						// move to it
-						m_bot.Map().drawLine(rangedUnit->pos, order.getPosition(), sc2::Colors::White);
+						Drawing::drawLine(m_bot,rangedUnit->pos, order.getPosition(), sc2::Colors::White);
 						moveToPosition.push_back(rangedUnit);
 					}
 				}

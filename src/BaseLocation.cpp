@@ -215,7 +215,7 @@ void BaseLocation::setTownHall(const sc2::Unit * townHall)
 
 void BaseLocation::draw()
 {
-    m_bot.Map().drawSphere(m_centerOfResources, 1.0f, sc2::Colors::Yellow);
+    Drawing::drawSphere(m_bot,m_centerOfResources, 1.0f, sc2::Colors::Yellow);
 
     std::stringstream ss;
     ss << "BaseLocation: " << m_baseID << "\n";
@@ -234,35 +234,35 @@ void BaseLocation::draw()
         ss << "Enemy ";
     }
 
-    m_bot.Map().drawText(sc2::Point2D(m_left, m_top+3), ss.str().c_str());
-    m_bot.Map().drawText(sc2::Point2D(m_left, m_bottom), ss.str().c_str());
+    Drawing::drawText(m_bot,sc2::Point2D(m_left, m_top+3), ss.str().c_str());
+    Drawing::drawText(m_bot,sc2::Point2D(m_left, m_bottom), ss.str().c_str());
 
     // draw the base bounding box
-    m_bot.Map().drawBox(m_left, m_top, m_right, m_bottom);
+    Drawing::drawBox(m_bot,m_left, m_top, m_right, m_bottom);
 
     for (float x=m_left; x < m_right; ++x)
     {
-        m_bot.Map().drawLine(x, m_top, x, m_bottom, sc2::Color(160, 160, 160));
+        Drawing::drawLine(m_bot,x, m_top, x, m_bottom, sc2::Color(160, 160, 160));
     }
 
     for (float y=m_bottom; y<m_top; ++y)
     {
-        m_bot.Map().drawLine(m_left, y, m_right, y, sc2::Color(160, 160, 160));
+        Drawing::drawLine(m_bot,m_left, y, m_right, y, sc2::Color(160, 160, 160));
     }
 
     for (auto & mineralPos : m_mineralPositions)
     {
-        m_bot.Map().drawSphere(mineralPos, 1.0f, sc2::Colors::Teal);
+        Drawing::drawSphere(m_bot,mineralPos, 1.0f, sc2::Colors::Teal);
     }
 
     for (auto & geyserPos : m_geyserPositions)
     {
-        m_bot.Map().drawSphere(geyserPos, 1.0f, sc2::Colors::Green);
+        Drawing::drawSphere(m_bot,geyserPos, 1.0f, sc2::Colors::Green);
     }
 
     if (m_isStartLocation)
     {
-        m_bot.Map().drawSphere(m_depotPosition, 1.0f, sc2::Colors::Red);
+        Drawing::drawSphere(m_bot,m_depotPosition, 1.0f, sc2::Colors::Red);
     }
     
     float ccWidth = 5;
@@ -270,7 +270,7 @@ void BaseLocation::draw()
     sc2::Point2D boxtl = m_depotPosition - sc2::Point2D(ccWidth/2, -ccHeight/2);
     sc2::Point2D boxbr = m_depotPosition + sc2::Point2D(ccWidth/2, -ccHeight/2);
 
-    m_bot.Map().drawBox(boxtl.x, boxtl.y, boxbr.x, boxbr.y, sc2::Colors::Red);
+    Drawing::drawBox(m_bot,boxtl.x, boxtl.y, boxbr.x, boxbr.y, sc2::Colors::Red);
 
     //m_distanceMap.draw(m_bot);
 }

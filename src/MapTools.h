@@ -28,36 +28,23 @@ class MapTools
     
     void computeConnectivity();
 
-    int getSectorNumber(int x, int y) const;
-    int getSectorNumber(const sc2::Point2D & pos) const;
         
-    void printMap();
-
 	bool isNextToRamp(int x, int y) const;
 
 public:
+	int getSectorNumber(int x, int y) const;
+	int getSectorNumber(const sc2::Point2D & pos) const;
 
     MapTools(CCBot & bot);
 
     void    onStart();
     void    onFrame();
-    void    draw() const;
 
     int     width() const;
     int     height() const;
     float   terrainHeight(float x, float y) const;
 
-    void    drawLine(float x1, float y1, float x2, float y2, const sc2::Color & color = sc2::Colors::White) const;
-    void    drawLine(const sc2::Point2D & min, const sc2::Point2D max, const sc2::Color & color = sc2::Colors::White) const;
-    void    drawSquare(float x1, float y1, float x2, float y2, const sc2::Color & color = sc2::Colors::White) const;
-    void    drawBox(float x1, float y1, float x2, float y2, const sc2::Color & color = sc2::Colors::White) const;
-    void    drawBox(const sc2::Point2D & min, const sc2::Point2D max, const sc2::Color & color = sc2::Colors::White) const;
-    void    drawSphere(float x1, float x2, float radius, const sc2::Color & color = sc2::Colors::White) const;
-    void    drawSphere(const sc2::Point2D & pos, float radius, const sc2::Color & color = sc2::Colors::White) const;
-    void    drawText(const sc2::Point2D & pos, const std::string & str, const sc2::Color & color = sc2::Colors::White) const;
-    void    drawTextScreen(const sc2::Point2D & pos, const std::string & str, const sc2::Color & color = sc2::Colors::White) const;
-    void    drawBoxAroundUnit(const UnitTag & uinit, sc2::Color color) const;
-    void    drawSphereAroundUnit(const UnitTag & uinit, sc2::Color color) const;
+    
     
     bool    isValid(int x, int y) const;
     bool    isValid(const sc2::Point2D & pos) const;
@@ -72,7 +59,6 @@ public:
     bool    isConnected(const sc2::Point2D & from, const sc2::Point2D & to) const;
     bool    isWalkable(const sc2::Point2D & pos) const;
     bool    isWalkable(int x, int y) const;
-    void    drawLastSeen() const;
     
     bool    isBuildable(const sc2::Point2D & pos) const;
     bool    isBuildable(int x, int y) const;
@@ -88,7 +74,8 @@ public:
 	const sc2::Point2D getClosestWalkableTo(const sc2::Point2D & pos) const;
 	const sc2::Point2D MapTools::getClosestBorderPoint(sc2::Point2D pos,int margin) const;
 	const bool hasPocketBase() const;
+	const float getHeight(const sc2::Point2D pos) const;
+	const float getHeight(const float x,const float y) const;
+	void draw() const;
+	void printMap() const;
 };
-
-
-extern bool useDebug;

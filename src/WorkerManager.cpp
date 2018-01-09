@@ -340,12 +340,12 @@ void WorkerManager::drawResourceDebugInfo()
     {
         if (!worker) { continue; }
 
-        m_bot.Map().drawText(worker->pos, m_workerData.getJobCode(worker));
+        Drawing::drawText(m_bot,worker->pos, m_workerData.getJobCode(worker));
 
         auto depot = m_workerData.getWorkerDepot(worker);
         if (depot)
         {
-            m_bot.Map().drawLine(worker->pos, depot->pos);
+            Drawing::drawLine(m_bot,worker->pos, depot->pos);
         }
     }
 }
@@ -367,7 +367,7 @@ void WorkerManager::drawWorkerInformation()
         ss << m_workerData.getJobCode(workerTag) << " " << workerTag << "\n";
     }
 
-    m_bot.Map().drawTextScreen(sc2::Point2D(0.75f, 0.2f), ss.str());
+    Drawing::drawTextScreen(m_bot,sc2::Point2D(0.75f, 0.2f), ss.str());
 }
 
 bool WorkerManager::isFree(const sc2::Unit * worker) const

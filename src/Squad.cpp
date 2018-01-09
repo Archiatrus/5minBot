@@ -40,7 +40,7 @@ void Squad::onFrame()
 		m_lastRetreatSwitchVal = true;
         sc2::Point2D regroupPosition = calcRegroupPosition();
 
-        m_bot.Map().drawSphere(regroupPosition, 3, sc2::Colors::Purple);
+        Drawing::drawSphere(m_bot,regroupPosition, 3, sc2::Colors::Purple);
 
         m_meleeManager.regroup(regroupPosition);
         m_rangedManager.regroup(regroupPosition);

@@ -275,7 +275,7 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalOptions>%(AdditionalOptions)  /machine:x64 /PDB:5minBot.pdb</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions)  /machine:x64 /PDB:5minBot.pdb /verbose:lib</AdditionalOptions>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;sc2api.lib;sc2lib.lib;sc2utils.lib;sc2renderer.lib;sc2protocol.lib;libprotobuf.lib;civetweb.lib;winmm.lib;imm32.lib;version.lib;dinput8.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -451,6 +451,7 @@
     <ClCompile Include="..\src\BuildOrderQueue.cpp" />
     <ClCompile Include="..\src\CombatCommander.cpp" />
     <ClCompile Include="..\src\DistanceMap.cpp" />
+    <ClCompile Include="..\src\Drawing.cpp" />
     <ClCompile Include="..\src\GameCommander.cpp" />
     <ClCompile Include="..\src\HarassManager.cpp" />
     <ClCompile Include="..\src\JSONTools.cpp" />
@@ -491,6 +492,7 @@
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\BotConfig.h" />
     <ClInclude Include="..\src\DistanceMap.h" />
+    <ClInclude Include="..\src\Drawing.h" />
     <ClInclude Include="..\src\GameCommander.h" />
     <ClInclude Include="..\src\HarassManager.h" />
     <ClInclude Include="..\src\JSONTools.h" />

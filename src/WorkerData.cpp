@@ -279,7 +279,7 @@ void WorkerData::drawDepotDebugInfo()
         std::stringstream ss;
         ss << "Workers: " << getNumAssignedWorkers(depot);
 
-        m_bot.Map().drawText(depot->pos, ss.str());
+        Drawing::drawText(m_bot,depot->pos, ss.str());
     }
 }
 

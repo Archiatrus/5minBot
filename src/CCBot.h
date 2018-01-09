@@ -13,6 +13,7 @@
 #include "TechTree.h"
 #include "BuildType.h"
 #include "AutoObserver\CameraModule.h"
+#include "Drawing.h"
 
 class CCBot : public sc2::Agent 
 {

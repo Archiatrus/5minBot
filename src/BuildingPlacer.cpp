@@ -3,6 +3,7 @@
 #include "CCBot.h"
 #include "Building.h"
 #include "Util.h"
+#include "Drawing.h"
 
 BuildingPlacer::BuildingPlacer(CCBot & bot)
     : m_bot(bot)
@@ -34,9 +35,7 @@ void BuildingPlacer::expandBuildingTesterOnce()
 		if (useDebug && buildLocationTester.m_canBuildHere && buildLocationTester.m_footPrintArea != 25)
 		{
 			auto newPos = buildLocationTester.m_closestTiles[buildLocationTester.m_idx];
-			auto newPos3D = Util::get3DPoint(newPos, m_bot);
-			m_bot.Debug()->DebugSphereOut(newPos3D, std::sqrt(buildLocationTester.m_footPrintArea)/2.0,sc2::Colors::Yellow);
-			m_bot.Debug()->DebugTextOut(sc2::UnitTypeToName(buildLocationTester.m_building.type), newPos);
+			Drawing::drawSphere(m_bot,newPos, std::sqrt(buildLocationTester.m_footPrintArea)/2.0f,sc2::Colors::Yellow);
 		}
 		//We don't need to find another base right next to the old one
 		if (buildLocationTester.m_canBuildHere || buildLocationTester.m_footPrintArea==25)
@@ -90,7 +89,7 @@ bool BuildingPlacer::canBuildHere(int bx, int by, const Building & b) const
     }
 	//Don't build below flying buildings
 	const sc2::Units flyingBuildings = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_BARRACKSFLYING,sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING, sc2::UNIT_TYPEID::TERRAN_STARPORTFLYING }));
-	sc2::Point2D loc(bx, by);
+	sc2::Point2D loc(static_cast<float>(bx), static_cast<float>(by));
 	for (auto unit : flyingBuildings)
 	{
 		if (Util::Dist(loc, unit->pos) < 3)
@@ -290,7 +289,7 @@ void BuildingPlacer::drawReservedTiles()
                 int x2 = (x+1)*32 - 8;
                 int y2 = (y+1)*32 - 8;
 
-                m_bot.Map().drawBox((float)x1, (float)y1, (float)x2, (float)y2, sc2::Colors::Yellow);
+                Drawing::drawBox(m_bot,(float)x1, (float)y1, (float)x2, (float)y2, sc2::Colors::Yellow);
             }
         }
     }

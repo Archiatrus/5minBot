@@ -807,5 +807,5 @@ void ProductionManager::drawProductionInformation()
 	{
 		ss << "\n" << sc2::UnitTypeToName(b.type.getUnitTypeID());
 	}
-	m_bot.Map().drawTextScreen(sc2::Point2D(0.01f, 0.01f), ss.str(), sc2::Colors::Yellow);
+	Drawing::drawTextScreen(m_bot,sc2::Point2D(0.01f, 0.01f), ss.str(), sc2::Colors::Yellow);
 }

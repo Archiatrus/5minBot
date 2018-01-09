@@ -1,6 +1,7 @@
 #include "DistanceMap.h"
 #include "CCBot.h"
 #include "Util.h"
+#include "Drawing.h"
 
 const size_t LegalActions = 4;
 const int actionX[LegalActions] = {1, -1, 0, 0};
@@ -77,7 +78,7 @@ void DistanceMap::draw(CCBot & bot) const
         std::stringstream ss;
         ss << dist;
 
-        bot.Map().drawText(textPos, ss.str());
+        Drawing::drawText(bot,textPos, ss.str());
     }
 }
 

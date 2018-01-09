@@ -2,6 +2,7 @@
 #include "CCBot.h"
 #include "Util.h"
 #include "Micro.h"
+#include "Drawing.h"
 #include <queue>
 
 const float reaperVisionRadius = 9;
@@ -162,7 +163,7 @@ void ScoutManager::drawScoutInformation()
 		ss << "Scout Info: " << m_scoutStatus;
 	}
 
-    m_bot.Map().drawTextScreen(sc2::Point2D(0.1f, 0.6f), ss.str());
+    Drawing::drawTextScreen(m_bot,sc2::Point2D(0.1f, 0.6f), ss.str());
 }
 
 void ScoutManager::moveScouts()

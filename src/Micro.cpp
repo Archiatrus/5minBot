@@ -11,24 +11,16 @@ void Micro::SmartStop(const sc2::Unit * attacker, CCBot & bot)
     bot.Actions()->UnitCommand(attacker, sc2::ABILITY_ID::STOP);
 }
 
-void Micro::SmartAttackUnit(const sc2::Unit * attacker, const sc2::Unit * target, CCBot & bot,bool queue)
+void Micro::SmartAttackUnit(const sc2::Unit * attacker, const sc2::Unit * target, CCBot & bot, bool queue)
 {
-    BOT_ASSERT(attacker != nullptr, "Attacker is null");
-    BOT_ASSERT(target != nullptr, "Target is null");
+	BOT_ASSERT(attacker != nullptr, "Attacker is null");
+	BOT_ASSERT(target != nullptr, "Target is null");
 	//if we are already attack it, we do not need to spam the attack
 	if (!attacker->orders.empty() && attacker->orders.back().target_unit_tag == target->tag)
 	{
 		return;
 	}
-	//in range
-//	if (Util::Dist(attacker->pos, target->pos) < Util::GetAttackRange(attacker->unit_type,bot))
-//	{
-		bot.Actions()->UnitCommand(attacker, sc2::ABILITY_ID::ATTACK_ATTACK, target, queue);
-//	}
-//	else
-//	{
-//		bot.Actions()->UnitCommand(attacker, sc2::ABILITY_ID::ATTACK_ATTACK, target->pos, queue);
-//	}
+	bot.Actions()->UnitCommand(attacker, sc2::ABILITY_ID::ATTACK_ATTACK, target, queue);
 }
 
 void Micro::SmartAttackUnit(const sc2::Units & attacker, const sc2::Unit * target, CCBot & bot, bool queue)
@@ -49,12 +41,12 @@ void Micro::SmartAttackUnit(const sc2::Units & attacker, const sc2::Unit * targe
 		float range = Util::GetAttackRange((*iter)->unit_type, bot);
 		if ((*iter)->weapon_cooldown == 0.0f && dist>range + 0.5f)
 		{
-			bot.Map().drawLine((*iter)->pos, target->pos, sc2::Colors::Yellow);
+			Drawing::drawLine(bot,(*iter)->pos, target->pos, sc2::Colors::Yellow);
 			attackerThatNeedToAttackMove.push_back((*iter));
 		}
 		else
 		{
-			bot.Map().drawLine((*iter)->pos, target->pos, sc2::Colors::Red);
+			Drawing::drawLine(bot,(*iter)->pos, target->pos, sc2::Colors::Red);
 			attackerThatNeedToAttack.push_back((*iter));
 		}
 	}

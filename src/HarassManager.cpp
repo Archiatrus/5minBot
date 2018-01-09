@@ -3,7 +3,7 @@
 #include "Util.h"
 #include "CCBot.h"
 #include "pathPlaning.h"
-
+#include "Drawing.h"
 
 const int updateRatePathplaning = 10;
 
@@ -24,7 +24,7 @@ void Hitsquad::escapePathPlaning()
 	{
 		if (m_wayPoints.size() > 0)
 		{
-			m_bot.Map().drawLine(m_wayPoints.back(), pos);
+			Drawing::drawLine(m_bot,m_wayPoints.back(), pos);
 		}
 		m_wayPoints.push(pos);
 	}

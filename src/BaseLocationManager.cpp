@@ -1,7 +1,7 @@
 #include "BaseLocationManager.h"
 #include "Util.h"
 #include "sc2lib/sc2_search.h"
-
+#include "Drawing.h"
 #include "CCBot.h"
 
 BaseLocationManager::BaseLocationManager(CCBot & bot)
@@ -296,8 +296,8 @@ void BaseLocationManager::drawBaseLocations()
     // draw a purple sphere at the next expansion location
     sc2::Point2D nextExpansionPosition = getNextExpansion(Players::Self);
 
-    m_bot.Map().drawSphere(nextExpansionPosition, 1, sc2::Colors::Purple);
-    m_bot.Map().drawText(nextExpansionPosition, "Next Expansion Location", sc2::Colors::Purple);
+    Drawing::drawSphere(m_bot,nextExpansionPosition, 1, sc2::Colors::Purple);
+    Drawing::drawText(m_bot,nextExpansionPosition, "Next Expansion Location", sc2::Colors::Purple);
 }
 
 const std::vector<const BaseLocation *> & BaseLocationManager::getBaseLocations() const
@@ -334,7 +334,7 @@ const sc2::Point2D BaseLocationManager::getRallyPoint() const
 	{
 		targetPos+=base->getPosition();
 	}
-	targetPos /= startingBases.size();
+	targetPos /= static_cast<float>(startingBases.size());
 	sc2::Point2D rallyPoint = newestBasePlayer + 5*(targetPos - newestBasePlayer) / std::sqrt(Util::DistSq(targetPos - newestBasePlayer));
 
 	// get the precomputed vector of tile positions which are sorted closes to this location
