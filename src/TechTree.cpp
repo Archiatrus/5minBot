@@ -79,6 +79,8 @@ void TechTree::initUnitTypeData()
     m_unitTypeData[sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS] =        { sc2::Race::Terran, 0, 0, 0, 0, true, true, false, false, false, false, false, sc2::ABILITY_ID::MORPH_PLANETARYFORTRESS, 0, { sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER }, {}, {} };
 
     // Terran Addons                                                                         m  g  s  t  unit  bld   wrk    rfn    sup    hall   add
+	m_unitTypeData[sc2::UNIT_TYPEID::TERRAN_REACTOR] =					{ sc2::Race::Terran, 0, 0, 0, 0, true, true, false, false, false, false, true, sc2::ABILITY_ID::BUILD_REACTOR_BARRACKS, 0, { sc2::UNIT_TYPEID::TERRAN_BARRACKS,sc2::UNIT_TYPEID::TERRAN_FACTORY,sc2::UNIT_TYPEID::TERRAN_STARPORT }, {}, {} };
+	m_unitTypeData[sc2::UNIT_TYPEID::TERRAN_TECHLAB] =					{ sc2::Race::Terran, 0, 0, 0, 0, true, true, false, false, false, false, true, sc2::ABILITY_ID::BUILD_TECHLAB_BARRACKS, 0,{ sc2::UNIT_TYPEID::TERRAN_BARRACKS,sc2::UNIT_TYPEID::TERRAN_FACTORY,sc2::UNIT_TYPEID::TERRAN_STARPORT },{},{} };
     m_unitTypeData[sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR] =          { sc2::Race::Terran, 0, 0, 0, 0, true, true, false, false, false, false, true, sc2::ABILITY_ID::BUILD_REACTOR_BARRACKS, 0, { sc2::UNIT_TYPEID::TERRAN_BARRACKS }, {}, {} };
     m_unitTypeData[sc2::UNIT_TYPEID::TERRAN_BARRACKSTECHLAB] =          { sc2::Race::Terran, 0, 0, 0, 0, true, true, false, false, false, false, true, sc2::ABILITY_ID::BUILD_TECHLAB_BARRACKS, 0, { sc2::UNIT_TYPEID::TERRAN_BARRACKS }, {}, {} };
     m_unitTypeData[sc2::UNIT_TYPEID::TERRAN_FACTORYREACTOR] =           { sc2::Race::Terran, 0, 0, 0, 0, true, true, false, false, false, false, true, sc2::ABILITY_ID::BUILD_REACTOR_FACTORY, 0, { sc2::UNIT_TYPEID::TERRAN_FACTORY }, {}, {} };

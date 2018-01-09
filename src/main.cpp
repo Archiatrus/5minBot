@@ -16,10 +16,10 @@
 
 #ifndef LADDEREXE
 bool useDebug = true;
-bool useAutoObserver = false;
+bool useAutoObserver = true;
 #else
 bool useDebug = false;
-bool useAutoObserver = false;
+bool useAutoObserver = true;
 #endif
 
 #ifndef LADDEREXE
