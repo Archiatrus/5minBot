@@ -10,6 +10,7 @@ Squad::Squad(CCBot & bot)
     , m_name("Default")
     , m_meleeManager(bot)
     , m_rangedManager(bot)
+	, m_siegeManager(bot)
 {
 
 }
@@ -22,8 +23,10 @@ Squad::Squad(const std::string & name, const SquadOrder & order, size_t priority
     , m_lastRetreatSwitchVal(false)
     , m_priority(priority)
     , m_meleeManager(bot)
-    , m_rangedManager(bot)
+	, m_rangedManager(bot)
+	, m_siegeManager(bot)
 {
+
 }
 
 void Squad::onFrame()
@@ -49,7 +52,7 @@ void Squad::onFrame()
     {
         m_meleeManager.execute(m_order);
         m_rangedManager.execute(m_order);
-
+		m_siegeManager.execute(m_order);
         //_detectorManager.setUnitClosestToEnemy(unitClosestToEnemy());
         //_detectorManager.execute(_order);
     }
@@ -122,7 +125,7 @@ void Squad::addUnitsToMicroManagers()
     std::vector<const sc2::Unit *> rangedUnits;
     std::vector<const sc2::Unit *> detectorUnits;
     std::vector<const sc2::Unit *> transportUnits;
-    std::vector<const sc2::Unit *> tankUnits;
+    std::vector<const sc2::Unit *> siegeUnits;
 
     // add _units to micro managers
     for (auto unit : m_units)
@@ -130,23 +133,7 @@ void Squad::addUnitsToMicroManagers()
         BOT_ASSERT(unit, "null unit in addUnitsToMicroManagers()");
         if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_SIEGETANK || unit->unit_type == sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED)
         {
-			if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_SIEGETANK)
-			{
-				if (m_order.getType() == SquadOrderTypes::Defend && (unit->orders.empty() || unit->orders.back().ability_id != sc2::ABILITY_ID::MORPH_SIEGEMODE))
-				{
-					m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::MORPH_SIEGEMODE);
-				}
-				sc2::Point2D centre = m_bot.Bases().getRallyPoint();
-				if (Util::Dist(unit->pos, centre) < 3 && (unit->orders.empty() || unit->orders.back().ability_id != sc2::ABILITY_ID::MORPH_SIEGEMODE) && m_bot.Map().isBuildable(unit->pos))
-				{
-					m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::MORPH_SIEGEMODE);
-				}
-				else if (Util::Dist(unit->pos, centre) >= 3)
-				{
-					Micro::SmartMove(unit, centre, m_bot);
-				}
-				
-			}
+			siegeUnits.push_back(unit);
         }
         // TODO: detectors
         else if (Util::IsDetector(unit) && !m_bot.Data(unit->unit_type).isBuilding)
@@ -168,7 +155,7 @@ void Squad::addUnitsToMicroManagers()
     m_meleeManager.setUnits(meleeUnits);
     m_rangedManager.setUnits(rangedUnits);
     //m_detectorManager.setUnits(detectorUnits);
-    //m_tankManager.setUnits(tankUnits);
+    m_siegeManager.setUnits(siegeUnits);
 }
 
 const bool Squad::needsToRegroup()
