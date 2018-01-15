@@ -192,8 +192,31 @@ void ProductionManager::defaultMacro()
 		canBuildAddon = false;
 	}
 
+	//Even without money we can drop mules
+	const sc2::Units CommandCenters = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER , sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND , sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS }));
+	for (auto & unit : CommandCenters)
+	{
+		if (unit->build_progress == 1.0f)
+		{
+			if (unit->energy >= 50)
+			{
+				const sc2::Unit * mineralPatch = Util::getClostestMineral(unit->pos, m_bot);
+				if (mineralPatch && mineralPatch->Visible == sc2::Unit::DisplayType::Visible)
+				{
+					m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::EFFECT_CALLDOWNMULE, mineralPatch);
+				}
+			}
+			//Sometimes we have a problem here
+			if (unit->assigned_harvesters == 0 || unit->energy > 60)
+			{
+				m_bot.OnBuildingConstructionComplete(unit);
+			}
+		}
+	}
+
+
 	int32_t minerals = getFreeMinerals();
-	//without money...
+	//but not much else
 	if (minerals < 50)
 	{
 		defaultMacroSleep = defaultMacroSleepMax;
@@ -210,7 +233,6 @@ void ProductionManager::defaultMacro()
 	const int numDepots = static_cast<int>(Depots.size());
 	const int numDepotsFinished = buildingsFinished(Depots);
 
-	const sc2::Units CommandCenters = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER , sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND , sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS }));
 	const int numBases = static_cast<int>(CommandCenters.size());
 	const int numBasesFinished = buildingsFinished(CommandCenters);
 
@@ -248,7 +270,6 @@ void ProductionManager::defaultMacro()
 	{
 		if (unit->build_progress == 1.0f)
 		{
-			auto test = m_bot.Query()->GetAbilitiesForUnit(unit);
 			if (unit->energy >= 50)
 			{
 				const sc2::Unit * mineralPatch = Util::getClostestMineral(unit->pos, m_bot);
