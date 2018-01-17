@@ -28,7 +28,7 @@ void CCBot::OnGameStart()
 	
 	// get my race
     auto playerID = Observation()->GetPlayerID();
-    for (auto & playerInfo : Observation()->GetGameInfo().player_info)
+    for (const auto & playerInfo : Observation()->GetGameInfo().player_info)
     {
         if (playerInfo.player_id == playerID)
         {

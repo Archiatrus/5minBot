@@ -21,7 +21,7 @@ void SquadData::clearSquadData()
     for (auto & kv : m_squads)
     {
         Squad & squad = kv.second;
-        for (auto & unit : squad.getUnits())
+        for (const auto & unit : squad.getUnits())
         {
             BOT_ASSERT(unit, "null unit");
 
@@ -45,7 +45,7 @@ void SquadData::removeSquad(const std::string & squadName)
         return;
     }
 
-    for (auto unit : squadPtr->second.getUnits())
+    for (const auto unit : squadPtr->second.getUnits())
     {
         BOT_ASSERT(unit, "null unit");
 
@@ -104,7 +104,7 @@ void SquadData::drawSquadInformation()
         Drawing::drawSphere(m_bot,order.getPosition(), 5, sc2::Colors::Red);
         Drawing::drawText(m_bot,order.getPosition(), squad.getName(), sc2::Colors::Red);
 
-        for (auto unit : units)
+        for (const auto & unit : units)
         {
             BOT_ASSERT(unit, "null unit");
 
@@ -121,7 +121,7 @@ void SquadData::verifySquadUniqueMembership()
 
     for (const auto & kv : m_squads)
     {
-        for (auto & unit : kv.second.getUnits())
+        for (const auto & unit : kv.second.getUnits())
         {
             if (std::find(assigned.begin(), assigned.end(), unit) != assigned.end())
             {
@@ -200,7 +200,7 @@ Squad & SquadData::getSquad(const std::string & squadName)
 
 const bool SquadData::underAttack() const
 {
-	for (auto & squad : m_squads)
+	for (const auto & squad : m_squads)
 	{
 		if (squad.second.getSquadOrder().getType() == SquadOrderTypes::Defend)
 		{

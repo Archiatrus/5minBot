@@ -187,7 +187,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		{
 			m_status = HarassStatus::Refueling;
 		}
-		for (auto & m : m_marines)
+		for (const auto & m : m_marines)
 		{
 			//This is still buggy since we can not drop individual marines
 			if (m->health <= 5)
@@ -212,7 +212,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		sc2::Units targetUnits = getNearbyEnemyUnits();
 		// The ones that can hit our medivac
 		sc2::Units targetUnitsCanHitMedivac;
-		for (auto & unit : targetUnits)
+		for (const auto & unit : targetUnits)
 		{
 			if (Util::canHitMe(m_medivac, unit, m_bot))
 			{
@@ -261,7 +261,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		}
 		else
 		{
-			for (auto & marine : m_marines)
+			for (const auto & marine : m_marines)
 			{
 				if (marine->health != marine->health_max)
 				{
@@ -318,12 +318,12 @@ const BaseLocation * Hitsquad::getSavePosition() const
 	//We use that it is ordered
 	std::map<float, const BaseLocation *> allTargetBases;
 	sc2::Units enemyUnits = m_bot.UnitInfo().getUnits(Players::Enemy);
-	for (auto & base : bases)
+	for (const auto & base : bases)
 	{
 		if (!(base->isOccupiedByPlayer(Players::Enemy)))
 		{
 			bool actuallySafe = true;
-			for (auto & enemy:enemyUnits)
+			for (const auto & enemy:enemyUnits)
 			{
 				if (Util::Dist(enemy->pos, base->getBasePosition()) < 15.0f)
 				{
@@ -358,7 +358,7 @@ const BaseLocation * Hitsquad::getSavePosition() const
 const bool Hitsquad::shouldWeFlee(sc2::Units targets) const
 {
 	int opponents = 0;
-	for (auto & t : targets)
+	for (const auto & t : targets)
 	{
 		if (Util::IsCombatUnitType(t->unit_type.ToType(), m_bot))
 		{
@@ -379,7 +379,7 @@ sc2::Units Hitsquad::getNearbyEnemyUnits() const
 	sc2::Units nearbyEnemyUnits;
 	sc2::Point2D pos = m_medivac->pos;
 	float range = Util::GetUnitTypeSight(m_medivac->unit_type.ToType(), m_bot);
-	for (auto & t : enemyUnits)
+	for (const auto & t : enemyUnits)
 	{
 		if (Util::Dist(pos, t->pos) <= range)
 		{
@@ -394,7 +394,7 @@ const sc2::Unit * Hitsquad::getTargetMarines(sc2::Units targets) const
 	const sc2::Unit * target = nullptr;
 	int maxPriority = 0;
 	float minHealth = std::numeric_limits<float>::max();
-	for (auto & t : targets)
+	for (const auto & t : targets)
 	{
 		int prio = 0;
 		if (t->unit_type.ToType() == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || t->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
@@ -588,12 +588,12 @@ std::vector<const BaseLocation *> HarassManager::getPotentialTargets(size_t n) c
 		homePos = (*(bases.begin()))->getBasePosition();
 	}
 	std::map<float, const BaseLocation *> targetsWithDistance;
-	for (auto & base : bases)
+	for (const auto & base : bases)
 	{
 		float dist = static_cast<float>(base->getGroundDistance(homePos));
 		targetsWithDistance[-dist] = base;
 	}
-	for (auto & tb : targetsWithDistance)
+	for (const auto & tb : targetsWithDistance)
 	{
 		targetBases.push_back(tb.second);
 	}
@@ -609,7 +609,7 @@ const bool HarassManager::needMedivac() const
 		return true;
 	}
 	//if one is missing a medivac
-	for (auto & hs : m_hitSquads)
+	for (const auto & hs : m_hitSquads)
 	{
 		if (!hs.getMedivac())
 		{
@@ -621,7 +621,7 @@ const bool HarassManager::needMedivac() const
 const bool HarassManager::needMarine() const
 {
 	//if one is missing a marine
-	for (auto & hs : m_hitSquads)
+	for (const auto & hs : m_hitSquads)
 	{
 		//Only if it already has a Medivac
 		if (hs.getMedivac() && hs.getStatus() == HarassStatus::Idle && hs.getNumMarines()<8)

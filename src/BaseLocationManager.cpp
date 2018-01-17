@@ -24,7 +24,7 @@ void BaseLocationManager::onStart()
     
     // stores each cluster of resources based on some ground distance
     std::vector<std::vector<const sc2::Unit *>> resourceClusters;
-    for (auto mineral : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral))
+    for (const auto & mineral : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral))
     {
         // skip minerals that don't have more than 100 starting minerals
         // these are probably stupid map-blocking minerals to confuse us
@@ -60,7 +60,7 @@ void BaseLocationManager::onStart()
     }
 
     // add geysers only to existing resource clusters
-    for (auto & geyser : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral))
+    for (const auto  geyser : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral))
     {
         if (!Util::IsGeyser(geyser))
         {
@@ -82,7 +82,7 @@ void BaseLocationManager::onStart()
 
     // add the base locations if there are more than 4 resouces in the cluster
     int baseID = 0;
-    for (auto & cluster : resourceClusters)
+    for (const auto  cluster : resourceClusters)
     {
         if (cluster.size() > 4)
         {
@@ -91,7 +91,7 @@ void BaseLocationManager::onStart()
     }
 
     // construct the vectors of base location pointers, this is safe since they will never change
-    for (auto & baseLocation : m_baseLocationData)
+    for (const auto  baseLocation : m_baseLocationData)
     {
         m_baseLocationPtrs.push_back(&baseLocation);
 
@@ -170,7 +170,7 @@ void BaseLocationManager::onFrame()
 			baseLocation->setPlayerOccupying(Players::Enemy, true);
 		}
 	}
-    for (auto & unit : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self))
+    for (const auto  unit : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self))
     {
         // we only care about buildings on the ground
         if (!m_bot.Data(unit->unit_type).isBuilding || unit->is_flying || !unit->is_alive)
@@ -195,7 +195,7 @@ void BaseLocationManager::onFrame()
     // 1. we've seen the enemy base directly, so the baselocation will know
     if (m_playerStartingBaseLocations[Players::Enemy] == nullptr)
     {
-        for (auto & baseLocation : m_baseLocationData)
+        for (const auto  baseLocation : m_baseLocationData)
         {
             if (baseLocation.isPlayerStartLocation(Players::Enemy))
             {
@@ -240,7 +240,7 @@ void BaseLocationManager::onFrame()
     // update the occupied base locations for each player
     m_occupiedBaseLocations[Players::Self] = std::set<const BaseLocation *>();
     m_occupiedBaseLocations[Players::Enemy] = std::set<const BaseLocation *>();
-    for (auto & baseLocation : m_baseLocationData)
+    for (const auto  baseLocation : m_baseLocationData)
     {
         if (baseLocation.isOccupiedByPlayer(Players::Self))
         {
@@ -330,7 +330,7 @@ const sc2::Point2D BaseLocationManager::getRallyPoint() const
 
 	std::vector<const BaseLocation *> startingBases = getStartingBaseLocations();
 	sc2::Point2D targetPos(0.0f, 0.0f);
-	for (auto &base : startingBases)
+	for (const auto base : startingBases)
 	{
 		targetPos+=base->getPosition();
 	}
@@ -360,7 +360,7 @@ sc2::Point2D BaseLocationManager::getNextExpansion(int player) const
 	{
 		return sc2::Point2D(0.0f, 0.0f);
 	}
-    for (auto & base : getBaseLocations())
+    for (const auto  base : getBaseLocations())
     {
         // skip mineral only and starting locations (TODO: fix this)
         if (base->isMineralOnly() || base->isOccupiedByPlayer(player))
@@ -402,7 +402,7 @@ sc2::Point2D BaseLocationManager::getNewestExpansion(int player) const
 	const BaseLocation * homeBase = getPlayerStartingBaseLocation(player);
 	const BaseLocation * newestBase = nullptr;
 	float maxDistance = -1;
-	for (auto & base : getBaseLocations())
+	for (const auto  base : getBaseLocations())
 	{
 		float dist = Util::Dist(homeBase->getPosition(), base->getPosition());
 		if (base->isOccupiedByPlayer(Players::Self) && maxDistance < dist && base->getTownHall())

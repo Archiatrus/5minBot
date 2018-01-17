@@ -19,7 +19,7 @@ void SiegeManager::assignTargets(const std::vector<const sc2::Unit *> & targets)
 
 	// figure out targets
 	std::vector<const sc2::Unit *> SiegeUnitTargets;
-	for (auto target : targets)
+	for (const auto & target : targets)
 	{
 		if (!target) { continue; }
 		if (target->is_flying) { continue; }
@@ -30,7 +30,7 @@ void SiegeManager::assignTargets(const std::vector<const sc2::Unit *> & targets)
 	}
 
 	// for each Unit
-	for (auto & siegeUnit : SiegeUnits)
+	for (const auto & siegeUnit : SiegeUnits)
 	{
 		BOT_ASSERT(siegeUnit, "melee unit is null");
 
@@ -158,7 +158,7 @@ const sc2::Unit * SiegeManager::getTarget(const sc2::Unit * siegeUnit, const std
 	// We want to attack the weakest/highest prio target in range
 	// If there is no in range, we want to attack one in sight,
 	// else the one with highest prio.
-	for (auto targetUnit : targets)
+	for (const auto & targetUnit : targets)
 	{
 		BOT_ASSERT(targetUnit, "null target unit in getTarget");
 		//Ignore dead units or ones we can not hit

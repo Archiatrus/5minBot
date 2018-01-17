@@ -152,7 +152,7 @@ const BaseLocation * Util::getClosestBase(sc2::Point2D pos,const CCBot &bot)
 	const std::vector<const BaseLocation *> bases = bot.Bases().getBaseLocations();
 	int minDistance = std::numeric_limits<int>::max();
 	const BaseLocation * closestBase;
-	for (auto & base : bases)
+	for (const auto & base : bases)
 	{
 		int distance=base->getGroundDistance(pos);
 		if (minDistance > distance && base->isOccupiedByPlayer(Players::Self))
@@ -213,7 +213,7 @@ sc2::Point2D Util::CalcCenter(const std::vector<const sc2::Unit *> & units)
     float cx = 0.0f;
     float cy = 0.0f;
 
-    for (auto unit : units)
+    for (const auto & unit : units)
     {
         BOT_ASSERT(unit, "Unit pointer was null");
         cx += unit->pos.x;
@@ -243,7 +243,7 @@ float Util::GetAttackRange(const sc2::UnitTypeID & type, CCBot & bot)
     }
 
     float maxRange = 0.0f;
-    for (auto & weapon : weapons)
+    for (const auto & weapon : weapons)
     {
         if (weapon.range > maxRange)
         {
@@ -558,7 +558,7 @@ UnitTag GetClosestEnemyUnitTo(const sc2::Unit * ourUnit, const sc2::ObservationI
     UnitTag closestTag = 0;
 	double closestDist = std::numeric_limits<double>::max();
 
-	for (auto & unit : obs->GetUnits())
+	for (const auto & unit : obs->GetUnits())
 	{
 		double dist = Util::DistSq(unit->pos, ourUnit->pos);
 
@@ -613,7 +613,7 @@ bool Util::canHitMe(const sc2::Unit * me, const sc2::Unit * hitter, CCBot & bot)
 	std::vector<sc2::Weapon> weapons = bot.Observation()->GetUnitTypeData()[hitter->unit_type].weapons;
 	if (me->is_flying)
 	{
-		for (auto & weapon : weapons)
+		for (const auto & weapon : weapons)
 		{
 			if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
 			{
@@ -628,7 +628,7 @@ bool Util::canHitMe(const sc2::Unit * me, const sc2::Unit * hitter, CCBot & bot)
 		{
 			return true;
 		}
-		for (auto & weapon : weapons)
+		for (const auto & weapon : weapons)
 		{
 			if (weapon.type == sc2::Weapon::TargetType::Ground || weapon.type == sc2::Weapon::TargetType::Any)
 			{
@@ -643,7 +643,7 @@ const sc2::Unit * Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 {
 	const std::set<const BaseLocation *> bases = bot.Bases().getOccupiedBaseLocations(Players::Self);
 	std::map<int, const BaseLocation *> orderedBases;
-	for (auto & base : bases)
+	for (const auto & base : bases)
 	{
 		//We don't care for not finished bases.
 		const sc2::Unit * townHall = base->getTownHall();
@@ -654,11 +654,11 @@ const sc2::Unit * Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 		int distance = base->getGroundDistance(pos);
 		orderedBases[distance] = base;
 	}
-	for (auto & baseMap : orderedBases)
+	for (const auto & baseMap : orderedBases)
 	{
 		const std::vector<const sc2::Unit *> mineralPatches = baseMap.second->getMinerals();
 		std::map<int, const sc2::Unit *> orderedMinerals;
-		for (auto & mineralPatch : mineralPatches)
+		for (const auto & mineralPatch : mineralPatches)
 		{
 			int distance = bot.Map().getGroundDistance(mineralPatch->pos, pos);
 
@@ -669,7 +669,7 @@ const sc2::Unit * Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 			}
 			
 		}
-		for (auto & mineralPatch : orderedMinerals )
+		for (const auto & mineralPatch : orderedMinerals )
 		{
 			return mineralPatch.second;
 		}
@@ -677,15 +677,15 @@ const sc2::Unit * Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 	//If we get till here its time to long distance mine
 	const std::vector<const BaseLocation *> bases2 = bot.Bases().getBaseLocations();
 	std::map<int, const BaseLocation *> orderedBases2;
-	for (auto & base : bases2)
+	for (const auto & base : bases2)
 	{
 		int distance = base->getGroundDistance(pos);
 		orderedBases2[distance] = base;
 	}
-	for (auto & baseMap : orderedBases2)
+	for (const auto & baseMap : orderedBases2)
 	{
 		const std::vector<const sc2::Unit *> mineralPatches = baseMap.second->getMinerals();
-		for (auto & mineralPatch : mineralPatches)
+		for (const auto & mineralPatch : mineralPatches)
 		{
 			//Bad things happen if it is not alive or just snapshot. But they are probably snapshots if we get till here.
 			if (mineralPatch->is_alive && mineralPatch->display_type == sc2::Unit::DisplayType::Visible && mineralPatch->mineral_contents > 200)

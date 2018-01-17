@@ -67,18 +67,18 @@ void WorkerManager::handleGasWorkers()
 {
 
 	//We want first 14 workers on minerals
-	int minWorker = m_workerData.getWorkerJobCount(WorkerJobs::Minerals);
-	int gasWorker = m_workerData.getWorkerJobCount(WorkerJobs::Gas);
-	if (minWorker < 14 && gasWorker > 0)
+	int numMinWorker = m_workerData.getWorkerJobCount(WorkerJobs::Minerals);
+	int numGasWorker = m_workerData.getWorkerJobCount(WorkerJobs::Gas);
+	if (numMinWorker < 14 && numGasWorker > 1)
 	{
-		for (auto &gasWorker : m_workerData.getGasWorkers())
+		for (const auto & gasWorker : m_workerData.getGasWorkers())
 		{
 			if (gasWorker->orders.empty() || gasWorker->orders[0].ability_id != sc2::ABILITY_ID::HARVEST_RETURN)
 			{
 				setMineralWorker(gasWorker);
-				minWorker++;
-				gasWorker--;
-				if (minWorker > 14)
+				numMinWorker++;
+				numGasWorker--;
+				if (numMinWorker > 14 || numGasWorker==1)
 				{
 					return;
 				}
@@ -88,7 +88,7 @@ void WorkerManager::handleGasWorkers()
 	else
 	{
 		// for each unit we have
-		for (auto unit : m_bot.UnitInfo().getUnits(Players::Self))
+		for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
 		{
 			// if that unit is a refinery
 			if (Util::IsRefinery(unit) && Util::IsCompleted(unit) && unit->vespene_contents > 0 )
@@ -98,7 +98,7 @@ void WorkerManager::handleGasWorkers()
 
 
 				// if it's less than we want it to be, fill 'er up
-				if (numAssigned<3 && minWorker>14)
+				if (numAssigned<3 && numMinWorker>14)
 				{
 					auto gasWorker = getGasWorker(unit);
 					if (gasWorker)
@@ -114,7 +114,7 @@ void WorkerManager::handleMineralWorkers()
 {
 	const sc2::Units CommandCenters = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER , sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND , sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS }));
 	// for each unit we have
-	for (auto & unit : CommandCenters)
+	for (const auto  unit : CommandCenters)
 	{
 		// if that unit is a townhall
 		if (Util::IsCompleted(unit))
@@ -127,7 +127,7 @@ void WorkerManager::handleMineralWorkers()
 			if (numAssigned > numMaxAssigned)
 			{
 
-				for (auto unit_next : CommandCenters)
+				for (const auto & unit_next : CommandCenters)
 				{
 					// if that unit is finished
 					if (Util::IsCompleted(unit_next))
@@ -156,7 +156,7 @@ void WorkerManager::handleMineralWorkers()
 void WorkerManager::handleIdleWorkers()
 {
     // for each of our workers
-    for (auto worker : m_workerData.getWorkers())
+    for (const auto & worker : m_workerData.getWorkers())
     {
         if (!worker) { continue; }
 
@@ -177,7 +177,7 @@ void WorkerManager::handleIdleWorkers()
 void WorkerManager::handleRepairWorkers()
 {
 	const sc2::Units Bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit( sc2::UNIT_TYPEID::TERRAN_BUNKER ));
-	for (auto & b : Bunker)
+	for (const auto  b : Bunker)
 	{
 		if (b->build_progress==1.0f && b->health < b->health_max)
 		{
@@ -193,7 +193,7 @@ const sc2::Unit * WorkerManager::getClosestMineralWorkerTo(const sc2::Point2D & 
     double closestDist = std::numeric_limits<double>::max();
 
     // for each of our workers
-	for (auto & worker : m_workerData.getWorkers())
+	for (const auto  worker : m_workerData.getWorkers())
 	{
 		if (!worker) { continue; }
 
@@ -223,7 +223,7 @@ const sc2::Unit * WorkerManager::getClosestCombatWorkerTo(const sc2::Point2D & p
 	double closestDist = std::numeric_limits<double>::max();
 
 	// for each of our workers
-	for (auto & worker : m_workerData.getWorkers())
+	for (const auto  worker : m_workerData.getWorkers())
 	{
 		if (!worker) { continue; }
 
@@ -267,7 +267,7 @@ const sc2::Unit * WorkerManager::getClosestDepot(const sc2::Unit * worker) const
     const sc2::Unit * closestDepot = nullptr;
     double closestDistance = std::numeric_limits<double>::max();
 
-    for (auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
+    for (const auto  unit : m_bot.UnitInfo().getUnits(Players::Self))
     {
         if (!unit) { continue; }
 
@@ -336,7 +336,7 @@ void WorkerManager::drawResourceDebugInfo()
         return;
     }
 
-    for (auto & worker : m_workerData.getWorkers())
+    for (const auto  worker : m_workerData.getWorkers())
     {
         if (!worker) { continue; }
 
@@ -362,7 +362,7 @@ void WorkerManager::drawWorkerInformation()
 
     int yspace = 0;
 
-    for (auto & workerTag : m_workerData.getWorkers())
+    for (const auto  workerTag : m_workerData.getWorkers())
     {
         ss << m_workerData.getJobCode(workerTag) << " " << workerTag << "\n";
     }

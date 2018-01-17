@@ -90,7 +90,7 @@ bool BuildingPlacer::canBuildHere(int bx, int by, const Building & b) const
 	//Don't build below flying buildings
 	const sc2::Units flyingBuildings = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_BARRACKSFLYING,sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING, sc2::UNIT_TYPEID::TERRAN_STARPORTFLYING }));
 	sc2::Point2D loc(static_cast<float>(bx), static_cast<float>(by));
-	for (auto unit : flyingBuildings)
+	for (const auto & unit : flyingBuildings)
 	{
 		if (Util::Dist(loc, unit->pos) < 3)
 		{
@@ -320,7 +320,7 @@ sc2::Point2D BuildingPlacer::getRefineryPosition()
     double minGeyserDistanceFromHome = std::numeric_limits<double>::max();
     sc2::Point2D homePosition = m_bot.GetStartLocation();
 
-    for (auto & unit : m_bot.Observation()->GetUnits())
+    for (const auto & unit : m_bot.Observation()->GetUnits())
     {
         if (!Util::IsGeyser(unit))
         {
@@ -331,7 +331,7 @@ sc2::Point2D BuildingPlacer::getRefineryPosition()
 
         // check to see if it's next to one of our depots
         bool nearDepot = false;
-        for (auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
+        for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
         {
             if (Util::IsTownHall(unit) && Util::Dist(unit->pos, geyserPos) < 10)
             {

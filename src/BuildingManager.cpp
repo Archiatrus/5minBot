@@ -40,7 +40,7 @@ void BuildingManager::onFrame()
 
 bool BuildingManager::isBeingBuilt(sc2::UnitTypeID type)
 {
-    for (auto & b : m_buildings)
+    for (const auto & b : m_buildings)
     {
         if (b.type == type)
         {
@@ -60,7 +60,7 @@ void BuildingManager::validateWorkersAndBuildings()
     std::vector<Building> toRemove;
 
     // find any buildings which have become obsolete
-    for (auto & b : m_buildings)
+    for (const auto & b : m_buildings)
     {
         if (b.status != BuildingStatus::UnderConstruction)
         {
@@ -538,7 +538,7 @@ sc2::Point2D BuildingManager::getBuildingLocation(const Building & b)
 
 void BuildingManager::removeBuildings(const std::vector<Building> & toRemove)
 {
-    for (auto & b : toRemove)
+    for (const auto & b : toRemove)
     {
         const auto & it = std::find(m_buildings.begin(), m_buildings.end(), b);
 

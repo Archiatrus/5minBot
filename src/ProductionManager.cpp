@@ -194,7 +194,7 @@ void ProductionManager::defaultMacro()
 
 	//Even without money we can drop mules
 	const sc2::Units CommandCenters = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER , sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND , sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS }));
-	for (auto & unit : CommandCenters)
+	for (const auto & unit : CommandCenters)
 	{
 		if (unit->build_progress == 1.0f)
 		{
@@ -266,7 +266,7 @@ void ProductionManager::defaultMacro()
 			return;
 		}
 	}
-	for (auto & unit : CommandCenters)
+	for (const auto & unit : CommandCenters)
 	{
 		if (unit->build_progress == 1.0f)
 		{
@@ -315,7 +315,7 @@ void ProductionManager::defaultMacro()
 	//Upgrades techlab
 	const sc2::Units bTechLab = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_BARRACKSTECHLAB));
 	std::vector<sc2::UpgradeID> upgrades = m_bot.Observation()->GetUpgrades();
-	for (auto & unit : bTechLab)
+	for (const auto & unit : bTechLab)
 	{
 		if (unit->build_progress == 1 && unit->orders.empty())
 		{
@@ -366,7 +366,7 @@ void ProductionManager::defaultMacro()
 	const sc2::Units Armories = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_ARMORY));
 	const int numArmories = static_cast<int>(Armories.size());
 	const int numArmoriesFinished = buildingsFinished(Armories);
-	for (auto & unit : Engibays)
+	for (const auto & unit : Engibays)
 	{
 		if (unit->build_progress == 1)
 		{
@@ -452,7 +452,7 @@ void ProductionManager::defaultMacro()
 	}
 	//Every rax has to build
 	const sc2::Units bReactor = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR));
-	for (auto & unit : Rax)
+	for (const auto & unit : Rax)
 	{
 		//Any finished rax
 		if (unit->build_progress == 1)
@@ -542,7 +542,7 @@ void ProductionManager::defaultMacro()
 			}
 		}
 	}
-	for (auto & unit : Factories)
+	for (const auto & unit : Factories)
 	{
 		//Any finished Factory
 		if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_FACTORY && unit->build_progress == 1)
@@ -585,7 +585,7 @@ void ProductionManager::defaultMacro()
 			}
 		}
 	}
-	for (auto & unit : Starports)
+	for (const auto & unit : Starports)
 	{
 		//Any finished Starport
 		if (unit->build_progress == 1)
@@ -597,7 +597,7 @@ void ProductionManager::defaultMacro()
 				if (canBuildAddon && !unit->add_on_tag)
 				{
 					//The reactor for the first starport should be with the factory
-					for (auto & factory : Factories)
+					for (const auto & factory : Factories)
 					{
 						if ((factory->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORY && factory->orders.empty() && factory->add_on_tag && !unit->is_flying)||(factory->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING && factory->orders.empty()&& unit->is_flying))
 						{
@@ -688,7 +688,7 @@ void ProductionManager::defaultMacro()
 			//So only after 68/114 seconds we need to build the armory
 			//Since it always takes a while we do it 10sec earlier
 			float maxProgress = 0.0f;
-			for (auto & engi : Engibays)
+			for (const auto & engi : Engibays)
 			{
 				if (engi->orders.empty())
 				{
@@ -783,7 +783,7 @@ void ProductionManager::requestVikings()
 int ProductionManager::buildingsFinished(sc2::Units units)
 {
 	int numBuildingsFinished = 0;
-	for (auto & unit : units)
+	for (const auto & unit : units)
 	{
 		if (unit->build_progress==1.0f)
 		{
@@ -796,7 +796,7 @@ int ProductionManager::buildingsFinished(sc2::Units units)
 int ProductionManager::howOftenQueued(sc2::UnitTypeID type)
 {
 	int numQueued = 0;
-	for (auto & b : m_newQueue)
+	for (const auto & b : m_newQueue)
 	{
 		if (b.type.getUnitTypeID() == type)
 		{
@@ -817,14 +817,14 @@ void ProductionManager::drawProductionInformation()
 	std::stringstream ss;
 	ss << "Production Information\n";
 
-	for (auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
+	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
 	{
 		if (unit->build_progress < 1.0f)
 		{
 			//ss << sc2::UnitTypeToName(unit.unit_type) << " " << unit.build_progress << "\n";
 		}
 	}
-	for (auto & b : m_newQueue)
+	for (const auto & b : m_newQueue)
 	{
 		ss << "\n" << sc2::UnitTypeToName(b.type.getUnitTypeID());
 	}

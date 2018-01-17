@@ -46,7 +46,7 @@ const float pathPlaning::calcThreatLvl(sc2::Point2D pos) const
 			float dps = 0.0f;
 			//float range = 0.0f;
 			float range = Util::GetUnitTypeSight(ui.type, m_bot);
-			for (auto & weapon : weapons)
+			for (const auto & weapon : weapons)
 			{
 				//At the moment its only used for medivacs
 				if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)

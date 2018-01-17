@@ -48,7 +48,7 @@ void MapTools::onStart()
 			m_ramp[x][y] = m_walkable[x][y] || !m_buildable[x][y];
         }
     }
-    for (auto & unit : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral))
+    for (const auto & unit : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral))
     {
         m_maxZ = std::max(unit->pos.z, m_maxZ);
     }
@@ -137,7 +137,7 @@ bool MapTools::isVisible(const sc2::Point2D & pos) const
 
 bool MapTools::isPowered(const sc2::Point2D & pos) const
 {
-    for (auto & powerSource : m_bot.Observation()->GetPowerSources())
+    for (const auto & powerSource : m_bot.Observation()->GetPowerSources())
     {
         if (Util::Dist(pos, powerSource.position) < powerSource.radius)
         {
@@ -311,7 +311,7 @@ sc2::Point2D MapTools::getLeastRecentlySeenPosition() const
     sc2::Point2D leastSeen(0.0f, 0.0f);
     const BaseLocation * baseLocation = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
 
-    for (auto & tile : baseLocation->getClosestTiles())
+    for (const auto & tile : baseLocation->getClosestTiles())
     {
         BOT_ASSERT(isValid(tile), "How is this tile not valid?");
 
@@ -449,7 +449,7 @@ const bool MapTools::hasPocketBase() const
 	const BaseLocation * homeBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
 	const BaseLocation * firstExe = nullptr;
 	int minDistance = std::numeric_limits<int>::max();
-	for (auto & base : m_bot.Bases().getBaseLocations())
+	for (const auto & base : m_bot.Bases().getBaseLocations())
 	{
 		auto tile = base->getDepotPosition();
 		int distanceFromHome = homeBase->getGroundDistance(tile);

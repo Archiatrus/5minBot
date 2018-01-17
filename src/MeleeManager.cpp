@@ -19,7 +19,7 @@ void MeleeManager::assignTargets(const std::vector<const sc2::Unit *> & targets)
 
     // figure out targets
     std::vector<const sc2::Unit *> meleeUnitTargets;
-    for (auto target : targets)
+    for (const auto target : targets)
     {
         if (!target) { continue; }
         if (target->is_flying) { continue; }
@@ -30,7 +30,7 @@ void MeleeManager::assignTargets(const std::vector<const sc2::Unit *> & targets)
     }
 
     // for each meleeUnit
-    for (auto & meleeUnit : meleeUnits)
+    for (const auto & meleeUnit : meleeUnits)
     {
         BOT_ASSERT(meleeUnit, "melee unit is null");
 
@@ -82,7 +82,7 @@ const sc2::Unit * MeleeManager::getTarget(const sc2::Unit * meleeUnit, const std
     const sc2::Unit * closestTarget = nullptr;
 
     // for each target possiblity
-    for (auto & targetUnit : targets)
+    for (const auto & targetUnit : targets)
     {
         BOT_ASSERT(targetUnit, "null target unit in getTarget");
 
@@ -121,7 +121,7 @@ int MeleeManager::getAttackPriority(const sc2::Unit * attacker, const sc2::Unit 
 
 bool MeleeManager::meleeUnitShouldRetreat(const sc2::Unit * meleeUnit, const std::vector<const sc2::Unit *> & targets)
 {
-	for (auto & target : targets)
+	for (const auto & target : targets)
 	{
 		//It would be better if we have one sacrifice.
 		if (target->unit_type.ToType() == sc2::UNIT_TYPEID::ZERG_BANELING && Util::Dist(meleeUnit->pos, target->pos) <= 5.2f)

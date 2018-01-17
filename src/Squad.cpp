@@ -61,7 +61,7 @@ void Squad::onFrame()
 	{
 		return;
 	}
-	for (auto & unit : m_units)
+	for (const auto & unit : m_units)
 	{
 		m_bot.Debug()->DebugSphereOut(unit->pos, 0.5f);
 		m_bot.Debug()->DebugTextOut(m_order.getStatus(), unit->pos);
@@ -94,7 +94,7 @@ void Squad::setAllUnits()
 {
     // clean up the _units vector just in case one of them died
     std::set<const sc2::Unit *> goodUnits;
-    for (auto unit : m_units)
+    for (const auto & unit : m_units)
     {
         if (!unit) { continue; }
         if (unit->build_progress < 1.0f) { continue; }
@@ -111,7 +111,7 @@ void Squad::setAllUnits()
 void Squad::setNearEnemyUnits()
 {
     m_nearEnemy.clear();
-    for (auto unit : m_units)
+    for (const auto unit : m_units)
     {
         m_nearEnemy[unit] = isUnitNearEnemy(unit);
 
@@ -129,7 +129,7 @@ void Squad::addUnitsToMicroManagers()
     std::vector<const sc2::Unit *> siegeUnits;
 
     // add _units to micro managers
-    for (auto unit : m_units)
+    for (const auto unit : m_units)
     {
         BOT_ASSERT(unit, "null unit in addUnitsToMicroManagers()");
         if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_SIEGETANK || unit->unit_type == sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED)
@@ -173,7 +173,7 @@ const bool Squad::needsToRegroup()
 	float n = 0.0f;
 	sc2::Point2D mean(0.0f, 0.0f);
 	sc2::Point2D variance(0.0f, 0.0f);
-	for (auto & unit : m_units)
+	for (const auto & unit : m_units)
 	{
 		if (!unit->is_alive || unit->unit_type.ToType()==sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 		{
@@ -219,7 +219,7 @@ bool Squad::containsUnit(const sc2::Unit * unit) const
 
 void Squad::clear()
 {
-    for (auto unit : getUnits())
+    for (const auto & unit : getUnits())
     {
         BOT_ASSERT(unit, "null unit in squad clear");
 
@@ -236,7 +236,7 @@ bool Squad::isUnitNearEnemy(const sc2::Unit * unit) const
 {
     BOT_ASSERT(unit, "null unit in squad");
 
-    for (auto & u : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Enemy))
+    for (const auto & u : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Enemy))
     {
         if (Util::Dist(unit->pos, u->pos) < Util::GetUnitTypeSight(u->unit_type.ToType(),m_bot))
         {
@@ -255,7 +255,7 @@ sc2::Point2D Squad::calcCenter() const
     }
 
     sc2::Point2D sum(0,0);
-    for (auto unit: m_units)
+    for (const auto & unit: m_units)
     {
         BOT_ASSERT(unit, "null unit in squad calcCenter");
         sum += unit->pos;
@@ -283,7 +283,7 @@ const sc2::Unit * Squad::unitClosestToEnemy() const
     const sc2::Unit * closest = nullptr;
     float closestDist = std::numeric_limits<float>::max();
 
-    for (auto unit : m_units)
+    for (const auto & unit : m_units)
     {
         BOT_ASSERT(unit, "null unit");
 
@@ -304,7 +304,7 @@ int Squad::squadUnitsNear(const sc2::Point2D & p) const
 {
     int numUnits = 0;
 
-    for (auto unit : m_units)
+    for (const auto & unit : m_units)
     {
         BOT_ASSERT(unit, "null unit");
 

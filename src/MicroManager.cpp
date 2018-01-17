@@ -28,7 +28,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
     // if the order is to defend, we only care about units in the radius of the defense
     if (order.getType() == SquadOrderTypes::Defend)
     {
-        for (auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
+        for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
         {
             if (Util::Dist(enemyUnit->pos, order.getPosition()) < order.getRadius())
             {
@@ -39,7 +39,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
     } // otherwise we want to see everything on the way as well
     else if (order.getType() == SquadOrderTypes::Attack)
     {
-        for (auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
+        for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
         {
             if (Util::Dist(enemyUnit->pos, order.getPosition()) < order.getRadius())
             {
@@ -47,11 +47,11 @@ void MicroManager::execute(const SquadOrder & inputOrder)
             }
         }
 
-        for (auto unit : m_units)
+        for (const auto & unit : m_units)
         {
             BOT_ASSERT(unit, "null unit in attack");
 
-            for (auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
+            for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
             {
                 if (Util::Dist(enemyUnit->pos, unit->pos) < order.getRadius())
                 {
@@ -79,7 +79,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
         {
             // if this is the an attack squad
             std::vector<const sc2::Unit *> workersRemoved;
-            for (auto enemyUnit : targetUnitTags)
+            for (const auto enemyUnit : targetUnitTags)
             {
                 BOT_ASSERT(enemyUnit, "null enemy unit target");
 
@@ -116,7 +116,7 @@ const std::vector<const sc2::Unit *> & MicroManager::getUnits() const
 void MicroManager::regroup(const sc2::Point2D & regroupPosition) const
 {
 	sc2::Units regroupUnits;
-	for (auto & unit : m_units)
+	for (const auto & unit : m_units)
 	{
 		if (Util::Dist(unit->pos, regroupPosition) > 8.0f)
 		{
