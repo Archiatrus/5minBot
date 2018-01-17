@@ -47,6 +47,7 @@ void Squad::onFrame()
 
         m_meleeManager.regroup(regroupPosition);
         m_rangedManager.regroup(regroupPosition);
+		m_siegeManager.regroup(regroupPosition);
     }
     else // otherwise, execute micro
     {

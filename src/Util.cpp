@@ -734,3 +734,29 @@ sc2::Point3D Util::get3DPoint(const sc2::Point2D pos,CCBot & bot)
 {
 	return sc2::Point3D(pos.x,pos.y,bot.Observation()->TerrainHeight(pos));
 }
+
+sc2::Point2D Util::normalizeVector(const sc2::Point2D pos, const float length)
+{
+	return (length / Util::Dist(pos)) * pos ;
+}
+
+const bool Util::isBadEffect(const sc2::EffectID id)
+{
+	if (id.ToType() == sc2::EFFECT_ID::LURKERATTACK)
+	{
+		int a = 1;
+	}
+	switch (id.ToType())
+	{
+	case sc2::EFFECT_ID::BLINDINGCLOUD:
+	case sc2::EFFECT_ID::CORROSIVEBILE:
+	case sc2::EFFECT_ID::LIBERATORMORPHED:
+	case sc2::EFFECT_ID::LIBERATORMORPHING:
+	case sc2::EFFECT_ID::LURKERATTACK:
+	case sc2::EFFECT_ID::NUKEDOT:
+	case sc2::EFFECT_ID::PSISTORM:
+	case sc2::EFFECT_ID::THERMALLANCES:
+		return true;
+	}
+	return false;
+}

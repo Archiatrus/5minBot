@@ -67,6 +67,10 @@ namespace Util
     
 	sc2::Point3D get3DPoint(sc2::Point2D pos, CCBot & bot);
 
+	sc2::Point2D normalizeVector(const sc2::Point2D pos, const float length=1.0f);
+
+	const bool isBadEffect(sc2::EffectID id);
+
     // Kevin-provided helper functions
     void    VisualizeGrids(const sc2::ObservationInterface* obs, sc2::DebugInterface* debug);
     float   TerainHeight(const sc2::GameInfo& info, const sc2::Point2D& point);

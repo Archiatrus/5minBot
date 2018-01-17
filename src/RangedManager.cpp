@@ -19,7 +19,7 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 
     // figure out targets
     std::vector<const sc2::Unit *> rangedUnitTargets;
-    for (auto target : targets)
+    for (const auto & target : targets)
     {
         if (!target) { continue; }
         if (target->unit_type == sc2::UNIT_TYPEID::ZERG_EGG) { continue; }
@@ -39,7 +39,7 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 	float minDist = std::numeric_limits<float>::max();
 	//Just checking if only medivacs available
 	bool justMedivacs = true;
-	for (auto & injured : rangedUnits)
+	for (const auto & injured : rangedUnits)
 	{
 		if (!m_bot.GetUnit(injured->tag) || !injured->is_alive)
 		{
@@ -78,10 +78,52 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 		return;
 	}
 
-	
+	//Get effects like storm
+	const std::vector<sc2::Effect> effects = m_bot.Observation()->GetEffects();
+
     // for each Unit
-    for (auto rangedUnit : rangedUnits)
+	auto test = m_bot.Observation()->GetEffectData()[12].radius;
+    for (const auto & rangedUnit : rangedUnits)
     {
+		//Don't stand in a storm etc
+		bool fleeYouFools = false;
+		for (const auto & effect : effects)
+		{
+			if (Util::isBadEffect(effect.effect_id))
+			{
+				const float radius = m_bot.Observation()->GetEffectData()[effect.effect_id].radius;
+				for (const auto & pos : effect.positions)
+				{
+					Drawing::drawSphere(m_bot, pos, radius, sc2::Colors::Purple);
+					if (Util::Dist(rangedUnit->pos, pos)<radius + 2.0f)
+					{
+						sc2::Point2D fleeingPos;
+						if (effect.positions.size() == 1)
+						{
+							fleeingPos = pos + Util::normalizeVector(rangedUnit->pos - pos, radius + 2.0f);
+						}
+						else
+						{
+							const sc2::Point2D attackDirection = effect.positions.back() - effect.positions.front();
+							fleeingPos = rangedUnit->pos + Util::normalizeVector(sc2::Point2D(-attackDirection.x,attackDirection.y), radius + 2.0f);
+						}
+						Micro::SmartMove(rangedUnit, fleeingPos, m_bot);
+						fleeYouFools = true;
+						break;
+					}
+				}
+			}
+			
+			
+			if (fleeYouFools)
+			{
+				break;
+			}
+		}
+		if (fleeYouFools)
+		{
+			continue;
+		}
         BOT_ASSERT(rangedUnit, "ranged unit is null");
         // if the order is to attack or defend
 		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend)
@@ -93,7 +135,7 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 				//find the nearest enemy
 				const sc2::Unit * nearestEnemy = nullptr;
 				float minDistTarget = std::numeric_limits<float>::max();
-				for (auto & target : rangedUnitTargets)
+				for (const auto & target : rangedUnitTargets)
 				{
 					if (target->is_alive && Util::canHitMe(rangedUnit, target,m_bot))
 					{
@@ -199,7 +241,7 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 		}
     }
 	//Grouped by target attack command
-	for (auto & t : targetsAttackedBy)
+	for (const auto & t : targetsAttackedBy)
 	{
 		Micro::SmartAttackUnit(t.second, t.first, m_bot);
 	}
@@ -226,7 +268,7 @@ const sc2::Unit * RangedManager::getTarget(const sc2::Unit * rangedUnit, const s
 	// We want to attack the weakest/highest prio target in range
 	// If there is no in range, we want to attack one in sight,
 	// else the one with highest prio.
-	for (auto targetUnit : targets)
+	for (const auto & targetUnit : targets)
 	{
 		BOT_ASSERT(targetUnit, "null target unit in getTarget");
 		//Ignore dead units or ones we can not hit
