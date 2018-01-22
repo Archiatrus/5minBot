@@ -19,11 +19,6 @@ void UnitData::updateUnit(const sc2::Unit * unit)
 	{
 		firstSeen = true;
 		m_unitMap[unit] = UnitInfo();
-
-		//if (Util::IsBuildingType(unit->unit_type.ToType()))
-		//{
-		//	m_buildings[unit->unit_type.ToType()].push_back(unit);
-		//}
 	}
 
 	UnitInfo & ui = m_unitMap[unit];

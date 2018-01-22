@@ -17,7 +17,7 @@ WorkerData::WorkerData(CCBot & bot)
 void WorkerData::updateAllWorkerData()
 {
     // check all our units and add new workers if we find them
-    for (const auto  unit : m_bot.UnitInfo().getUnits(Players::Self))
+    for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
     {
         if (Util::IsWorker(unit))
         {
@@ -291,7 +291,7 @@ const std::set<const sc2::Unit *> & WorkerData::getWorkers() const
 std::vector<const sc2::Unit *> WorkerData::getMineralWorkers() const
 {
 	std::vector<const sc2::Unit *> mineralWorkers;
-	for (const auto  unitjob : m_workerJobMap)
+	for (const auto & unitjob : m_workerJobMap)
 	{
 		if (unitjob.first && unitjob.second == WorkerJobs::Minerals)
 		{
@@ -303,7 +303,7 @@ std::vector<const sc2::Unit *> WorkerData::getMineralWorkers() const
 std::vector<const sc2::Unit *> WorkerData::getGasWorkers() const
 {
 	std::vector<const sc2::Unit *> gasWorkers;
-	for (const auto  unitjob : m_workerJobMap)
+	for (const auto & unitjob : m_workerJobMap)
 	{
 		if (unitjob.second == WorkerJobs::Gas)
 		{
@@ -339,7 +339,7 @@ void WorkerData::checkRepairedBuildings()
 		}
 		sc2::Units & workers = m.second;
 		sc2::Units deadWorker;
-		for (const auto  w : workers)
+		for (const auto & w : workers)
 		{
 			if (w->orders.empty() || w->orders.front().target_unit_tag != m.first)
 			{
@@ -350,12 +350,12 @@ void WorkerData::checkRepairedBuildings()
 				deadWorker.push_back(w);
 			}
 		}
-		for (const auto  deadW : deadWorker)
+		for (const auto & deadW : deadWorker)
 		{
 			workers.erase(std::remove(workers.begin(), workers.end(), deadW), workers.end());
 		}
 	}
-	for (const auto  t : targetsToDelete)
+	for (const auto & t : targetsToDelete)
 	{
 		m_repair_map.erase(t);
 	}

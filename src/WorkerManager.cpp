@@ -114,7 +114,7 @@ void WorkerManager::handleMineralWorkers()
 {
 	const sc2::Units CommandCenters = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER , sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND , sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS }));
 	// for each unit we have
-	for (const auto  unit : CommandCenters)
+	for (const auto & unit : CommandCenters)
 	{
 		// if that unit is a townhall
 		if (Util::IsCompleted(unit))
@@ -177,7 +177,7 @@ void WorkerManager::handleIdleWorkers()
 void WorkerManager::handleRepairWorkers()
 {
 	const sc2::Units Bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit( sc2::UNIT_TYPEID::TERRAN_BUNKER ));
-	for (const auto  b : Bunker)
+	for (const auto & b : Bunker)
 	{
 		if (b->build_progress==1.0f && b->health < b->health_max)
 		{
@@ -193,7 +193,7 @@ const sc2::Unit * WorkerManager::getClosestMineralWorkerTo(const sc2::Point2D & 
     double closestDist = std::numeric_limits<double>::max();
 
     // for each of our workers
-	for (const auto  worker : m_workerData.getWorkers())
+	for (const auto & worker : m_workerData.getWorkers())
 	{
 		if (!worker) { continue; }
 
@@ -223,7 +223,7 @@ const sc2::Unit * WorkerManager::getClosestCombatWorkerTo(const sc2::Point2D & p
 	double closestDist = std::numeric_limits<double>::max();
 
 	// for each of our workers
-	for (const auto  worker : m_workerData.getWorkers())
+	for (const auto & worker : m_workerData.getWorkers())
 	{
 		if (!worker) { continue; }
 
@@ -267,7 +267,7 @@ const sc2::Unit * WorkerManager::getClosestDepot(const sc2::Unit * worker) const
     const sc2::Unit * closestDepot = nullptr;
     double closestDistance = std::numeric_limits<double>::max();
 
-    for (const auto  unit : m_bot.UnitInfo().getUnits(Players::Self))
+    for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
     {
         if (!unit) { continue; }
 
@@ -336,7 +336,7 @@ void WorkerManager::drawResourceDebugInfo()
         return;
     }
 
-    for (const auto  worker : m_workerData.getWorkers())
+    for (const auto & worker : m_workerData.getWorkers())
     {
         if (!worker) { continue; }
 
@@ -362,7 +362,7 @@ void WorkerManager::drawWorkerInformation()
 
     int yspace = 0;
 
-    for (const auto  workerTag : m_workerData.getWorkers())
+    for (const auto & workerTag : m_workerData.getWorkers())
     {
         ss << m_workerData.getJobCode(workerTag) << " " << workerTag << "\n";
     }

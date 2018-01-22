@@ -72,7 +72,7 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const std::vector<const sc2:
     m_distanceMap = m_bot.Map().getDistanceMap(m_centerOfResources);
 
     // check to see if this is a start location for the map
-    for (const auto  pos : m_bot.Observation()->GetGameInfo().enemy_start_locations)
+    for (const auto & pos : m_bot.Observation()->GetGameInfo().enemy_start_locations)
     {
         if (containsPosition(pos))
         {
@@ -82,7 +82,7 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const std::vector<const sc2:
     }
     
     // if this base location position is near our own resource depot, it's our start location
-    for (const auto  unit : m_bot.Observation()->GetUnits())
+    for (const auto & unit : m_bot.Observation()->GetUnits())
     {
         if (Util::GetPlayer(unit) == Players::Self && Util::IsTownHall(unit) && containsPosition(unit->pos))
         {
@@ -98,7 +98,7 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const std::vector<const sc2:
     if (!isStartLocation())
     {
         // the position of the depot will be the closest spot we can build one from the resource center
-        for (const auto  tile : getClosestTiles())
+        for (const auto & tile : getClosestTiles())
         {
             // TODO: m_depotPosition = depot position for this base location
         }
@@ -199,7 +199,7 @@ void BaseLocation::setTownHall(const sc2::Unit * townHall)
 	//it seems we have a new base. Time to update the mineral nodes.
 	sc2::Units resources = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral, sc2::IsUnits(Util::getMineralTypes()));
 	m_minerals.clear();
-	for (const auto  resource : resources)
+	for (const auto & resource : resources)
 	{
 		if (Util::Dist(townHall->pos, resource->pos)<10)
 		{
@@ -250,12 +250,12 @@ void BaseLocation::draw()
         Drawing::drawLine(m_bot,m_left, y, m_right, y, sc2::Color(160, 160, 160));
     }
 
-    for (const auto  mineralPos : m_mineralPositions)
+    for (const auto & mineralPos : m_mineralPositions)
     {
         Drawing::drawSphere(m_bot,mineralPos, 1.0f, sc2::Colors::Teal);
     }
 
-    for (const auto  geyserPos : m_geyserPositions)
+    for (const auto & geyserPos : m_geyserPositions)
     {
         Drawing::drawSphere(m_bot,geyserPos, 1.0f, sc2::Colors::Green);
     }

@@ -49,6 +49,15 @@ void UnitInfoManager::updateUnitInfo()
 				m_unitData[Players::Enemy].lostPosition(kv.first);
 			}
 		}
+		//DT detection
+		for (const auto & kv : getUnitData(Players::Self).getUnitInfoMap())
+		{
+			const float lostHealth = kv.second.lastHealth - kv.first->health;
+			if (m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Protoss && (lostHealth == 45 || lostHealth == 50 || lostHealth == 55 || lostHealth == 60))
+			{
+				int a = 1;
+			}
+		}
 	}
 
 	// remove bad enemy units
@@ -121,7 +130,6 @@ void UnitInfoManager::drawSelectedUnitDebugInfo()
 
     if (!unit) { return; }
 
-    auto debug = m_bot.Debug();
     auto query = m_bot.Query();
     auto abilities = m_bot.Observation()->GetAbilityData();
 
@@ -150,7 +158,7 @@ void UnitInfoManager::drawSelectedUnitDebugInfo()
             debug_txt += GetAbilityText(ability.ability_id) + "\n";
         }
     }
-    debug->DebugTextOut(debug_txt, unit->pos, sc2::Colors::Green);
+    Drawing::drawTextScreen(m_bot, unit->pos, debug_txt, sc2::Colors::Green);
 
     // Show the direction of the unit.
     sc2::Point3D p1; // Use this to show target distance.
@@ -162,7 +170,7 @@ void UnitInfoManager::drawSelectedUnitDebugInfo()
         assert(unit->facing >= 0.0f && unit->facing < 6.29f);
         p1.x += length * std::cos(unit->facing);
         p1.y += length * std::sin(unit->facing);
-        debug->DebugLineOut(p0, p1, sc2::Colors::Yellow);
+		Drawing::drawLine(m_bot,p0, p1, sc2::Colors::Yellow);
     }
 
     // Box around the unit.
@@ -175,14 +183,14 @@ void UnitInfoManager::drawSelectedUnitDebugInfo()
         p_max.x += 2.0f;
         p_max.y += 2.0f;
         p_max.z += 2.0f;
-        debug->DebugBoxOut(p_min, p_max, sc2::Colors::Blue);
+		Drawing::drawBox(m_bot,p_min, p_max, sc2::Colors::Blue);
     }
 
     // Sphere around the unit.
     {
         sc2::Point3D p = unit->pos;
         p.z += 0.1f; // Raise the line off the ground a bit so it renders more clearly.
-        debug->DebugSphereOut(p, 1.25f, sc2::Colors::Purple);
+		Drawing::drawSphere(m_bot,p, 1.25f, sc2::Colors::Purple);
     }
 
     // Pathing query to get the target.
@@ -218,8 +226,8 @@ void UnitInfoManager::drawSelectedUnitDebugInfo()
     {
         sc2::Point3D p = target;
         p.z += 0.1f; // Raise the line off the ground a bit so it renders more clearly.
-        debug->DebugSphereOut(target, 1.25f, sc2::Colors::Blue);
-        debug->DebugTextOut(target_info, p1, sc2::Colors::Yellow);
+		Drawing::drawSphere(m_bot,target, 1.25f, sc2::Colors::Blue);
+		Drawing::drawTextScreen(m_bot, p1, target_info, sc2::Colors::Yellow);
     }
     
 }
@@ -268,8 +276,8 @@ void UnitInfoManager::drawUnitInformation(float x,float y) const
     
     for (auto & kv : getUnitData(Players::Enemy).getUnitInfoMap())
     {
-        m_bot.Debug()->DebugSphereOut(kv.second.lastPosition, 0.5f);
-        m_bot.Debug()->DebugTextOut(sc2::UnitTypeToName(kv.second.type), kv.second.lastPosition);
+        Drawing::drawSphere(m_bot,kv.second.lastPosition, 0.5f);
+        Drawing::drawTextScreen(m_bot, kv.second.lastPosition,sc2::UnitTypeToName(kv.second.type));
     }
 
 

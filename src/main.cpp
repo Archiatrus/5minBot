@@ -47,12 +47,12 @@ int main(int argc, char* argv[])
 		coordinator.SetParticipants({
 			CreateParticipant(sc2::Race::Terran, &bot),
 			//sc2::PlayerSetup(sc2::PlayerType::Observer,Util::GetRaceFromString(enemyRaceString)),
-			CreateComputer(sc2::Race::Zerg, sc2::Difficulty::CheatInsane)
+			CreateComputer(sc2::Race::Protoss, sc2::Difficulty::CheatInsane)
 		});
 		// Start the game.
 		coordinator.LaunchStarcraft();
-		coordinator.StartGame("C:/Program Files (x86)/StarCraft II/Maps/AcolyteLE.SC2Map");
-		//coordinator.StartGame("Interloper LE");
+		//coordinator.StartGame("C:/Program Files (x86)/StarCraft II/Maps/AcolyteLE.SC2Map");
+		coordinator.StartGame("Interloper LE");
 
 
 		// Step forward the game simulation.

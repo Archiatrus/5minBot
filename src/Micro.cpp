@@ -63,7 +63,7 @@ void Micro::SmartAttackUnit(const sc2::Units & attacker, const sc2::Unit * targe
 void Micro::SmartAttackMove(const sc2::Unit * attacker, const sc2::Point2D & targetPosition, CCBot & bot)
 {
     BOT_ASSERT(attacker != nullptr, "Attacker is null");
-	if (attacker->orders.empty() || attacker->orders.back().ability_id != sc2::ABILITY_ID::ATTACK_ATTACK || Util::Dist(attacker->orders.back().target_pos,targetPosition) > 0.1f)
+	if (attacker->orders.empty() || attacker->orders.back().ability_id != sc2::ABILITY_ID::ATTACK_ATTACK || Util::Dist(attacker->orders.back().target_pos,targetPosition) > 1.0f)
 	{
 		bot.Actions()->UnitCommand(attacker, sc2::ABILITY_ID::ATTACK_ATTACK, targetPosition);
 	}
@@ -74,7 +74,7 @@ void Micro::SmartAttackMove(const sc2::Units & attacker, const sc2::Point2D & ta
 	sc2::Units attackerThatNeedToMove;
 	for (const auto & a:attacker)
 	{
-		if (a->orders.empty() || a->orders.back().ability_id != sc2::ABILITY_ID::ATTACK_ATTACK || Util::Dist(a->orders.back().target_pos, targetPosition) > 0.1f)
+		if (a->orders.empty() || a->orders.back().ability_id != sc2::ABILITY_ID::ATTACK_ATTACK || Util::Dist(a->orders.back().target_pos, targetPosition) > 1.0f)
 		{
 			attackerThatNeedToMove.push_back(a);
 		}
