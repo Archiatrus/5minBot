@@ -647,7 +647,7 @@ const sc2::Unit * Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 	{
 		//We don't care for not finished bases.
 		const sc2::Unit * townHall = base->getTownHall();
-		if (townHall && townHall->build_progress != 1.0f)
+		if (townHall && townHall->build_progress != 1.0f && townHall->assigned_harvesters<24)
 		{
 			continue;
 		}
@@ -679,6 +679,10 @@ const sc2::Unit * Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 	std::map<int, const BaseLocation *> orderedBases2;
 	for (const auto & base : bases2)
 	{
+		if (base->isOccupiedByPlayer(Players::Self))
+		{
+			continue;
+		}
 		int distance = base->getGroundDistance(pos);
 		orderedBases2[distance] = base;
 	}
