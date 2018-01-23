@@ -17,8 +17,8 @@ const float cameraDistance = 50.0f;
 CameraModule::CameraModule(sc2::Client * const bot):
 	m_initialized(false),
 	m_client(bot), 
-	cameraMoveTime(150),
-	cameraMoveTimeMin(50),
+	cameraMoveTime(200),
+	cameraMoveTimeMin(75),
 	watchScoutWorkerUntil(7500),
 	lastMoved(0),
 	lastMovedPriority(0),
@@ -33,6 +33,14 @@ void CameraModule::onStart()
 {
 	if (m_client->Control() && m_client->Control()->GetObservation())
 	{
+		if (lastMoved)
+		{
+			lastMoved = 0;
+			lastMovedPriority = 0;
+			lastMovedPosition = sc2::Point2D(0, 0);
+			cameraFocusUnit = nullptr;
+			followUnit=false;
+		}
 		setPlayerIds();
 		setPlayerStartLocations();
 		cameraFocusPosition = (*m_startLocations.begin()).second;
@@ -50,7 +58,7 @@ void CameraModule::onFrame()
 		return;
 	}
 	moveCameraFallingNuke();
-	//moveCameraNukeDetect();
+	moveCameraNukeDetect();
 	//moveCameraIsUnderAttack();
 	moveCameraIsAttacking();
 	if (m_client->Observation()->GetGameLoop() <= watchScoutWorkerUntil)
@@ -65,15 +73,31 @@ void CameraModule::onFrame()
 
 void CameraModule::moveCameraFallingNuke()
 {
+	const int prio = 6;
+	if (!shouldMoveCamera(prio))
+	{
+		return;
+	}
+	for (auto & unit : m_client->Observation()->GetUnits())
+	{
+		if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_NUKE)
+		{
+			moveCamera(unit, prio);
+			return;
+		}
+	}
+}
+
+void CameraModule::moveCameraNukeDetect()
+{
 	const int prio = 5;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
 	}
-
-	for(auto & effects: m_client->Observation()->GetEffects())
+	for (auto & effects : m_client->Observation()->GetEffects())
 	{
-		if (effects.effect_id==uint32_t(7)) //7 = NukePersistent NOT TESTED YET
+		if (effects.effect_id == uint32_t(7)) //7 = NukePersistent NOT TESTED YET
 		{
 			moveCamera(effects.positions.front(), prio);
 			return;
@@ -81,23 +105,9 @@ void CameraModule::moveCameraFallingNuke()
 	}
 }
 
-//Not yet implemented
-void CameraModule::moveCameraNukeDetect(const sc2::Point2D target)
-{
-	const int prio = 4;
-	if (!shouldMoveCamera(prio))
-	{
-		return;
-	}
-	else
-	{
-		moveCamera(target, prio);
-	}
-}
-
 void CameraModule::moveCameraIsUnderAttack()
 {
-	const int prio = 3;
+	const int prio = 4;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
@@ -115,7 +125,7 @@ void CameraModule::moveCameraIsUnderAttack()
 
 void CameraModule::moveCameraIsAttacking()
 {
-	const int prio = 3;
+	const int prio = 4;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
@@ -158,7 +168,7 @@ void CameraModule::moveCameraScoutWorker()
 
 void CameraModule::moveCameraDrop()
 {
-	const int prio = 2;
+	const int prio = 3;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
@@ -175,7 +185,7 @@ void CameraModule::moveCameraDrop()
 
 void CameraModule::moveCameraArmy()
 {
-	const int prio = 1;
+	int prio = 1;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
@@ -221,7 +231,15 @@ void CameraModule::moveCameraUnitCreated(const sc2::Unit * unit)
 	{
 		return;
 	}
-	const int prio = 1;
+	int prio;
+	if (isBuilding(unit->unit_type))
+	{
+		prio = 2;
+	}
+	else
+	{
+		prio = 1;
+	}
 	if (!shouldMoveCamera(prio) || unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
 	{
 		return;
@@ -237,7 +255,7 @@ const bool CameraModule::shouldMoveCamera(const int priority) const
 	const int elapsedFrames = m_client->Observation()->GetGameLoop() - lastMoved;
 	const bool isTimeToMove = elapsedFrames >= cameraMoveTime;
 	const bool isTimeToMoveIfHigherPrio = elapsedFrames >= cameraMoveTimeMin;
-	const bool isHigherPrio = lastMovedPriority < priority;
+	const bool isHigherPrio = lastMovedPriority < priority || (followUnit && !cameraFocusUnit->is_alive);
 	// camera should move IF: enough time has passed OR (minimum time has passed AND new prio is higher)
 	return isTimeToMove || (isHigherPrio && isTimeToMoveIfHigherPrio);
 }
@@ -506,36 +524,21 @@ const float CameraModule::Dist(const sc2::Point2D A, const sc2::Point2D B) const
 
 void CameraModule::setPlayerStartLocations()
 {
-	
+	m_startLocations.clear();
 	std::vector<sc2::Point2D> startLocations = m_client->Observation()->GetGameInfo().start_locations;
 	sc2::Units bases = m_client->Observation()->GetUnits(sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER,sc2::UNIT_TYPEID::ZERG_HATCHERY,sc2::UNIT_TYPEID::PROTOSS_NEXUS }));
 	// If we are not an observer
 	// Assumes 2 player map
 	if (bases.size() == 1)
 	{
-		for (auto & startLocation : startLocations)
-		{
-			if (Dist(bases.front()->pos, startLocation) < 5.0f)
-			{
-				m_startLocations[bases.front()->owner] = startLocation;
-			}
-			else
-			{
-				m_startLocations[getOpponent(bases.front()->owner)] = startLocation;
-			}
-		}
+		m_startLocations[bases.front()->owner] = bases.front()->pos;
+		m_startLocations[getOpponent(bases.front()->owner)] = getInvertedPos(bases.front()->pos);
 	}
 	else
 	{
 		for (auto & unit : bases)
 		{
-			for (auto & startLocation : startLocations)
-			{
-				if (Dist(unit->pos, startLocation) < 5.0f)
-				{
-					m_startLocations[unit->owner] = startLocation;
-				}
-			}
+			m_startLocations[unit->owner] = unit->pos;
 		}
 	}
 }
@@ -563,6 +566,11 @@ const int CameraModule::getOpponent(const int player) const
 	return -1;
 }
 
+const sc2::Point2D CameraModule::getInvertedPos(const sc2::Point2D pos) const
+{
+	return sc2::Point2D(m_client->Observation()->GetGameInfo().width - pos.x, m_client->Observation()->GetGameInfo().width - pos.y);
+}
+
 CameraModule::~CameraModule()
 {
 
@@ -582,7 +590,7 @@ void CameraModuleObserver::onStart()
 	SC2APIProtocol::RequestObserverAction* obsRequest = request->mutable_obs_action();
 	SC2APIProtocol::ObserverAction* action = obsRequest->add_actions();
 	SC2APIProtocol::ActionObserverPlayerPerspective * player_perspective = action->mutable_player_perspective();
-	player_perspective->set_player_id(0);
+	player_perspective->set_player_id(0); //0 = everyone
 	m_client->Control()->Proto().SendRequest(request);
 	m_client->Control()->WaitForResponse();
 	CameraModule::onStart();
