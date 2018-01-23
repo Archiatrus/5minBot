@@ -19,6 +19,7 @@ class ProductionManager
 
 	bool m_scoutRequested;
 	bool m_vikingRequested;
+	int m_scansRequested;
 
     //const sc2::Unit * getClosestUnitToPosition(const std::vector<const sc2::Unit *> & units, sc2::Point2D closestTo);
     //bool    meetsReservedResources(const BuildType & type);
@@ -47,6 +48,8 @@ public:
 
 	void requestScout();
 	void requestVikings();
+	void requestScan();
+	void usedScan(const int i=1);
 	int buildingsFinished(sc2::Units units);
 	int howOftenQueued(sc2::UnitTypeID type);
 };

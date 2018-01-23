@@ -94,6 +94,10 @@ void CCBot::OnStep()
 	}
 	Drawing::drawTextScreen(*this, sc2::Point2D(0.85f, 0.6f), "Step time: " + std::to_string(int(std::round(ms))) + "ms\nMax step time: " + std::to_string(int(std::round(maxStepTime))) + "ms\n" + "#Frames >    85ms: " + std::to_string(lvl85) + "\n#Frames >  1000ms: " + std::to_string(lvl1000) + "\n#Frames > 10000ms: " + std::to_string(lvl10000), sc2::Colors::White, 16);
 	//std::cout << "#Frames > 85: " << lvl85 << ",    #Frames > 1000: " << lvl1000 << ",    #Frames > 10000ms: " << lvl10000 << std::endl;
+	//if (Observation()->GetGameLoop() == 100)
+	//{
+	//	Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_DARKTEMPLAR, Bases().getNextExpansion(Players::Self), 2, 1);
+	//}
 	Debug()->SendDebug();
 }
 
@@ -115,6 +119,11 @@ void CCBot::OnBuildingConstructionComplete(const sc2::Unit * unit)
 void CCBot::OnUnitEnterVision(const sc2::Unit * unit)
 {
 	m_gameCommander.OnUnitEnterVision(unit);
+}
+
+void CCBot::OnDTdetected(const sc2::Point2D pos)
+{
+	m_gameCommander.OnDTdetected(pos);
 }
 
 

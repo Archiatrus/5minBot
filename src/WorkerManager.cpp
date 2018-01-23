@@ -66,10 +66,11 @@ void WorkerManager::stopRepairing(const sc2::Unit * worker)
 void WorkerManager::handleGasWorkers()
 {
 
-	//We want first 14 workers on minerals
+	//We want first 13 workers on minerals
+	const int minNumMinWorkers = 13;
 	int numMinWorker = m_workerData.getWorkerJobCount(WorkerJobs::Minerals);
 	int numGasWorker = m_workerData.getWorkerJobCount(WorkerJobs::Gas);
-	if (numMinWorker < 14 && numGasWorker > 1)
+	if (numMinWorker < minNumMinWorkers && numGasWorker > 1)
 	{
 		for (const auto & gasWorker : m_workerData.getGasWorkers())
 		{
@@ -78,7 +79,7 @@ void WorkerManager::handleGasWorkers()
 				setMineralWorker(gasWorker);
 				numMinWorker++;
 				numGasWorker--;
-				if (numMinWorker > 14 || numGasWorker==1)
+				if (numMinWorker > minNumMinWorkers || numGasWorker==1)
 				{
 					return;
 				}
@@ -98,7 +99,7 @@ void WorkerManager::handleGasWorkers()
 
 
 				// if it's less than we want it to be, fill 'er up
-				if (numAssigned<3 && numMinWorker>14)
+				if (numAssigned<3 && numMinWorker>minNumMinWorkers)
 				{
 					auto gasWorker = getGasWorker(unit);
 					if (gasWorker)

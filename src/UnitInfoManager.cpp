@@ -28,7 +28,32 @@ void UnitInfoManager::updateUnitInfo()
     m_units[Players::Self].clear();
     m_units[Players::Enemy].clear();
 
-
+	//DT detection
+	const std::vector<sc2::UpgradeID> upgrades = m_bot.Observation()->GetUpgrades();
+	int armor = 0;
+	if (std::find(upgrades.begin(), upgrades.end(), sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL3) != upgrades.end())
+	{
+		armor = 3;
+	}
+	else if (std::find(upgrades.begin(), upgrades.end(), sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL2) != upgrades.end())
+	{
+		armor = 2;
+	}
+	else if (std::find(upgrades.begin(), upgrades.end(), sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL1) != upgrades.end())
+	{
+		armor = 1;
+	}
+	if (m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Protoss && m_unitData.size() > 1)
+	{
+		for (const auto & kv : getUnitData(Players::Self).getUnitInfoMap())
+		{
+			const float lostHealth = kv.second.lastHealth - kv.first->health;
+			if (lostHealth == 45.0f-armor || lostHealth == 50.0f - armor || lostHealth == 55.0f - armor || lostHealth == 60.0f - armor)
+			{
+				m_bot.OnDTdetected(kv.first->pos);
+			}
+		}
+	}
 
 	for (auto & unit : m_bot.Observation()->GetUnits())
 	{
@@ -47,15 +72,6 @@ void UnitInfoManager::updateUnitInfo()
 			if (kv.first->last_seen_game_loop!=m_bot.Observation()->GetGameLoop() && !Util::IsBuildingType(kv.second.type, m_bot) && !Util::IsBurrowedType(kv.second.type) && m_bot.Observation()->GetVisibility(kv.second.lastPosition) == sc2::Visibility::Visible)
 			{
 				m_unitData[Players::Enemy].lostPosition(kv.first);
-			}
-		}
-		//DT detection
-		for (const auto & kv : getUnitData(Players::Self).getUnitInfoMap())
-		{
-			const float lostHealth = kv.second.lastHealth - kv.first->health;
-			if (m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Protoss && (lostHealth == 45 || lostHealth == 50 || lostHealth == 55 || lostHealth == 60))
-			{
-				int a = 1;
 			}
 		}
 	}

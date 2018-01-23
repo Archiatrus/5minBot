@@ -9,6 +9,14 @@
 
 class CCBot;
 
+struct timePlace
+{
+	uint32_t m_time;
+	sc2::Point2D m_place;
+
+	timePlace(uint32_t time=0, sc2::Point2D place= sc2::Point2D(0,0));
+};
+
 class GameCommander
 {
     CCBot &                 m_bot;
@@ -23,6 +31,8 @@ class GameCommander
     std::vector<const sc2::Unit *>    m_combatUnits;
 	std::vector<const sc2::Unit *>    m_scoutUnits;
 	std::vector<const sc2::Unit *>    m_harassUnits;
+
+	std::vector<timePlace> m_DTdetections;
 
     bool                    m_initialScoutSet;
 
@@ -53,6 +63,8 @@ public:
 	void OnBuildingConstructionComplete(const sc2::Unit * unit);
     void onUnitDestroy(const sc2::Unit * unit);
 	void OnUnitEnterVision(const sc2::Unit * unit);
+	void OnDTdetected(const sc2::Point2D pos);
 
 	const ProductionManager & Production() const;
+	void handleDTdetections();
 };

@@ -24,6 +24,7 @@ ProductionManager::ProductionManager(CCBot & bot)
 	, m_armor(0)
 	, m_scoutRequested(false)
 	, m_vikingRequested(false)
+	, m_scansRequested(0)
 {
 
 }
@@ -194,16 +195,21 @@ void ProductionManager::defaultMacro()
 
 	//Even without money we can drop mules
 	const sc2::Units CommandCenters = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER , sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND , sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS }));
+	int scansAvailable = 0;
 	for (const auto & unit : CommandCenters)
 	{
 		if (unit->build_progress == 1.0f)
 		{
 			if (unit->energy >= 50)
 			{
-				const sc2::Unit * mineralPatch = Util::getClostestMineral(unit->pos, m_bot);
-				if (mineralPatch && mineralPatch->Visible == sc2::Unit::DisplayType::Visible)
+				scansAvailable+=static_cast<int>(std::floor(unit->energy/50.0f));
+				if (scansAvailable > m_scansRequested)
 				{
-					m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::EFFECT_CALLDOWNMULE, mineralPatch);
+					const sc2::Unit * mineralPatch = Util::getClostestMineral(unit->pos, m_bot);
+					if (mineralPatch && mineralPatch->Visible == sc2::Unit::DisplayType::Visible)
+					{
+						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::EFFECT_CALLDOWNMULE, mineralPatch);
+					}
 				}
 			}
 			//Sometimes we have a problem here
@@ -270,15 +276,6 @@ void ProductionManager::defaultMacro()
 	{
 		if (unit->build_progress == 1.0f)
 		{
-			if (unit->energy >= 50)
-			{
-				const sc2::Unit * mineralPatch = Util::getClostestMineral(unit->pos, m_bot);
-				if (mineralPatch && mineralPatch->Visible == sc2::Unit::DisplayType::Visible)
-				{
-					m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::EFFECT_CALLDOWNMULE, mineralPatch);
-				}
-			}
-
 			//Sometimes we have a problem here
 			if (unit->assigned_harvesters == 0 || unit->energy > 60)
 			{
@@ -750,7 +747,7 @@ void ProductionManager::defaultMacro()
 	{
 		if (numRax==1 || numStarport>0)
 		{
-			if (minerals >= 150 && numRax + 2 + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 3 * numBases - 2 && numRax<=12)
+			if (minerals >= 150 && numRax + 2 + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 3 * numBases - 2 && numRax<=14)
 			{
 				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
 				std::cout << "Barracks" << std::endl;
@@ -778,6 +775,24 @@ void ProductionManager::requestScout()
 void ProductionManager::requestVikings()
 {
 	m_vikingRequested = true;
+}
+
+void ProductionManager::requestScan()
+{
+	++m_scansRequested;
+}
+
+void ProductionManager::usedScan(int i)
+{
+	//if we needed one...
+	if (m_scansRequested > 1+i)
+	{
+		m_scansRequested-=i;
+	}
+	else
+	{
+		m_scansRequested = 1;
+	}
 }
 
 int ProductionManager::buildingsFinished(sc2::Units units)

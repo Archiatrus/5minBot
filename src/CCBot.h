@@ -43,6 +43,8 @@ public:
 	void OnBuildingConstructionComplete(const sc2::Unit * unit) override;
 	void OnUnitEnterVision(const sc2::Unit * unit) override;
 
+	void OnDTdetected(const sc2::Point2D pos);
+
           BotConfig & Config();
           WorkerManager & Workers();
     const BaseLocationManager & Bases() const;

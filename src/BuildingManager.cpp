@@ -26,6 +26,8 @@ void BuildingManager::onStart()
 // gets called every frame from GameCommander
 void BuildingManager::onFrame()
 {
+	reservedResourcesCheck();
+
 	m_buildingPlacer.onFrame();
 
     validateWorkersAndBuildings();          // check to see if assigned workers have died en route or while constructing
@@ -36,6 +38,23 @@ void BuildingManager::onFrame()
     checkForCompletedBuildings();           // check to see if any buildings have completed and update data structures
 
     drawBuildingInformation();
+}
+
+void BuildingManager::reservedResourcesCheck()
+{
+	bool shouldReset = true;
+	for (const auto & b : m_buildings)
+	{
+		if (!b.buildingUnit)
+		{
+			shouldReset = false;
+		}
+	}
+	if (shouldReset)
+	{
+		resetFreeMinerals();
+		resetFreeGas();
+	}
 }
 
 bool BuildingManager::isBeingBuilt(sc2::UnitTypeID type)
@@ -296,10 +315,6 @@ void BuildingManager::checkForStartedConstruction()
 // STEP 5: IF WE ARE TERRAN, THIS MATTERS, SO: LOL
 void BuildingManager::checkForDeadTerranBuilders()
 {
-	if (m_buildings.empty())
-	{
-		resetFreeMinerals();
-	}
 	std::vector<Building> toRemove;
 	//At this point all buildings should have a builder. If not remove them
 	for (auto & b : m_buildings)
@@ -418,6 +433,11 @@ int BuildingManager::getReservedGas()
 void BuildingManager::resetFreeMinerals()
 {
 	m_reservedMinerals = 0;
+}
+
+void BuildingManager::resetFreeGas()
+{
+	m_reservedGas = 0;
 }
 
 void BuildingManager::drawBuildingInformation()

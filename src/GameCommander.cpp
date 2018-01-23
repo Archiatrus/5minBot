@@ -5,6 +5,10 @@
 //Only harass if we have more than
 const int manyUnits = 25;
 
+timePlace::timePlace(uint32_t time, sc2::Point2D place) : m_time(time), m_place(place)
+{
+
+}
 
 GameCommander::GameCommander(CCBot & bot)
     : m_bot                 (bot)
@@ -29,6 +33,7 @@ void GameCommander::onFrame()
 {
     m_timer.start();
 
+	handleDTdetections();
     handleUnitAssignments();
     m_productionManager.onFrame();
     m_scoutManager.onFrame();
@@ -293,6 +298,12 @@ void GameCommander::OnUnitEnterVision(const sc2::Unit * unit)
 	}
 }
 
+void GameCommander::OnDTdetected(const sc2::Point2D pos)
+{
+	m_productionManager.requestScan();
+	m_DTdetections.push_back(timePlace(m_bot.Observation()->GetGameLoop(),pos));
+}
+
 void GameCommander::assignUnit(const sc2::Unit * unit, std::vector<const sc2::Unit *> & units)
 {
     if (std::find(m_scoutUnits.begin(), m_scoutUnits.end(), unit) != m_scoutUnits.end())
@@ -314,5 +325,74 @@ void GameCommander::assignUnit(const sc2::Unit * unit, std::vector<const sc2::Un
 const ProductionManager & GameCommander::Production() const
 {
 	return m_productionManager;
+}
+
+void GameCommander::handleDTdetections()
+{
+	if (m_bot.Observation()->GetGameLoop() == 4032)
+	{
+		m_productionManager.requestScan();
+	}
+	if (m_DTdetections.size() > 0)
+	{
+		//If the detection is too old or if we are already scanning discard it.
+		const uint32_t currentTime = m_bot.Observation()->GetGameLoop();
+		const std::vector<sc2::Effect> effects = m_bot.Observation()->GetEffects();
+		std::vector<sc2::Point2D> scanPoints;
+		for (auto & effect : effects)
+		{
+			if (sc2::EffectID(effect.effect_id).ToType() == sc2::EFFECT_ID::SCANNERSWEEP)
+			{
+				scanPoints.push_back(effect.positions.front());
+			}
+		}
+		const float scanRadius = m_bot.Observation()->GetEffectData()[sc2::EffectID(sc2::EFFECT_ID::SCANNERSWEEP)].radius;
+		int numRemovedDetections = 0;
+		m_DTdetections.erase(std::remove_if(m_DTdetections.begin(), m_DTdetections.end(), [currentTime, scanPoints, scanRadius,&numRemovedDetections](timePlace tp) {
+			if (currentTime - tp.m_time > 112) //5 sec
+			{
+				++numRemovedDetections;
+				return true;
+			}
+			for (const auto & p : scanPoints)
+			{
+				if (Util::Dist(tp.m_place, p) < scanRadius)
+				{
+					++numRemovedDetections;
+					return true;
+				}
+			}
+			return false;
+		}), m_DTdetections.end());
+		m_productionManager.usedScan(numRemovedDetections);
+		if (m_DTdetections.empty())
+		{
+			return;
+		}
+		const sc2::Units CommandCenters = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND));
+		for (const auto & unit : CommandCenters)
+		{
+			if (unit->build_progress == 1.0f)
+			{
+				if (unit->energy >= 50)
+				{
+					int nearbyUnits = 0;
+					for (const auto & unit : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self))
+					{
+						if (Util::IsCombatUnitType(unit->unit_type,m_bot) &&  Util::Dist(m_DTdetections.back().m_place, unit->pos) < scanRadius)
+						{
+							++nearbyUnits;
+						}
+					}
+					if (nearbyUnits > 5)
+					{
+						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::EFFECT_SCAN, m_DTdetections.back().m_place);
+						m_productionManager.usedScan();
+						return;
+					}
+				}
+			}
+		}
+	}
 }
 
