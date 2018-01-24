@@ -463,28 +463,47 @@ bool ScoutManager::attackEnemyCombat(std::vector<const sc2::Unit *> enemyUnitsIn
 
 bool ScoutManager::attackEnemyWorker(std::vector<const sc2::Unit *> enemyUnitsInSight)
 {
-	bool attackingEnemy = false;
-	const sc2::Unit * lowestHealthUnit;
+	const sc2::Unit * lowestHealthUnitInRange=nullptr;
+	const sc2::Unit * lowestHealthUnitOutsideRange = nullptr;
+	const float range = Util::GetUnitTypeRange(m_scoutUnit->unit_type.ToType(), m_bot);
 	for (const auto & unit : enemyUnitsInSight)
 	{
-		float dist = Util::Dist(unit->pos, m_scoutUnit->pos);
 		if (Util::IsWorker(unit))
 		{
-			if (attackingEnemy)
+			const float dist = Util::Dist(unit->pos, m_scoutUnit->pos);
+			if (dist < range)
 			{
-				if (unit->health < lowestHealthUnit->health)
+				if (lowestHealthUnitInRange)
 				{
-					lowestHealthUnit = unit;
+					if (unit->health+unit->shield < lowestHealthUnitInRange->health+ lowestHealthUnitInRange->shield)
+					{
+						lowestHealthUnitInRange = unit;
+					}
+				}
+				else
+				{
+					lowestHealthUnitInRange = unit;
 				}
 			}
 			else
 			{
-				attackingEnemy = true;
-				lowestHealthUnit = unit;
+				if (lowestHealthUnitOutsideRange)
+				{
+					if (unit->health + unit->shield < lowestHealthUnitOutsideRange->health + lowestHealthUnitOutsideRange->shield)
+					{
+						lowestHealthUnitOutsideRange = unit;
+					}
+				}
+				else
+				{
+					lowestHealthUnitOutsideRange = unit;
+				}
 			}
 		}
 	}
-	if (attackingEnemy)
+	const sc2::Unit * lowestHealthUnit = nullptr;
+	lowestHealthUnitInRange ? lowestHealthUnit = lowestHealthUnitInRange : lowestHealthUnit = lowestHealthUnitOutsideRange;
+	if (lowestHealthUnit)
 	{
 		m_scoutStatus = "Found a victim (worker). Attacking!";
 		sc2::AvailableAbilities abilities = m_bot.Query()->GetAbilitiesForUnit(m_scoutUnit);
@@ -493,7 +512,7 @@ bool ScoutManager::attackEnemyWorker(std::vector<const sc2::Unit *> enemyUnitsIn
 			if (ability.ability_id == sc2::ABILITY_ID::EFFECT_KD8CHARGE)
 			{
 				m_bot.Actions()->UnitCommand(m_scoutUnit, sc2::ABILITY_ID::EFFECT_KD8CHARGE, lowestHealthUnit);
-				return attackingEnemy;
+				return true;
 			}
 		}
 		if (enemyUnitsInSight.size() > 1)
@@ -505,8 +524,9 @@ bool ScoutManager::attackEnemyWorker(std::vector<const sc2::Unit *> enemyUnitsIn
 		{
 			Micro::SmartAttackUnit(m_scoutUnit, lowestHealthUnit, m_bot);
 		}
+		return true;
 	}
-	return attackingEnemy;
+	return false;
 }
 
 bool ScoutManager::enemyWorkerInRadiusOf(const sc2::Point2D & pos) const
