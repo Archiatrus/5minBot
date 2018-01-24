@@ -192,8 +192,14 @@ void Hitsquad::harass(const BaseLocation * target)
 			//This is still buggy since we can not drop individual marines
 			if (m->health <= 5)
 			{
-				Micro::SmartRightClick(m, m_medivac, m_bot);
-				Micro::SmartRightClick(m_medivac, m, m_bot);
+				for (const auto & enemy : targetUnits)
+				{
+					if (Util::canHitMe(m, enemy, m_bot))
+					{
+						Micro::SmartRightClick(m, m_medivac, m_bot);
+						Micro::SmartRightClick(m_medivac, m, m_bot);
+					}
+				}
 			}
 		}
 		break;
