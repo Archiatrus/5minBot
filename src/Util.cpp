@@ -764,3 +764,24 @@ const bool Util::isBadEffect(const sc2::EffectID id)
 	}
 	return false;
 }
+
+std::vector<const sc2::Unit *> Util::getEnemyUnitsInSight(const sc2::Unit * unit, CCBot & bot)
+{
+	std::vector<const sc2::Unit *> enemyUnitsInSight;
+	if (!unit) { return enemyUnitsInSight; }
+
+	UnitTag enemyUnitTag = 0;
+	float sightDistance = Util::GetUnitTypeSight(unit->unit_type.ToType(), bot);
+	// for each enemy unit (and building?)
+	for (const auto &enemy : bot.UnitInfo().getUnits(Players::Enemy))
+	{
+		const float dist = Util::Dist(unit->pos, enemy->pos);
+
+		if ((Util::IsCombatUnitType(enemy->unit_type, bot) || Util::IsWorkerType(enemy->unit_type)) && dist < sightDistance)
+		{
+			enemyUnitsInSight.push_back(enemy);
+		}
+	}
+
+	return enemyUnitsInSight;
+}

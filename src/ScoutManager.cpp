@@ -82,7 +82,7 @@ void ScoutManager::checkOurBases()
 	else
 	{
 		//Whos there in sight?
-		std::vector<const sc2::Unit *> enemyUnitsInSight = getEnemyUnitsInSight(scout->pos);
+		std::vector<const sc2::Unit *> enemyUnitsInSight = Util::getEnemyUnitsInSight(scout, m_bot);
 
 		//Do the actual scouting
 		raiseAlarm(enemyUnitsInSight);
@@ -225,7 +225,7 @@ void ScoutManager::moveScouts()
         if (true)
         {
 			//Whos there in sight?
-			std::vector<const sc2::Unit *> enemyUnitsInSight = getEnemyUnitsInSight(scout->pos);
+			std::vector<const sc2::Unit *> enemyUnitsInSight = Util::getEnemyUnitsInSight(m_scoutUnit,m_bot);
 			// without words
 			if (dontBlowYourselfUp())
 			{
@@ -363,27 +363,6 @@ const sc2::Unit * ScoutManager::closestEnemyCombatTo(const sc2::Point2D & pos) c
 	}
 
 	return m_bot.GetUnit(enemyUnitTag);
-}
-
-std::vector<const sc2::Unit *> ScoutManager::getEnemyUnitsInSight(const sc2::Point2D & pos) const
-{
-	std::vector<const sc2::Unit *> enemyUnitsInSight;
-	if (!m_scoutUnit) { return enemyUnitsInSight; }
-
-	UnitTag enemyUnitTag = 0;
-	float sightDistance = Util::GetUnitTypeSight(m_scoutUnit->unit_type.ToType(),m_bot);
-	// for each enemy unit (and building?)
-	for (const auto &unit : m_bot.UnitInfo().getUnits(Players::Enemy))
-	{
-			float dist = Util::Dist(unit->pos, m_scoutUnit->pos);
-
-			if ((Util::IsCombatUnitType(unit->unit_type,m_bot) || Util::IsWorkerType(unit->unit_type)) && dist < sightDistance)
-			{
-				enemyUnitsInSight.push_back(unit);
-			}
-	}
-
-	return enemyUnitsInSight;
 }
 
 bool ScoutManager::enemyTooClose(std::vector<const sc2::Unit *> enemyUnitsInSight)
@@ -555,7 +534,7 @@ void ScoutManager::scoutDamaged()
 	{
 
 		//Whos there in sight?
-		std::vector<const sc2::Unit *> enemyUnitsInSight = getEnemyUnitsInSight(scout->pos);
+		std::vector<const sc2::Unit *> enemyUnitsInSight = Util::getEnemyUnitsInSight(m_scoutUnit,m_bot);
 		float sightDistance = Util::GetUnitTypeSight(m_scoutUnit->unit_type.ToType(), m_bot);
 		if (enemyUnitsInSight.size()>0)
 		{
@@ -588,7 +567,7 @@ int ScoutManager::getNumScouts()
 void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos,int player)
 {
 	std::vector<const BaseLocation *> bases = m_bot.Bases().getBaseLocations();
-	//We use that it is ordered
+	//We use that map is ordered
 	std::map<int,const BaseLocation *> allTargetBases;
 	int numBasesEnemy = 0;
 	for (const auto & base : bases)

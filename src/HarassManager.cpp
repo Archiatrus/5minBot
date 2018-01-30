@@ -329,7 +329,7 @@ const BaseLocation * Hitsquad::getSavePosition() const
 		if (!(base->isOccupiedByPlayer(Players::Enemy)))
 		{
 			bool actuallySafe = true;
-			for (const auto & enemy:enemyUnits)
+			for (const auto & enemy : enemyUnits)
 			{
 				if (Util::Dist(enemy->pos, base->getBasePosition()) < 15.0f)
 				{
@@ -344,21 +344,6 @@ const BaseLocation * Hitsquad::getSavePosition() const
 		}
 	}
 	return allTargetBases.begin()->second;
-	/*
-	//If we are damaged or lost too many marines
-	else
-	{
-		const sc2::Unit * worker = m_bot.Workers().getClosestMineralWorkerTo(m_medivac->pos);
-		if (worker)
-		{
-			if (m_bot.Bases().getBaseLocation(worker->pos))
-			{
-				return m_bot.Bases().getBaseLocation(worker->pos);
-			}
-		}
-		//If there are no mineral workers left, we are probably dead anyway
-		return m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
-	}*/
 }
 
 const bool Hitsquad::shouldWeFlee(sc2::Units targets) const
@@ -380,7 +365,6 @@ const bool Hitsquad::shouldWeFlee(sc2::Units targets) const
 
 sc2::Units Hitsquad::getNearbyEnemyUnits() const
 {
-	//sc2::Units enemyUnits = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
 	sc2::Units enemyUnits = m_bot.UnitInfo().getUnits(Players::Enemy);
 	sc2::Units nearbyEnemyUnits;
 	sc2::Point2D pos = m_medivac->pos;
@@ -545,8 +529,111 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 	}
 }
 
+//////////////////////////////////////////////////////////////////// WIDOW MINE HARASS /////////////////////////////////////////////
+ExeBomber::ExeBomber(CCBot & bot) :m_bot(bot),m_widowmine(nullptr)
+{
+
+}
+
+void ExeBomber::getWayPoints(const sc2::Point2D targetPos)
+{
+	m_wayPoints.push(targetPos);
+}
+
+void ExeBomber::replanWayPoints(const sc2::Point2D targetPos)
+{
+	while (m_wayPoints.size() > 0)
+	{
+		m_wayPoints.pop();
+	}
+	m_wayPoints.push(targetPos);
+}
+
+void ExeBomber::harass(const sc2::Point2D pos)
+{
+	//No widow mine yet
+	if (!m_widowmine)
+	{
+		return;
+	}
+	//Dead?
+	if (!m_widowmine->is_alive)
+	{
+		m_widowmine = nullptr;
+		return;
+	}
+	//If we arrived
+	if (Util::Dist(m_widowmine->pos, pos) < 1.0f)
+	{
+		//And we are not yet burrowed
+		if (m_widowmine->unit_type.ToType() != sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
+		{
+			Micro::SmartAbility(m_widowmine, sc2::ABILITY_ID::BURROWDOWN, m_bot);
+		}
+		//And now we wait
+		return;
+	}
+	//Still on our way
+	sc2::Units enemies = Util::getEnemyUnitsInSight(m_widowmine, m_bot);
+	//If enemies nearby, better burrow
+	for (const auto & enemy : enemies)
+	{
+		if (Util::IsCombatUnitType(enemy->unit_type, m_bot) || (Util::IsWorkerType(enemy->unit_type) && Util::Dist(m_widowmine->pos, enemy->pos) < 2.0f))
+		{
+			if (m_widowmine->unit_type.ToType() != sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
+			{
+				Micro::SmartAbility(m_widowmine, sc2::ABILITY_ID::BURROWDOWN, m_bot);
+			}
+			return;
+		}
+	}
+	//Nobody in sight
+	if (m_widowmine->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
+	{
+		Micro::SmartAbility(m_widowmine, sc2::ABILITY_ID::BURROWUP, m_bot);
+		return;
+	}
+	//Plan our way
+	if (m_wayPoints.empty())
+	{
+		getWayPoints(pos);
+		return;
+	}
+	//Replan if destination changed
+	if (m_wayPoints.back()!=pos)
+	{
+		replanWayPoints(pos);
+		return;
+	}
+	//Walk there
+	if (Util::Dist(m_widowmine->pos, m_wayPoints.front()) > 1.0f)
+	{
+		Micro::SmartMove(m_widowmine, m_wayPoints.front(),m_bot);
+	}
+	else
+	{
+		m_wayPoints.pop();
+	}
+}
+
+const bool ExeBomber::addWidowMine(const sc2::Unit * widowMine)
+{
+	if (m_widowmine)
+	{
+		return false;
+	}
+	m_widowmine = widowMine;
+	return true;
+}
+
+const sc2::Unit * ExeBomber::getwidowMine() const
+{
+	return m_widowmine;
+}
+
+///////////////////////////////////////////////////////////////////// HARASS MANAGER ////////////////////////////////////////////////////
 HarassManager::HarassManager(CCBot & bot)
-	: m_bot(bot), m_liberator(nullptr)
+	: m_bot(bot), m_exeBomber(ExeBomber(bot)), m_liberator(nullptr)
 {
 
 }
@@ -559,6 +646,7 @@ void HarassManager::onFrame()
 {
 	handleHitSquads();
 	handleLiberator();
+	handleExeBomber();
 }
 
 void HarassManager::handleHitSquads()
@@ -643,6 +731,11 @@ const bool HarassManager::needLiberator() const
 	return false;
 }
 
+const bool HarassManager::needWidowMine() const
+{
+	return !m_exeBomber.getwidowMine();
+}
+
 const bool HarassManager::setMedivac(const sc2::Unit * medivac)
 {
 	for (auto & hs : m_hitSquads)
@@ -678,10 +771,26 @@ const bool HarassManager::setLiberator(const sc2::Unit * liberator)
 	return false;
 }
 
+const bool HarassManager::setWidowMine(const sc2::Unit * widowMine)
+{
+	return m_exeBomber.addWidowMine(widowMine);
+}
+
 void HarassManager::handleLiberator()
 {
 
 }
+
+void HarassManager::handleExeBomber()
+{
+	if (m_exeBomber.getwidowMine())
+	{
+		const sc2::Point2D pos = m_bot.Bases().getNextExpansion(Players::Enemy);
+		auto base = m_bot.Bases().getBaseLocation(pos);
+		m_exeBomber.harass(base->getBasePosition());
+	}
+}
+
 
 const sc2::Unit * HarassManager::getMedivac()
 {
@@ -700,7 +809,13 @@ const sc2::Units HarassManager::getMarines()
 	}
 	return m_hitSquads.front().getMarines();
 }
+
 const sc2::Unit * HarassManager::getLiberator()
 {
 	return m_liberator;
+}
+
+const sc2::Unit * HarassManager::getWidowMine()
+{
+	return m_exeBomber.getwidowMine();
 }

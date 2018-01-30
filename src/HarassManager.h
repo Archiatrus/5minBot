@@ -5,6 +5,7 @@
 #include <queue>
 class CCBot;
 
+
 namespace HarassStatus
 {
 	enum { Idle, Loading, OnMyWay, Harass, Fleeing, Refueling, GoingHome, Doomed };
@@ -38,7 +39,25 @@ public:
 	sc2::Units	getMarines() const;
 	const sc2::Unit * getMedivac() const;
 	const int getStatus() const;
-	void harass(const BaseLocation *);
+	void harass(const BaseLocation *pos);
+};
+
+class ExeBomber
+{
+	CCBot &   m_bot;
+	const sc2::Unit * m_widowmine;
+
+	std::queue<sc2::Point2D> m_wayPoints;
+	void getWayPoints(const sc2::Point2D targetPos);
+	void replanWayPoints(const sc2::Point2D targetPos);
+public:
+	ExeBomber(CCBot & bot);
+
+
+	const bool	addWidowMine(const sc2::Unit * widowMine);
+	const sc2::Unit * getwidowMine() const;
+	const int getStatus() const;
+	void harass(const sc2::Point2D pos);
 };
 
 class HarassManager
@@ -47,6 +66,7 @@ class HarassManager
 
 	std::vector<Hitsquad>	m_hitSquads;
 	const sc2::Unit* m_liberator;
+	ExeBomber m_exeBomber;
 	const int	m_numHitSquads = 1;
 
 	std::vector<const BaseLocation *> getPotentialTargets(size_t n) const;
@@ -54,6 +74,10 @@ class HarassManager
 	void handleHitSquads();
 	//Liberator harass
 	void handleLiberator();
+	//Widow mine harass
+	void handleExeBomber();
+
+	
 
 public:
 
@@ -65,13 +89,16 @@ public:
 	const bool needMedivac() const;
 	const bool needMarine() const;
 	const bool needLiberator() const;
+	const bool needWidowMine() const;
 
 	const bool setMedivac(const sc2::Unit * medivac);
 	const bool setMarine(const sc2::Unit * marine);
 	const bool setLiberator(const sc2::Unit * liberator);
+	const bool setWidowMine(const sc2::Unit * widowMine);
 
 	const sc2::Unit * getMedivac();
 	const sc2::Units getMarines();
 	const sc2::Unit * getLiberator();
+	const sc2::Unit * getWidowMine();
 
 };

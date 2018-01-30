@@ -174,6 +174,11 @@ void GameCommander::setHarassUnits()
 	{
 		assignUnit(liberator, m_harassUnits);
 	}
+	const sc2::Unit * widowMine = m_harassManager.getWidowMine();
+	if (widowMine)
+	{
+		assignUnit(widowMine, m_harassUnits);
+	}
 	
 	//We only start harassing after we saw two bases. Otherwise it might be a 1 base allin
 	//We should only can add units, if we are not under attack or if we have many units already
@@ -212,6 +217,13 @@ void GameCommander::setHarassUnits()
 				else if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_LIBERATOR && m_harassManager.needLiberator())
 				{
 					if (m_harassManager.setLiberator(unit))
+					{
+						assignUnit(unit, m_harassUnits);
+					}
+				}
+				else if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_WIDOWMINE && m_harassManager.needWidowMine())
+				{
+					if (m_harassManager.setWidowMine(unit))
 					{
 						assignUnit(unit, m_harassUnits);
 					}
@@ -329,7 +341,7 @@ const ProductionManager & GameCommander::Production() const
 
 void GameCommander::handleDTdetections()
 {
-	if (m_bot.Observation()->GetGameLoop() == 4032)
+	if (m_bot.Observation()->GetGameLoop() == 5376)
 	{
 		m_productionManager.requestScan();
 	}
