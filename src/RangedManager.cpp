@@ -194,11 +194,9 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 					if (!target)
 					{
 						//This can happen with vikings
-						if (Util::Dist(rangedUnit->pos, order.getPosition()) > 4)
+						if (rangedUnit->orders.empty() || frontSoldier && rangedUnit->orders.front().target_unit_tag && rangedUnit->orders.front().target_unit_tag != frontSoldier->tag)
 						{
-							// move to it
-							Drawing::drawLine(m_bot,rangedUnit->pos, order.getPosition(), sc2::Colors::White);
-							moveToPosition.push_back(rangedUnit);
+							m_bot.Actions()->UnitCommand(rangedUnit, sc2::ABILITY_ID::MOVE, frontSoldier);
 						}
 						continue;
 					}
