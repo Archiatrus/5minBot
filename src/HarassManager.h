@@ -46,6 +46,7 @@ class ExeBomber
 {
 	CCBot &   m_bot;
 	const sc2::Unit * m_widowmine;
+	uint32_t m_lastLoopEnemySeen;
 
 	std::queue<sc2::Point2D> m_wayPoints;
 	void getWayPoints(const sc2::Point2D targetPos);
@@ -56,7 +57,6 @@ public:
 
 	const bool	addWidowMine(const sc2::Unit * widowMine);
 	const sc2::Unit * getwidowMine() const;
-	const int getStatus() const;
 	void harass(const sc2::Point2D pos);
 };
 

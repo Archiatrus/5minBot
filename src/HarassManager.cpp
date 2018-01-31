@@ -584,13 +584,19 @@ void ExeBomber::harass(const sc2::Point2D pos)
 			{
 				Micro::SmartAbility(m_widowmine, sc2::ABILITY_ID::BURROWDOWN, m_bot);
 			}
+			m_lastLoopEnemySeen = m_bot.Observation()->GetGameLoop();
 			return;
 		}
 	}
 	//Nobody in sight
 	if (m_widowmine->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
 	{
-		Micro::SmartAbility(m_widowmine, sc2::ABILITY_ID::BURROWUP, m_bot);
+		const uint32_t currentLoop = m_lastLoopEnemySeen = m_bot.Observation()->GetGameLoop();
+		//wait a bit before unburrowing
+		if (currentLoop - m_lastLoopEnemySeen > 448)//20sec
+		{
+			Micro::SmartAbility(m_widowmine, sc2::ABILITY_ID::BURROWUP, m_bot);
+		}
 		return;
 	}
 	//Plan our way
