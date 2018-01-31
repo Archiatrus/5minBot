@@ -530,7 +530,7 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 }
 
 //////////////////////////////////////////////////////////////////// WIDOW MINE HARASS /////////////////////////////////////////////
-ExeBomber::ExeBomber(CCBot & bot) :m_bot(bot),m_widowmine(nullptr)
+ExeBomber::ExeBomber(CCBot & bot) :m_bot(bot),m_widowmine(nullptr), m_lastLoopEnemySeen(0)
 {
 
 }
@@ -591,7 +591,7 @@ void ExeBomber::harass(const sc2::Point2D pos)
 	//Nobody in sight
 	if (m_widowmine->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
 	{
-		const uint32_t currentLoop = m_lastLoopEnemySeen = m_bot.Observation()->GetGameLoop();
+		const uint32_t currentLoop = m_bot.Observation()->GetGameLoop();
 		//wait a bit before unburrowing
 		if (currentLoop - m_lastLoopEnemySeen > 448)//20sec
 		{
