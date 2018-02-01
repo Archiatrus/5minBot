@@ -199,6 +199,11 @@ const ProductionManager & CCBot::Production()
 	return m_gameCommander.Production();
 }
 
+void CCBot::requestGuards(const bool req)
+{
+	m_gameCommander.requestGuards(req);
+}
+
 
 
 void * CreateNewAgent()

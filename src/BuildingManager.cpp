@@ -32,7 +32,8 @@ void BuildingManager::onFrame()
 
     validateWorkersAndBuildings();          // check to see if assigned workers have died en route or while constructing
     assignWorkersToUnassignedBuildings();   // assign workers to the unassigned buildings and label them 'planned'    
-    constructAssignedBuildings();           // for each planned building, if the worker isn't constructing, send the command    
+    constructAssignedBuildings();           // for each planned building, if the worker isn't constructing, send the command
+	requestGuards();						// for new expansion we need to send guards to secure the area
     checkForStartedConstruction();          // check to see if any buildings have started construction and update data structures    
     checkForDeadTerranBuilders();           // if we are terran and a building is under construction without a worker, assign a new one    
     checkForCompletedBuildings();           // check to see if any buildings have completed and update data structures
@@ -237,6 +238,7 @@ void BuildingManager::constructAssignedBuildings()
 					if (m_bot.Query()->Placement(m_bot.Data(b.type).buildAbility, b.finalPosition))
 					{
 						Micro::SmartBuild(b.builderUnit, b.type, b.finalPosition, m_bot);
+
 					}
                 }
 
@@ -247,6 +249,24 @@ void BuildingManager::constructAssignedBuildings()
     }
 	removeBuildings(toRemove);
 }
+// Step 3.5: Request guards for new expansions
+void BuildingManager::requestGuards()
+{
+	for (const auto & b : m_buildings)
+	{
+		if (b.type.ToType() == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER)
+		{
+			//We need guards when the build order is issued bot there is no building yet
+			if (b.status == BuildingStatus::Assigned)
+			{
+				m_bot.requestGuards(true);
+				//We usually only build one CC at a time
+				return;
+			}
+		}
+	}
+}
+
 
 // STEP 4: UPDATE DATA STRUCTURES FOR BUILDINGS STARTING CONSTRUCTION
 void BuildingManager::checkForStartedConstruction()
@@ -301,7 +321,11 @@ void BuildingManager::checkForStartedConstruction()
 
                 // put it in the under construction vector
                 b.status = BuildingStatus::UnderConstruction;
-
+				//Starting with the construction we do not need any guards anymore since the rally point defaults to newest base
+				if (b.type.ToType() == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER)
+				{
+					m_bot.requestGuards(false);
+				}
                 // free this space
                 m_buildingPlacer.freeTiles((int)b.finalPosition.x, (int)b.finalPosition.y, Util::GetUnitTypeWidth(b.type, m_bot), Util::GetUnitTypeHeight(b.type, m_bot));
 

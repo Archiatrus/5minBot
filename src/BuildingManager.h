@@ -24,6 +24,7 @@ class BuildingManager
     void            validateWorkersAndBuildings();		    // STEP 1
     void            assignWorkersToUnassignedBuildings();	// STEP 2
     void            constructAssignedBuildings();			// STEP 3
+	void			requestGuards();						// STEP 3.5
     void            checkForStartedConstruction();			// STEP 4
     void            checkForDeadTerranBuilders();			// STEP 5
     void            checkForCompletedBuildings();			// STEP 6

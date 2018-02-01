@@ -14,10 +14,12 @@ class CombatCommander
     std::vector<const sc2::Unit *>  m_combatUnits;
     bool            m_initialized;
     bool            m_attackStarted;
+	bool			m_needGuards;
 
     void            updateScoutDefenseSquad();
     void            updateDefenseSquads();
     void            updateAttackSquads();
+	void			updateGuardSquads();
     void            updateIdleSquad();
     bool            isSquadUpdateFrame();
 
@@ -40,5 +42,6 @@ public:
 
     void drawSquadInformation();
 	const bool underAttack() const;
+	void requestGuards(const bool req);
 };
 

@@ -58,6 +58,7 @@ public:
     sc2::Point2D GetStartLocation() const;
     const sc2::Unit * GetUnit(const UnitTag & tag) const;
 	const ProductionManager & Production();
+	void requestGuards(const bool req);
 };
 
 extern bool useDebug;

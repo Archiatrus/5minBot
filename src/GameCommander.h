@@ -67,4 +67,5 @@ public:
 
 	const ProductionManager & Production() const;
 	void handleDTdetections();
+	void requestGuards(const bool req);
 };

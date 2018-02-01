@@ -408,3 +408,8 @@ void GameCommander::handleDTdetections()
 	}
 }
 
+void GameCommander::requestGuards(const bool req)
+{
+	m_combatCommander.requestGuards(req);
+}
+

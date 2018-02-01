@@ -126,7 +126,7 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 		}
         BOT_ASSERT(rangedUnit, "ranged unit is null");
         // if the order is to attack or defend
-		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend)
+		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend || order.getType() == SquadOrderTypes::GuardDuty)
 		{
 			// find the best target for this rangedUnit
 			//medivacs have the other ranged units as target.

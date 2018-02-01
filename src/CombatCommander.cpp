@@ -4,16 +4,18 @@
 #include "Micro.h"
 
 const size_t IdlePriority = 0;
-const size_t AttackPriority = 1;
-const size_t BaseDefensePriority = 2;
-const size_t ScoutDefensePriority = 3;
-const size_t DropPriority = 4;
+const size_t GuardDutyPriority = 1;
+const size_t AttackPriority = 2;
+const size_t BaseDefensePriority = 3;
+const size_t ScoutDefensePriority = 4;
+const size_t DropPriority = 5;
 
 CombatCommander::CombatCommander(CCBot & bot)
     : m_bot(bot)
     , m_squadData(bot)
     , m_initialized(false)
     , m_attackStarted(false)
+	, m_needGuards(false)
 {
 
 }
@@ -32,6 +34,10 @@ void CombatCommander::onStart()
     // the scout defense squad will handle chasing the enemy worker scout
     SquadOrder enemyScoutDefense(SquadOrderTypes::Defend, m_bot.GetStartLocation(), 25, "Get the scout");
     m_squadData.addSquad("ScoutDefense", Squad("ScoutDefense", enemyScoutDefense, ScoutDefensePriority, m_bot));
+
+	// the guard duty squad will handle securing the area for a new expansion
+	SquadOrder guardDutyOrder(SquadOrderTypes::GuardDuty, sc2::Point2D(0.0f, 0.0f), 25, "Guard Duty");
+	m_squadData.addSquad("GuardDuty", Squad("GuardDuty", enemyScoutDefense, ScoutDefensePriority, m_bot));
 }
 
 bool CombatCommander::isSquadUpdateFrame()
@@ -54,6 +60,7 @@ void CombatCommander::onFrame(const std::vector<const sc2::Unit *> & combatUnits
         updateScoutDefenseSquad();
         updateDefenseSquads();
         updateAttackSquads();
+		updateGuardSquads();
     }
 
     m_squadData.onFrame();
@@ -139,6 +146,38 @@ void CombatCommander::updateAttackSquads()
 
     SquadOrder mainAttackOrder(SquadOrderTypes::Attack, getMainAttackLocation(), 25, "Attack Enemy Base");
     mainAttackSquad.setSquadOrder(mainAttackOrder);
+}
+
+void CombatCommander::updateGuardSquads()
+{
+	Squad & guardSquad = m_squadData.getSquad("GuardDuty");
+
+	//We reassign every frame. Otherwise we can not change the jobs aka Harass, scout etc
+	guardSquad.clear();
+	if (m_attackStarted || !m_needGuards)
+	{
+		return;
+	}
+
+	
+
+	for (auto unit : m_combatUnits)
+	{
+		BOT_ASSERT(unit, "null unit in combat units");
+		// get every unit of a lower priority and put it into the attack squad
+		if (!Util::IsWorker(unit)
+			&& !(unit->unit_type == sc2::UNIT_TYPEID::ZERG_OVERLORD)
+			&& !(unit->unit_type == sc2::UNIT_TYPEID::ZERG_QUEEN)
+			&& m_squadData.canAssignUnitToSquad(unit, guardSquad))
+		{
+			m_squadData.assignUnitToSquad(unit, guardSquad);
+		}
+	}
+	sc2::Point2D guardPosAux = m_bot.Bases().getNextExpansion(Players::Self);
+	auto base = m_bot.Bases().getBaseLocation(guardPosAux);
+	const sc2::Point2D guardPos = base->getBasePosition()+Util::normalizeVector(base->getBasePosition() - base->getPosition(), 5.0f);
+	SquadOrder guardDutyOrder(SquadOrderTypes::GuardDuty,guardPos , 25, "Guard Duty");
+	guardSquad.setSquadOrder(guardDutyOrder);
 }
 
 void CombatCommander::updateScoutDefenseSquad()
@@ -553,4 +592,9 @@ const sc2::Unit * CombatCommander::findClosestWorkerTo(std::vector<const sc2::Un
 const bool CombatCommander::underAttack() const
 {
 	return m_squadData.underAttack();
+}
+
+void CombatCommander::requestGuards(const bool req)
+{
+	m_needGuards = req;
 }
