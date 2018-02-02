@@ -185,7 +185,7 @@ void GameCommander::setHarassUnits()
 	if (m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size()>1 || ( !m_combatCommander.underAttack() || m_validUnits.size() > manyUnits))
 	{
 		sc2::Units enemies = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
-		for (auto & unit : m_validUnits)
+		for (const auto & unit : m_validUnits)
 		{
 			BOT_ASSERT(unit, "Have a null unit in our valid units\n");
 
@@ -198,7 +198,8 @@ void GameCommander::setHarassUnits()
 						assignUnit(unit, m_harassUnits);
 					}
 				}
-				else if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MARINE && unit->health == unit->health_max && m_harassManager.needMarine())
+				//We only assign marines, after we have a medivac
+				else if (medivac && unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MARINE && unit->health == unit->health_max && m_harassManager.needMarine())
 				{
 					//If the marine is currently close to an anti air enemy, the medivac does not know what to do
 					bool tooClose = false;
