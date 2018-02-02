@@ -326,22 +326,33 @@ const sc2::Point2D BaseLocationManager::getBuildingLocation() const
 const sc2::Point2D BaseLocationManager::getRallyPoint() const
 {
 	//GET NEWEST EXPANSION
-	sc2::Point2D newestBasePlayer = getNewestExpansion(Players::Self);
+	sc2::Point2D fixpoint = getNewestExpansion(Players::Self);
+	//Or bunker
+	const sc2::Units bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_BUNKER));
 
 	std::vector<const BaseLocation *> startingBases = getStartingBaseLocations();
 	sc2::Point2D targetPos(0.0f, 0.0f);
-	for (const auto base : startingBases)
+	for (const auto & base : startingBases)
 	{
 		targetPos+=base->getPosition();
 	}
 	targetPos /= static_cast<float>(startingBases.size());
-	sc2::Point2D rallyPoint = newestBasePlayer + 5*(targetPos - newestBasePlayer) / std::sqrt(Util::DistSq(targetPos - newestBasePlayer));
+
+
+	for (const auto & b : bunker)
+	{
+		if (Util::Dist(fixpoint, targetPos) > Util::Dist(b->pos, targetPos))
+		{
+			fixpoint = b->pos;
+		}
+	}
+
+	const sc2::Point2D rallyPoint = fixpoint + Util::normalizeVector(targetPos - fixpoint, 5.0f);
 
 	// get the precomputed vector of tile positions which are sorted closes to this location
 	auto & closestTorallyPoint = m_bot.Map().getClosestTilesTo(rallyPoint);
-	for (size_t i(0); i < closestTorallyPoint.size(); ++i)
+	for (const auto & pos : m_bot.Map().getClosestTilesTo(rallyPoint))
 	{
-		auto & pos = closestTorallyPoint[i];
 		if (m_bot.Map().isWalkable(pos))
 		{
 			return pos;

@@ -293,7 +293,7 @@ void UnitInfoManager::drawUnitInformation(float x,float y) const
     for (auto & kv : getUnitData(Players::Enemy).getUnitInfoMap())
     {
         Drawing::drawSphere(m_bot,kv.second.lastPosition, 0.5f);
-        Drawing::drawTextScreen(m_bot, kv.second.lastPosition,sc2::UnitTypeToName(kv.second.type));
+        Drawing::drawText(m_bot, kv.second.lastPosition,sc2::UnitTypeToName(kv.second.type));
     }
 
 

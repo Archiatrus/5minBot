@@ -131,7 +131,7 @@ void CombatCommander::updateAttackSquads()
 	//We reassign every frame. Otherwise we can not change the jobs aka Harass, scout etc
 	mainAttackSquad.clear();
 
-    for (auto unit : m_combatUnits)
+    for (const auto & unit : m_combatUnits)
     {   
         BOT_ASSERT(unit, "null unit in combat units");
         // get every unit of a lower priority and put it into the attack squad
@@ -161,7 +161,7 @@ void CombatCommander::updateGuardSquads()
 
 	
 
-	for (auto unit : m_combatUnits)
+	for (const auto & unit : m_combatUnits)
 	{
 		BOT_ASSERT(unit, "null unit in combat units");
 		// get every unit of a lower priority and put it into the attack squad

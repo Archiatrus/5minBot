@@ -117,5 +117,5 @@ void Drawing::drawSphereAroundUnit(CCBot & bot, const UnitTag & unitTag, sc2::Co
 
 	if (!unit) { return; }
 
-	drawSphere(bot,unit->pos, 1, color);
+	drawSphere(bot,unit->pos, unit->radius, color);
 }
