@@ -338,15 +338,19 @@ const sc2::Point2D BaseLocationManager::getRallyPoint() const
 	}
 	targetPos /= static_cast<float>(startingBases.size());
 
-
+	bool bunkerRally = false;
 	for (const auto & b : bunker)
 	{
 		if (Util::Dist(fixpoint, targetPos) > Util::Dist(b->pos, targetPos))
 		{
 			fixpoint = b->pos;
+			bunkerRally = true;
 		}
 	}
-
+	if (bunkerRally)
+	{
+		return fixpoint;
+	}
 	const sc2::Point2D rallyPoint = fixpoint + Util::normalizeVector(targetPos - fixpoint, 5.0f);
 
 	// get the precomputed vector of tile positions which are sorted closes to this location

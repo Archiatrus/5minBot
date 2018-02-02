@@ -84,7 +84,7 @@ bool CombatCommander::shouldWeStartAttacking()
 void CombatCommander::updateIdleSquad()
 {
     Squad & idleSquad = m_squadData.getSquad("Idle");
-    for (auto & unit : m_combatUnits)
+    for (const auto & unit : m_combatUnits)
     {
         // if it hasn't been assigned to a squad yet, put it in the low priority idle squad
 		if (m_squadData.canAssignUnitToSquad(unit, idleSquad))
