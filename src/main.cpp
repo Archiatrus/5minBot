@@ -12,6 +12,7 @@
 #include <cmath>
 
 #include "CCBot.h"
+#include "LadderInterface.h"
 
 
 #ifndef LADDEREXE
@@ -75,64 +76,10 @@ int main(int argc, char* argv[])
 }
 
 #else
-struct ConnectionOptions
-{
-	int32_t GamePort;
-	int32_t StartPort;
-	std::string ServerAddress;
-};
-
-void ParseArguments(int argc, char *argv[], ConnectionOptions &connect_options)
-{
-	sc2::ArgParser arg_parser(argv[0]);
-	arg_parser.AddOptions({
-		{ "-g", "--GamePort", "Port of client to connect to", false },
-		{ "-o", "--StartPort", "Starting server port", false },
-		{ "-l", "--LadderServer", "Ladder server address", false },
-	});
-	arg_parser.Parse(argc, argv);
-	std::string GamePortStr;
-	if (arg_parser.Get("GamePort", GamePortStr)) {
-		connect_options.GamePort = atoi(GamePortStr.c_str());
-	}
-	std::string StartPortStr;
-	if (arg_parser.Get("StartPort", StartPortStr)) {
-		connect_options.StartPort = atoi(StartPortStr.c_str());
-	}
-	arg_parser.Get("LadderServer", connect_options.ServerAddress);
-}
-
 //*************************************************************************************************
-int main(int argc, char* argv[]) {
-	ConnectionOptions Options;
-	ParseArguments(argc, argv, Options);
-
-	sc2::Coordinator coordinator;
-	if (!coordinator.LoadSettings(argc, argv)) {
-		return 1;
-	}
-	if (!coordinator.LoadSettings(argc, argv)) {
-		return 1;
-	}
-
-	// Add the custom bot, it will control the players.
-	CCBot bot;
-	coordinator.SetParticipants({
-		CreateParticipant(sc2::Race::Terran, &bot),
-	});
-
-	// Start the game.
-
-	// Step forward the game simulation.
-	std::cout << "Connecting to port " << Options.GamePort << std::endl;
-	coordinator.Connect(Options.GamePort);
-	coordinator.SetupPorts(2, Options.StartPort, false);
-	// Step forward the game simulation.
-	coordinator.JoinGame();
-	coordinator.SetTimeoutMS(10000);
-	std::cout << " Successfully joined game" << std::endl;
-	while (coordinator.Update()) {
-	}
+int main(int argc, char* argv[])
+{
+	RunBot(argc, argv, new CCBot(),sc2::Race::Terran);
 
 	return 0;
 }

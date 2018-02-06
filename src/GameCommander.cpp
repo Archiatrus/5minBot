@@ -238,7 +238,7 @@ void GameCommander::setHarassUnits()
 // sets combat units to be passed to CombatCommander
 void GameCommander::setCombatUnits()
 {
-    for (auto & unit : m_validUnits)
+    for (const auto & unit : m_validUnits)
     {
         BOT_ASSERT(unit, "Have a null unit in our valid units\n");
         if (!isAssigned(unit) && Util::IsCombatUnitType(unit->unit_type, m_bot))
