@@ -327,7 +327,12 @@ void BuildingManager::checkForStartedConstruction()
 					m_bot.requestGuards(false);
 				}
                 // free this space
-                m_buildingPlacer.freeTiles((int)b.finalPosition.x, (int)b.finalPosition.y, Util::GetUnitTypeWidth(b.type, m_bot), Util::GetUnitTypeHeight(b.type, m_bot));
+				//but not if it is an rax or factory.
+				//this whole part should actually only be done if the building is destroyed.
+				if (b.type.ToType() != sc2::UNIT_TYPEID::TERRAN_FACTORY && b.type.ToType() != sc2::UNIT_TYPEID::TERRAN_STARPORT)
+				{
+					m_buildingPlacer.freeTiles((int)b.finalPosition.x, (int)b.finalPosition.y, Util::GetUnitTypeWidth(b.type, m_bot), Util::GetUnitTypeHeight(b.type, m_bot));
+				}
 
                 // only one building will match
                 break;

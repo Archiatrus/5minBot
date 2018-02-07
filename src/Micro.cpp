@@ -74,11 +74,6 @@ void Micro::SmartAttackMove(const sc2::Units & attacker, const sc2::Point2D & ta
 	sc2::Units attackerThatNeedToMove;
 	for (const auto & a:attacker)
 	{
-		if (!(a->orders.empty()))
-		{
-			auto test = Util::Dist(a->orders.back().target_pos, targetPosition);
-			int dbf = 1;
-		}
 		if (a->orders.empty() || a->orders.back().ability_id != sc2::ABILITY_ID::ATTACK || Util::Dist(a->orders.back().target_pos, targetPosition) > 1.0f)
 		{
 			attackerThatNeedToMove.push_back(a);
