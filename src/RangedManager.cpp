@@ -105,7 +105,15 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 						else
 						{
 							const sc2::Point2D attackDirection = effect.positions.back() - effect.positions.front();
-							fleeingPos = rangedUnit->pos + Util::normalizeVector(sc2::Point2D(-attackDirection.x,attackDirection.y), radius + 2.0f);
+							//Randomly go right and left
+							if (rangedUnit->tag % 2)
+							{
+								fleeingPos = rangedUnit->pos + Util::normalizeVector(sc2::Point2D(-attackDirection.x, attackDirection.y), radius + 2.0f);
+							}
+							else
+							{
+								fleeingPos = rangedUnit->pos - Util::normalizeVector(sc2::Point2D(-attackDirection.x, attackDirection.y), radius + 2.0f);
+							}
 						}
 						Micro::SmartMove(rangedUnit, fleeingPos, m_bot);
 						fleeYouFools = true;
