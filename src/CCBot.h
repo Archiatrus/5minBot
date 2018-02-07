@@ -30,6 +30,8 @@ class CCBot : public sc2::Agent
     GameCommander           m_gameCommander;
 	CameraModuleAgent		m_cameraModule;
 
+	std::vector<std::vector<double>> m_time;
+
     void OnError(const std::vector<sc2::ClientError> & client_errors, 
                  const std::vector<std::string> & protocol_errors = {}) override;
 

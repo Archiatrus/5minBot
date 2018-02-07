@@ -51,7 +51,8 @@ void CCBot::OnGameStart()
 	{
 		m_cameraModule.onStart();
 	}
-	Actions()->SendChat("gl hf (business)");
+	Actions()->SendChat("5minBot");
+	m_time.push_back({ 0.0,0.0,0.0,0.0 });
 }
 
 void CCBot::OnStep()
@@ -71,22 +72,35 @@ void CCBot::OnStep()
 	{
 		m_cameraModule.onFrame();
 	}
+
 	if (!useDebug)
 	{
 		return;
 	}
-	double ms = t.getElapsedTimeInMilliSec();
+	//OnStep,OnUnitCreated,OnBuildingConstructionComplete,OnUnitEnterVision
+	m_time.push_back({ 0.0,0.0,0.0,0.0 });
+	m_time[Observation()->GetGameLoop()][0] = t.getElapsedTimeInMilliSec();
+	double ms=0.0;
+	if (Observation()->GetGameLoop() > 1)
+	{
+		auto test2 = Observation()->GetGameLoop();
+		auto test = Observation()->GetGameLoop() - 1;
+		for (const auto k : m_time[test])
+		{
+			ms += k;
+		}
+	}
 	if (maxStepTime < ms)
 	{
 		maxStepTime = ms;
 	}
-	if (ms > 85)
+	if (ms > 85.0)
 	{
 		++lvl85;
-		if (ms > 1000)
+		if (ms > 1000.0)
 		{
 			++lvl1000;
-			if (ms > 10000)
+			if (ms > 10000.0)
 			{
 				++lvl10000;
 			}
@@ -103,22 +117,31 @@ void CCBot::OnStep()
 
 void CCBot::OnUnitCreated(const sc2::Unit * unit)
 {
+	Timer t;
+	t.start();
 	m_gameCommander.onUnitCreate(unit);
 	if (useAutoObserver)
 	{
 		m_cameraModule.moveCameraUnitCreated(unit);
 	}
+	m_time[Observation()->GetGameLoop()][1] = t.getElapsedTimeInMilliSec();
 }
 
 void CCBot::OnBuildingConstructionComplete(const sc2::Unit * unit)
 {
+	Timer t;
+	t.start();
 	m_gameCommander.OnBuildingConstructionComplete(unit);
+	m_time[Observation()->GetGameLoop()][2] = t.getElapsedTimeInMilliSec();
 }
 
 
 void CCBot::OnUnitEnterVision(const sc2::Unit * unit)
 {
+	Timer t;
+	t.start();
 	m_gameCommander.OnUnitEnterVision(unit);
+	m_time[Observation()->GetGameLoop()][3] = t.getElapsedTimeInMilliSec();
 }
 
 void CCBot::OnDTdetected(const sc2::Point2D pos)

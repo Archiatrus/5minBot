@@ -48,7 +48,7 @@ void SiegeManager::assignTargets(const std::vector<const sc2::Unit *> & targets)
 					//If the tank is in mobile mode
 					if (siegeUnit->unit_type == sc2::UNIT_TYPEID::TERRAN_SIEGETANK)
 					{
-						if (Util::Dist(siegeUnit->pos, target->pos) <= 11.0f)
+						if (Util::Dist(siegeUnit->pos, target->pos) <= 13.0f)
 						{
 							if (siegeUnit->orders.empty() || siegeUnit->orders.back().ability_id != sc2::ABILITY_ID::MORPH_SIEGEMODE)
 							{
