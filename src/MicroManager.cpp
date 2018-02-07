@@ -62,7 +62,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 		}
 		if (attackMoveUnits.size() > 0)
 		{
-			Micro::SmartAttackMove(moveUnits, pos, m_bot);
+			Micro::SmartAttackMove(attackMoveUnits, pos, m_bot);
 		}
 	}
 
