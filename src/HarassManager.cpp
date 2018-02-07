@@ -451,11 +451,11 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 		if (m_wayPoints.empty())
 		{
 			//WAYPOINTS QUEUE
-			sc2::Point2D posStart = m_medivac->pos;
-			int margin = 5;
-			sc2::Point2D posA = m_bot.Map().getClosestBorderPoint(posStart,margin);
-			sc2::Point2D posB = m_bot.Map().getClosestBorderPoint(posEnd,margin);
-
+			const sc2::Point2D posStart = m_medivac->pos;
+			const int margin = 5;
+			const sc2::Point2D posA = m_bot.Map().getClosestBorderPoint(posStart,margin);
+			const sc2::Point2D posB = m_bot.Map().getClosestBorderPoint(posEnd,margin);
+			const sc2::Point2D forbiddenCorner = m_bot.Map().getForbiddenCorner(margin);
 
 			float x_min = m_bot.Observation()->GetGameInfo().playable_min.x + margin;
 			float x_max = m_bot.Observation()->GetGameInfo().playable_max.x - margin;
@@ -470,34 +470,182 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 			//other side
 			else if (posA.x == x_min && posB.x == x_max || posA.x == x_max && posB.x == x_min || posA.y == y_min && posB.y == y_max || posA.y == y_max && posB.y == y_min)
 			{
+				//Left to right
 				if (posA.x == x_min)
 				{
-					m_wayPoints.push(sc2::Point2D(x_max, posStart.y));
+					m_wayPoints.push(sc2::Point2D(x_min, posStart.y));
+					if (forbiddenCorner.y == y_max)
+					{
+						m_wayPoints.push(sc2::Point2D(x_min, y_min));
+						m_wayPoints.push(sc2::Point2D(x_max, y_min));
+					}
+					else
+					{
+						m_wayPoints.push(sc2::Point2D(x_min, y_max));
+						m_wayPoints.push(sc2::Point2D(x_max, y_max));
+					}
 				}
+				//Right to left
 				else if (posA.x == x_max)
 				{
-					m_wayPoints.push(sc2::Point2D(x_min, posStart.y));
+					m_wayPoints.push(sc2::Point2D(x_max, posStart.y));
+					if (forbiddenCorner.y == y_max)
+					{
+						m_wayPoints.push(sc2::Point2D(x_max, y_min));
+						m_wayPoints.push(sc2::Point2D(x_min, y_min));
+					}
+					else
+					{
+						m_wayPoints.push(sc2::Point2D(x_max, y_max));
+						m_wayPoints.push(sc2::Point2D(x_min, y_max));
+					}
 				}
+				//Down to up
 				else if (posA.y == y_min)
 				{
-					m_wayPoints.push(sc2::Point2D(posStart.x, y_max));
+					m_wayPoints.push(sc2::Point2D(posStart.x, y_min));
+					if (forbiddenCorner.x == x_max)
+					{
+						m_wayPoints.push(sc2::Point2D(x_min, y_min));
+						m_wayPoints.push(sc2::Point2D(x_min, y_max));
+					}
+					else
+					{
+						m_wayPoints.push(sc2::Point2D(x_max, y_min));
+						m_wayPoints.push(sc2::Point2D(x_max, y_max));
+					}
 				}
+				//Up down
 				else if (posA.y == y_max)
 				{
-					m_wayPoints.push(sc2::Point2D(posStart.x, y_min));
+					m_wayPoints.push(sc2::Point2D(posStart.x, y_max));
+					if (forbiddenCorner.x == x_max)
+					{
+						m_wayPoints.push(sc2::Point2D(x_min, y_max));
+						m_wayPoints.push(sc2::Point2D(x_min, y_min));
+					}
+					else
+					{
+						m_wayPoints.push(sc2::Point2D(x_max, y_max));
+						m_wayPoints.push(sc2::Point2D(x_max, y_min));
+					}
 				}
 			}
 			else
 			{
 				m_wayPoints.push(posA);
 				//Over an Edge
-				if (posA.x == x_min || posA.x == x_max)
+				//left to up
+				if (posA.x == x_min && posB.y == y_max)
 				{
-					m_wayPoints.push(sc2::Point2D(posA.x, posB.y));
+					if (forbiddenCorner.x != x_min && forbiddenCorner.y != y_max)
+					{
+						m_wayPoints.push(sc2::Point2D(x_min, y_max));
+					}
+					else
+					{
+						m_wayPoints.push(sc2::Point2D(x_min, y_min));
+						m_wayPoints.push(sc2::Point2D(x_max, y_min));
+						m_wayPoints.push(sc2::Point2D(x_max, y_max));
+					}
 				}
-				else
+				//left to down
+				else if(posA.x == x_min && posB.y == y_min)
 				{
-					m_wayPoints.push(sc2::Point2D(posB.x, posA.y));
+					if (forbiddenCorner.x != x_min && forbiddenCorner.y != y_min)
+					{
+						m_wayPoints.push(sc2::Point2D(x_min, y_min));
+					}
+					else
+					{
+						m_wayPoints.push(sc2::Point2D(x_min, y_max));
+						m_wayPoints.push(sc2::Point2D(x_max, y_max));
+						m_wayPoints.push(sc2::Point2D(x_max, y_min));
+					}
+				}
+				//right to up
+				else if (posA.x == x_max && posB.y == y_max)
+				{
+					if (forbiddenCorner.x != x_max && forbiddenCorner.y != y_max)
+					{
+						m_wayPoints.push(sc2::Point2D(x_max, y_max));
+					}
+					else
+					{
+						m_wayPoints.push(sc2::Point2D(x_max, y_min));
+						m_wayPoints.push(sc2::Point2D(x_min, y_min));
+						m_wayPoints.push(sc2::Point2D(x_min, y_max));
+					}
+				}
+				//right to down
+				else if (posA.x == x_max && posB.y == y_min)
+				{
+					if (forbiddenCorner.x != x_max && forbiddenCorner.y != y_min)
+					{
+						m_wayPoints.push(sc2::Point2D(x_max, y_min));
+					}
+					else
+					{
+						m_wayPoints.push(sc2::Point2D(x_max, y_max));
+						m_wayPoints.push(sc2::Point2D(x_min, y_max));
+						m_wayPoints.push(sc2::Point2D(x_min, y_min));
+					}
+				}
+				//down to left
+				else if (posA.y == y_min && posB.x == x_min)
+				{
+					if (forbiddenCorner.x != x_min && forbiddenCorner.y != y_min)
+					{
+						m_wayPoints.push(sc2::Point2D(x_min, y_min));
+					}
+					else
+					{
+						m_wayPoints.push(sc2::Point2D(x_max, y_min));
+						m_wayPoints.push(sc2::Point2D(x_max, y_max));
+						m_wayPoints.push(sc2::Point2D(x_min, y_max));
+					}
+				}
+				//down to right
+				else if (posA.y == y_min && posB.x == x_max)
+				{
+					if (forbiddenCorner.x != x_min && forbiddenCorner.y != y_max)
+					{
+						m_wayPoints.push(sc2::Point2D(x_min, y_max));
+					}
+					else
+					{
+						m_wayPoints.push(sc2::Point2D(x_min, y_min));
+						m_wayPoints.push(sc2::Point2D(x_min, y_max));
+						m_wayPoints.push(sc2::Point2D(x_max, y_max));
+					}
+				}
+				//up to left
+				else if (posA.y == y_max && posB.x == x_min)
+				{
+					if (forbiddenCorner.x != x_min && forbiddenCorner.y != y_max)
+					{
+						m_wayPoints.push(sc2::Point2D(x_min, y_max));
+					}
+					else
+					{
+						m_wayPoints.push(sc2::Point2D(x_max, y_max));
+						m_wayPoints.push(sc2::Point2D(x_max, y_min));
+						m_wayPoints.push(sc2::Point2D(x_min, y_min));
+					}
+				}
+				//up to right
+				else if (posA.y == y_max && posB.x == x_max)
+				{
+					if (forbiddenCorner.x != x_max && forbiddenCorner.y != y_max)
+					{
+						m_wayPoints.push(sc2::Point2D(x_max, y_max));
+					}
+					else
+					{
+						m_wayPoints.push(sc2::Point2D(x_min, y_max));
+						m_wayPoints.push(sc2::Point2D(x_min, y_min));
+						m_wayPoints.push(sc2::Point2D(x_max, y_min));
+					}
 				}
 
 			}

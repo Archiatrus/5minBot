@@ -184,7 +184,7 @@ const bool Squad::needsToRegroup()
 	//std::cout << "std x = " << std::sqrt(variance.x / (n - 1)) << ", std y = " << std::sqrt(variance.y / (n - 1)) << std::endl;
 	//std::cout << "std = " << std::sqrt((variance.x/m_bot.Map().width() + variance.y / m_bot.Map().height()) / (n - 1)) << std::endl;
 	//Lets see if this is good. Actually, you should look this up. 
-	float scattering = std::sqrt((variance.x / m_bot.Map().width() + variance.y / m_bot.Map().height()) / (n - 1));
+	const float scattering = std::sqrt((variance.x / m_bot.Map().width() + variance.y / m_bot.Map().height()) / (n - 1));
 	//if we are retreating, we want to do it for a while
 	if (m_lastRetreatSwitchVal)
 	{
@@ -195,7 +195,7 @@ const bool Squad::needsToRegroup()
 	}
 	else
 	{
-		if (scattering > 4)
+		if (scattering > 4.0f)
 		{
 			m_lastRetreatSwitchVal = true;
 		}

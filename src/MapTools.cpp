@@ -385,16 +385,52 @@ bool MapTools::isNextToRamp(int x, int y) const
 	if (m_ramp[x + 1][y]) { return true; }//right
 	return false;
 }
+const sc2::Point2D MapTools::getForbiddenCorner(int margin) const
+{
+	const BaseLocation * enemyBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
+	if (!enemyBase)
+	{
+		return sc2::Point2D(-1.0f, -1.0f);
+	}
+	const sc2::Point2D pos = enemyBase->getDepotPosition();
+
+	const float x_min = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_min.x + margin);
+	const float x_max = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_max.x - margin);
+	const float y_min = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_min.y + margin);
+	const float y_max = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_max.y - margin);
+	if (pos.x - x_min < x_max - pos.x)
+	{
+		if (pos.y - y_min < y_max - pos.y)
+		{
+			return sc2::Point2D(x_min, y_min);
+		}
+		else
+		{
+			return sc2::Point2D(x_min, y_max);
+		}
+	}
+	else
+	{
+		if (pos.y - y_min < y_max - pos.y)
+		{
+			return sc2::Point2D(x_max, y_min);
+		}
+		else
+		{
+			return sc2::Point2D(x_max, y_max);
+		}
+	}
+}
 
 const sc2::Point2D MapTools::getClosestBorderPoint(sc2::Point2D pos,int margin) const
 {
-	float x_min = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_min.x + margin);
-	float x_max = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_max.x - margin);
-	float y_min = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_min.y + margin);
-	float y_max = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_max.y - margin);
-	if (pos.x < x_max - pos.x)
+	const float x_min = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_min.x + margin);
+	const float x_max = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_max.x - margin);
+	const float y_min = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_min.y + margin);
+	const float y_max = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_max.y - margin);
+	if (pos.x - x_min < x_max - pos.x)
 	{
-		if (pos.y < y_max - pos.y)
+		if (pos.y  - y_min < y_max - pos.y)
 		{
 			if (pos.x < pos.y)
 			{
@@ -419,7 +455,7 @@ const sc2::Point2D MapTools::getClosestBorderPoint(sc2::Point2D pos,int margin) 
 	}
 	else
 	{
-		if (pos.y < y_max - pos.y)
+		if (pos.y - y_min < y_max - pos.y)
 		{
 			if (x_max - pos.x < pos.y)
 			{

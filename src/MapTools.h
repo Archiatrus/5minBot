@@ -31,6 +31,7 @@ class MapTools
         
 	bool isNextToRamp(int x, int y) const;
 
+
 public:
 	int getSectorNumber(int x, int y) const;
 	int getSectorNumber(const sc2::Point2D & pos) const;
@@ -73,6 +74,7 @@ public:
     const std::vector<sc2::Point2D> & getClosestTilesTo(const sc2::Point2D & pos) const;
 	const sc2::Point2D getClosestWalkableTo(const sc2::Point2D & pos) const;
 	const sc2::Point2D MapTools::getClosestBorderPoint(sc2::Point2D pos,int margin) const;
+	const sc2::Point2D getForbiddenCorner(int margin) const;
 	const bool hasPocketBase() const;
 	const float getHeight(const sc2::Point2D pos) const;
 	const float getHeight(const float x,const float y) const;
