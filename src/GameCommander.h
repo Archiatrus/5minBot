@@ -6,6 +6,7 @@
 #include "ScoutManager.h"
 #include "HarassManager.h"
 #include "CombatCommander.h"
+#include "ShuttleService.h"
 
 class CCBot;
 
@@ -31,6 +32,7 @@ class GameCommander
     std::vector<const sc2::Unit *>    m_combatUnits;
 	std::vector<const sc2::Unit *>    m_scoutUnits;
 	std::vector<const sc2::Unit *>    m_harassUnits;
+	std::vector<std::shared_ptr<shuttle>>	m_shuttles;
 
 	std::vector<timePlace> m_DTdetections;
 
@@ -38,6 +40,10 @@ class GameCommander
 
     void assignUnit(const sc2::Unit * unit, std::vector<const sc2::Unit *> & units);
     bool isAssigned(const sc2::Unit * unit) const;
+
+	bool isShuttle(const sc2::Unit * unit) const;
+
+	void handleShuttleService();
 
 public:
 
@@ -48,7 +54,8 @@ public:
 
     void handleUnitAssignments();
     void setValidUnits();
-    void setScoutUnits();
+	void setShuttles();
+	void setScoutUnits();
 	void setHarassUnits();
     void setCombatUnits();
 
@@ -68,4 +75,5 @@ public:
 	const ProductionManager & Production() const;
 	void handleDTdetections();
 	void requestGuards(const bool req);
+	std::shared_ptr<shuttle> requestShuttleService(sc2::Units passengers, const sc2::Point2D targetPos);
 };

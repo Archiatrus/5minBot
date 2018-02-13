@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "BaseLocation.h"
+#include "ShuttleService.h"
 #include <queue>
 class CCBot;
 
@@ -9,6 +10,11 @@ class CCBot;
 namespace HarassStatus
 {
 	enum { Idle, Loading, OnMyWay, Harass, Fleeing, Refueling, GoingHome, Doomed };
+}
+
+namespace WMStatus
+{
+	enum { NewWM, WaitingForShuttle, ShuttleTransport, Harass, Relocating, Dead};
 }
 
 class Hitsquad
@@ -42,17 +48,19 @@ public:
 	void harass(const BaseLocation *pos);
 };
 
-class ExeBomber
+class WMHarass
 {
 	CCBot &   m_bot;
 	const sc2::Unit * m_widowmine;
 	uint32_t m_lastLoopEnemySeen;
+	int m_status;
+	std::shared_ptr<shuttle> m_shuttle;
 
 	std::queue<sc2::Point2D> m_wayPoints;
 	void getWayPoints(const sc2::Point2D targetPos);
 	void replanWayPoints(const sc2::Point2D targetPos);
 public:
-	ExeBomber(CCBot & bot);
+	WMHarass(CCBot & bot);
 
 
 	const bool	addWidowMine(const sc2::Unit * widowMine);
@@ -66,7 +74,7 @@ class HarassManager
 
 	std::vector<Hitsquad>	m_hitSquads;
 	const sc2::Unit* m_liberator;
-	ExeBomber m_exeBomber;
+	WMHarass m_WMHarass;
 	const int	m_numHitSquads = 1;
 
 	std::vector<const BaseLocation *> getPotentialTargets(size_t n) const;
@@ -75,7 +83,7 @@ class HarassManager
 	//Liberator harass
 	void handleLiberator();
 	//Widow mine harass
-	void handleExeBomber();
+	void handleWMHarass();
 
 	
 

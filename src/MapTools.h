@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-
+#include <queue>
 #include "sc2api/sc2_api.h"
 #include "DistanceMap.h"
 
@@ -30,6 +30,8 @@ class MapTools
 
         
 	bool isNextToRamp(int x, int y) const;
+
+	
 
 
 public:
@@ -80,4 +82,5 @@ public:
 	const float getHeight(const float x,const float y) const;
 	void draw() const;
 	void printMap() const;
+	std::queue<sc2::Point2D> getEdgePath(const sc2::Point2D posStart, const sc2::Point2D posEnd) const;
 };

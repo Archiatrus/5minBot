@@ -61,6 +61,7 @@ public:
     const sc2::Unit * GetUnit(const UnitTag & tag) const;
 	const ProductionManager & Production();
 	void requestGuards(const bool req);
+	std::shared_ptr<shuttle> requestShuttleService(sc2::Units passengers, const sc2::Point2D targetPos);
 };
 
 extern bool useDebug;

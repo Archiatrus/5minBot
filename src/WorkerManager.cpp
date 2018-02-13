@@ -177,12 +177,19 @@ void WorkerManager::handleIdleWorkers()
 
 void WorkerManager::handleRepairWorkers()
 {
-	const sc2::Units Bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit( sc2::UNIT_TYPEID::TERRAN_BUNKER ));
-	for (const auto & b : Bunker)
+	const sc2::Units buildings = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_BUNKER, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND,sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER }));
+	for (const auto & b : buildings)
 	{
 		if (b->build_progress==1.0f && b->health < b->health_max)
 		{
-			setRepairWorker(b,6);
+			if (b->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_BUNKER)
+			{
+				setRepairWorker(b, 6);
+			}
+			else
+			{
+				setRepairWorker(b);
+			}
 		}
 	}
 	m_workerData.checkRepairedBuildings();

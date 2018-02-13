@@ -466,6 +466,7 @@
     <ClCompile Include="..\src\ProductionManager.cpp" />
     <ClCompile Include="..\src\RangedManager.cpp" />
     <ClCompile Include="..\src\ScoutManager.cpp" />
+    <ClCompile Include="..\src\ShuttleService.cpp" />
     <ClCompile Include="..\src\SiegeManager.cpp" />
     <ClCompile Include="..\src\Squad.cpp" />
     <ClCompile Include="..\src\SquadData.cpp" />
@@ -507,6 +508,7 @@
     <ClInclude Include="..\src\ProductionManager.h" />
     <ClInclude Include="..\src\RangedManager.h" />
     <ClInclude Include="..\src\ScoutManager.h" />
+    <ClInclude Include="..\src\ShuttleService.h" />
     <ClInclude Include="..\src\SiegeManager.h" />
     <ClInclude Include="..\src\Squad.h" />
     <ClInclude Include="..\src\SquadData.h" />

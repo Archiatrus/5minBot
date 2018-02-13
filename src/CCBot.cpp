@@ -227,6 +227,11 @@ void CCBot::requestGuards(const bool req)
 	m_gameCommander.requestGuards(req);
 }
 
+std::shared_ptr<shuttle> CCBot::requestShuttleService(sc2::Units passengers, const sc2::Point2D targetPos)
+{
+	return m_gameCommander.requestShuttleService(passengers,targetPos);
+}
+
 
 
 void * CreateNewAgent()

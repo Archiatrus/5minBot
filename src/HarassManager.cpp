@@ -4,6 +4,7 @@
 #include "CCBot.h"
 #include "pathPlaning.h"
 #include "Drawing.h"
+#include "ShuttleService.h"
 
 const int updateRatePathplaning = 10;
 
@@ -450,207 +451,7 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 		}
 		if (m_wayPoints.empty())
 		{
-			//WAYPOINTS QUEUE
-			const sc2::Point2D posStart = m_medivac->pos;
-			const int margin = 5;
-			const sc2::Point2D posA = m_bot.Map().getClosestBorderPoint(posStart,margin);
-			const sc2::Point2D posB = m_bot.Map().getClosestBorderPoint(posEnd,margin);
-			const sc2::Point2D forbiddenCorner = m_bot.Map().getForbiddenCorner(margin);
-
-			float x_min = m_bot.Observation()->GetGameInfo().playable_min.x + margin;
-			float x_max = m_bot.Observation()->GetGameInfo().playable_max.x - margin;
-			float y_min = m_bot.Observation()->GetGameInfo().playable_min.y + margin;
-			float y_max = m_bot.Observation()->GetGameInfo().playable_max.y - margin;
-
-			//we are at the same side
-			if (posA.x == posB.x || posA.y == posB.y)
-			{
-				m_wayPoints.push(posA);
-			}
-			//other side
-			else if (posA.x == x_min && posB.x == x_max || posA.x == x_max && posB.x == x_min || posA.y == y_min && posB.y == y_max || posA.y == y_max && posB.y == y_min)
-			{
-				//Left to right
-				if (posA.x == x_min)
-				{
-					m_wayPoints.push(sc2::Point2D(x_min, posStart.y));
-					if (forbiddenCorner.y == y_max)
-					{
-						m_wayPoints.push(sc2::Point2D(x_min, y_min));
-						m_wayPoints.push(sc2::Point2D(x_max, y_min));
-					}
-					else
-					{
-						m_wayPoints.push(sc2::Point2D(x_min, y_max));
-						m_wayPoints.push(sc2::Point2D(x_max, y_max));
-					}
-				}
-				//Right to left
-				else if (posA.x == x_max)
-				{
-					m_wayPoints.push(sc2::Point2D(x_max, posStart.y));
-					if (forbiddenCorner.y == y_max)
-					{
-						m_wayPoints.push(sc2::Point2D(x_max, y_min));
-						m_wayPoints.push(sc2::Point2D(x_min, y_min));
-					}
-					else
-					{
-						m_wayPoints.push(sc2::Point2D(x_max, y_max));
-						m_wayPoints.push(sc2::Point2D(x_min, y_max));
-					}
-				}
-				//Down to up
-				else if (posA.y == y_min)
-				{
-					m_wayPoints.push(sc2::Point2D(posStart.x, y_min));
-					if (forbiddenCorner.x == x_max)
-					{
-						m_wayPoints.push(sc2::Point2D(x_min, y_min));
-						m_wayPoints.push(sc2::Point2D(x_min, y_max));
-					}
-					else
-					{
-						m_wayPoints.push(sc2::Point2D(x_max, y_min));
-						m_wayPoints.push(sc2::Point2D(x_max, y_max));
-					}
-				}
-				//Up down
-				else if (posA.y == y_max)
-				{
-					m_wayPoints.push(sc2::Point2D(posStart.x, y_max));
-					if (forbiddenCorner.x == x_max)
-					{
-						m_wayPoints.push(sc2::Point2D(x_min, y_max));
-						m_wayPoints.push(sc2::Point2D(x_min, y_min));
-					}
-					else
-					{
-						m_wayPoints.push(sc2::Point2D(x_max, y_max));
-						m_wayPoints.push(sc2::Point2D(x_max, y_min));
-					}
-				}
-			}
-			else
-			{
-				m_wayPoints.push(posA);
-				//Over an Edge
-				//left to up
-				if (posA.x == x_min && posB.y == y_max)
-				{
-					if (forbiddenCorner.x != x_min && forbiddenCorner.y != y_max)
-					{
-						m_wayPoints.push(sc2::Point2D(x_min, y_max));
-					}
-					else
-					{
-						m_wayPoints.push(sc2::Point2D(x_min, y_min));
-						m_wayPoints.push(sc2::Point2D(x_max, y_min));
-						m_wayPoints.push(sc2::Point2D(x_max, y_max));
-					}
-				}
-				//left to down
-				else if(posA.x == x_min && posB.y == y_min)
-				{
-					if (forbiddenCorner.x != x_min && forbiddenCorner.y != y_min)
-					{
-						m_wayPoints.push(sc2::Point2D(x_min, y_min));
-					}
-					else
-					{
-						m_wayPoints.push(sc2::Point2D(x_min, y_max));
-						m_wayPoints.push(sc2::Point2D(x_max, y_max));
-						m_wayPoints.push(sc2::Point2D(x_max, y_min));
-					}
-				}
-				//right to up
-				else if (posA.x == x_max && posB.y == y_max)
-				{
-					if (forbiddenCorner.x != x_max && forbiddenCorner.y != y_max)
-					{
-						m_wayPoints.push(sc2::Point2D(x_max, y_max));
-					}
-					else
-					{
-						m_wayPoints.push(sc2::Point2D(x_max, y_min));
-						m_wayPoints.push(sc2::Point2D(x_min, y_min));
-						m_wayPoints.push(sc2::Point2D(x_min, y_max));
-					}
-				}
-				//right to down
-				else if (posA.x == x_max && posB.y == y_min)
-				{
-					if (forbiddenCorner.x != x_max && forbiddenCorner.y != y_min)
-					{
-						m_wayPoints.push(sc2::Point2D(x_max, y_min));
-					}
-					else
-					{
-						m_wayPoints.push(sc2::Point2D(x_max, y_max));
-						m_wayPoints.push(sc2::Point2D(x_min, y_max));
-						m_wayPoints.push(sc2::Point2D(x_min, y_min));
-					}
-				}
-				//down to left
-				else if (posA.y == y_min && posB.x == x_min)
-				{
-					if (forbiddenCorner.x != x_min && forbiddenCorner.y != y_min)
-					{
-						m_wayPoints.push(sc2::Point2D(x_min, y_min));
-					}
-					else
-					{
-						m_wayPoints.push(sc2::Point2D(x_max, y_min));
-						m_wayPoints.push(sc2::Point2D(x_max, y_max));
-						m_wayPoints.push(sc2::Point2D(x_min, y_max));
-					}
-				}
-				//down to right
-				else if (posA.y == y_min && posB.x == x_max)
-				{
-					if (forbiddenCorner.x != x_min && forbiddenCorner.y != y_max)
-					{
-						m_wayPoints.push(sc2::Point2D(x_min, y_max));
-					}
-					else
-					{
-						m_wayPoints.push(sc2::Point2D(x_min, y_min));
-						m_wayPoints.push(sc2::Point2D(x_min, y_max));
-						m_wayPoints.push(sc2::Point2D(x_max, y_max));
-					}
-				}
-				//up to left
-				else if (posA.y == y_max && posB.x == x_min)
-				{
-					if (forbiddenCorner.x != x_min && forbiddenCorner.y != y_max)
-					{
-						m_wayPoints.push(sc2::Point2D(x_min, y_max));
-					}
-					else
-					{
-						m_wayPoints.push(sc2::Point2D(x_max, y_max));
-						m_wayPoints.push(sc2::Point2D(x_max, y_min));
-						m_wayPoints.push(sc2::Point2D(x_min, y_min));
-					}
-				}
-				//up to right
-				else if (posA.y == y_max && posB.x == x_max)
-				{
-					if (forbiddenCorner.x != x_max && forbiddenCorner.y != y_max)
-					{
-						m_wayPoints.push(sc2::Point2D(x_max, y_max));
-					}
-					else
-					{
-						m_wayPoints.push(sc2::Point2D(x_min, y_max));
-						m_wayPoints.push(sc2::Point2D(x_min, y_min));
-						m_wayPoints.push(sc2::Point2D(x_max, y_min));
-					}
-				}
-
-			}
-			m_wayPoints.push(posB);
-			m_wayPoints.push(posEnd);
+			m_wayPoints=m_bot.Map().getEdgePath(m_medivac->pos, posEnd);
 		}
 		//If we found a new base and it is closer to us then our current target
 		else if (Util::Dist(m_wayPoints.back(),posEnd)>10.0f && Util::Dist(m_medivac->pos, posEnd)<Util::Dist(m_medivac->pos, m_wayPoints.back()))
@@ -678,17 +479,17 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 }
 
 //////////////////////////////////////////////////////////////////// WIDOW MINE HARASS /////////////////////////////////////////////
-ExeBomber::ExeBomber(CCBot & bot) :m_bot(bot),m_widowmine(nullptr), m_lastLoopEnemySeen(0)
+WMHarass::WMHarass(CCBot & bot) :m_bot(bot),m_widowmine(nullptr), m_lastLoopEnemySeen(0),m_status(WMStatus::Dead),m_shuttle(nullptr)
 {
 
 }
 
-void ExeBomber::getWayPoints(const sc2::Point2D targetPos)
+void WMHarass::getWayPoints(const sc2::Point2D targetPos)
 {
 	m_wayPoints.push(targetPos);
 }
 
-void ExeBomber::replanWayPoints(const sc2::Point2D targetPos)
+void WMHarass::replanWayPoints(const sc2::Point2D targetPos)
 {
 	while (m_wayPoints.size() > 0)
 	{
@@ -697,97 +498,142 @@ void ExeBomber::replanWayPoints(const sc2::Point2D targetPos)
 	m_wayPoints.push(targetPos);
 }
 
-void ExeBomber::harass(const sc2::Point2D pos)
+void WMHarass::harass(const sc2::Point2D pos)
 {
-	//No widow mine yet
-	if (!m_widowmine)
+	if (m_status != WMStatus::Dead && !m_widowmine->is_alive)
 	{
+		m_status = WMStatus::Dead;
 		return;
 	}
-	//Dead?
-	if (!m_widowmine->is_alive)
+	switch (m_status)
 	{
-		m_widowmine = nullptr;
-		return;
-	}
-	//If we arrived
-	if (Util::Dist(m_widowmine->pos, pos) < 1.0f)
-	{
-		//And we are not yet burrowed
-		if (m_widowmine->unit_type.ToType() != sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
+		case(WMStatus::Dead): return;
+		case(WMStatus::NewWM):
 		{
-			Micro::SmartAbility(m_widowmine, sc2::ABILITY_ID::BURROWDOWN, m_bot);
-		}
-		//And now we wait
-		return;
-	}
-	//Still on our way
-	sc2::Units enemies = Util::getEnemyUnitsInSight(m_widowmine, m_bot);
-	//If enemies nearby, better burrow
-	for (const auto & enemy : enemies)
-	{
-		if (Util::IsCombatUnitType(enemy->unit_type, m_bot) || (Util::IsWorkerType(enemy->unit_type) && Util::Dist(m_widowmine->pos, enemy->pos) < 2.0f))
-		{
-			if (m_widowmine->unit_type.ToType() != sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
+			m_shuttle=m_bot.requestShuttleService({ m_widowmine }, pos);
+			while (m_wayPoints.size() > 0)
 			{
-				Micro::SmartAbility(m_widowmine, sc2::ABILITY_ID::BURROWDOWN, m_bot);
+				m_wayPoints.pop();
 			}
-			m_lastLoopEnemySeen = m_bot.Observation()->GetGameLoop();
-			return;
+			m_wayPoints.push(pos);
+			m_status = WMStatus::WaitingForShuttle;
+			break;
 		}
-	}
-	//Nobody in sight
-	if (m_widowmine->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
-	{
-		const uint32_t currentLoop = m_bot.Observation()->GetGameLoop();
-		//wait a bit before unburrowing
-		if (currentLoop - m_lastLoopEnemySeen > 448)//20sec
+		case(WMStatus::WaitingForShuttle):
 		{
-			Micro::SmartAbility(m_widowmine, sc2::ABILITY_ID::BURROWUP, m_bot);
+			if (m_shuttle->getShuttleStatus() == ShuttleStatus::OnMyWay)
+			{
+				m_status = WMStatus::ShuttleTransport;
+			}
+			break;
 		}
+		case(WMStatus::ShuttleTransport):
+		{
+			if (m_shuttle->getShuttleStatus() == ShuttleStatus::Done)
+			{
+				m_wayPoints.pop();
+				m_shuttle = nullptr;
+				m_status = WMStatus::Harass;
+			}
+			else if (m_wayPoints.back() != pos)
+			{
+				m_wayPoints.pop();
+				m_wayPoints.push(pos);
+				m_shuttle->updateTargetPos(pos);
+			}
+			break;
+		}
+		case(WMStatus::Harass):
+		{
+			if (Util::Dist(m_widowmine->pos, pos) < 1.0f)
+			{
+				if (m_widowmine->unit_type.ToType() != sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
+				{
+					Micro::SmartAbility(m_widowmine, sc2::ABILITY_ID::BURROWDOWN, m_bot);
+				}
+			}
+			else
+			{
+				m_status = WMStatus::Relocating;
+			}
+			break;
+		}
+		case(WMStatus::Relocating):
+		{
+			//Still on our way
+			sc2::Units enemies = Util::getEnemyUnitsInSight(m_widowmine, m_bot);
+			//If enemies nearby, better burrow
+			for (const auto & enemy : enemies)
+			{
+				if (Util::IsCombatUnitType(enemy->unit_type, m_bot) || (Util::IsWorkerType(enemy->unit_type) && Util::Dist(m_widowmine->pos, enemy->pos) < 2.0f))
+				{
+					if (m_widowmine->unit_type.ToType() != sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
+					{
+						Micro::SmartAbility(m_widowmine, sc2::ABILITY_ID::BURROWDOWN, m_bot);
+					}
+					m_lastLoopEnemySeen = m_bot.Observation()->GetGameLoop();
+					return;
+				}
+			}
+			//Nobody in sight
+			if (m_widowmine->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
+			{
+				const uint32_t currentLoop = m_bot.Observation()->GetGameLoop();
+				//wait a bit before unburrowing
+				if (currentLoop - m_lastLoopEnemySeen > 448)//20sec
+				{
+					Micro::SmartAbility(m_widowmine, sc2::ABILITY_ID::BURROWUP, m_bot);
+				}
+				return;
+			}
+			//Plan our way
+			if (m_wayPoints.empty())
+			{
+				getWayPoints(pos);
+			}
+			//Replan if destination changed
+			if (m_wayPoints.back() != pos)
+			{
+				replanWayPoints(pos);
+			}
+			//Walk there
+			if (Util::Dist(m_widowmine->pos, m_wayPoints.front()) > 1.0f)
+			{
+				Micro::SmartMove(m_widowmine, m_wayPoints.front(), m_bot);
+			}
+			else
+			{
+				m_wayPoints.pop();
+			}
+		}
+	}
+	//No widow mine yet
+	if (m_status==WMStatus::Dead)
+	{
 		return;
 	}
-	//Plan our way
-	if (m_wayPoints.empty())
-	{
-		getWayPoints(pos);
-		return;
-	}
-	//Replan if destination changed
-	if (m_wayPoints.back()!=pos)
-	{
-		replanWayPoints(pos);
-		return;
-	}
-	//Walk there
-	if (Util::Dist(m_widowmine->pos, m_wayPoints.front()) > 1.0f)
-	{
-		Micro::SmartMove(m_widowmine, m_wayPoints.front(),m_bot);
-	}
-	else
-	{
-		m_wayPoints.pop();
-	}
+	
 }
 
-const bool ExeBomber::addWidowMine(const sc2::Unit * widowMine)
+const bool WMHarass::addWidowMine(const sc2::Unit * widowMine)
 {
 	if (m_widowmine)
 	{
 		return false;
 	}
 	m_widowmine = widowMine;
+	m_status = WMStatus::NewWM;
 	return true;
 }
 
-const sc2::Unit * ExeBomber::getwidowMine() const
+const sc2::Unit * WMHarass::getwidowMine() const
 {
 	return m_widowmine;
 }
 
 ///////////////////////////////////////////////////////////////////// HARASS MANAGER ////////////////////////////////////////////////////
 HarassManager::HarassManager(CCBot & bot)
-	: m_bot(bot), m_exeBomber(ExeBomber(bot)), m_liberator(nullptr)
+	: m_bot(bot), m_WMHarass(WMHarass(bot)), m_liberator(nullptr)
 {
 
 }
@@ -800,7 +646,7 @@ void HarassManager::onFrame()
 {
 	handleHitSquads();
 	handleLiberator();
-	handleExeBomber();
+	handleWMHarass();
 }
 
 void HarassManager::handleHitSquads()
@@ -887,7 +733,7 @@ const bool HarassManager::needLiberator() const
 
 const bool HarassManager::needWidowMine() const
 {
-	return !m_exeBomber.getwidowMine();
+	return !m_WMHarass.getwidowMine();
 }
 
 const bool HarassManager::setMedivac(const sc2::Unit * medivac)
@@ -927,7 +773,7 @@ const bool HarassManager::setLiberator(const sc2::Unit * liberator)
 
 const bool HarassManager::setWidowMine(const sc2::Unit * widowMine)
 {
-	return m_exeBomber.addWidowMine(widowMine);
+	return m_WMHarass.addWidowMine(widowMine);
 }
 
 void HarassManager::handleLiberator()
@@ -935,13 +781,13 @@ void HarassManager::handleLiberator()
 
 }
 
-void HarassManager::handleExeBomber()
+void HarassManager::handleWMHarass()
 {
-	if (m_exeBomber.getwidowMine())
+	if (m_WMHarass.getwidowMine())
 	{
 		const sc2::Point2D pos = m_bot.Bases().getNextExpansion(Players::Enemy);
 		auto base = m_bot.Bases().getBaseLocation(pos);
-		m_exeBomber.harass(base->getBasePosition());
+		m_WMHarass.harass(base->getBasePosition());
 	}
 }
 
@@ -971,5 +817,5 @@ const sc2::Unit * HarassManager::getLiberator()
 
 const sc2::Unit * HarassManager::getWidowMine()
 {
-	return m_exeBomber.getwidowMine();
+	return m_WMHarass.getwidowMine();
 }

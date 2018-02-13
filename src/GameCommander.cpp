@@ -34,6 +34,7 @@ void GameCommander::onFrame()
     m_timer.start();
 
 	handleDTdetections();
+	handleShuttleService();
     handleUnitAssignments();
     m_productionManager.onFrame();
     m_scoutManager.onFrame();
@@ -69,6 +70,7 @@ void GameCommander::handleUnitAssignments()
 	// set each type of unit
 	setScoutUnits();
 	setHarassUnits();
+	setShuttles();
 	setCombatUnits();
 }
 
@@ -76,18 +78,66 @@ bool GameCommander::isAssigned(const sc2::Unit * unit) const
 {
 	return     (std::find(m_combatUnits.begin(), m_combatUnits.end(), unit) != m_combatUnits.end())
 		|| (std::find(m_scoutUnits.begin(), m_scoutUnits.end(), unit) != m_scoutUnits.end())
-		|| (std::find(m_harassUnits.begin(), m_harassUnits.end(), unit) != m_harassUnits.end());
+		|| (std::find(m_harassUnits.begin(), m_harassUnits.end(), unit) != m_harassUnits.end())
+		|| isShuttle(unit);
+}
+
+bool GameCommander::isShuttle(const sc2::Unit * unit) const
+{
+	if (unit->unit_type.ToType() != sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
+	{
+		return false;
+	}
+	for (const auto & s : m_shuttles)
+	{
+		if (s->isShuttle(unit))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void GameCommander::handleShuttleService()
+{
+	
+	m_shuttles.erase(std::remove_if(m_shuttles.begin(), m_shuttles.end(),[](std::shared_ptr<shuttle> s){
+		//Here is the shuttle handling hidden
+		s->hereItGoes();
+		return s->getShuttleStatus()==ShuttleStatus::Done;
+	}), m_shuttles.end());
 }
 
 // validates units as usable for distribution to various managers
 void GameCommander::setValidUnits()
 {
 	// make sure the unit is completed and alive and usable
-	for (auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
+	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
 	{
-		if (m_bot.GetUnit(unit->tag) && unit->is_alive && unit->last_seen_game_loop == m_bot.Observation()->GetGameLoop())
+		if (m_bot.GetUnit(unit->tag) && unit->is_alive && unit->last_seen_game_loop == m_bot.Observation()->GetGameLoop() && unit->unit_type.ToType()!=sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
 		{
 			m_validUnits.push_back(unit);
+		}
+	}
+}
+
+void GameCommander::setShuttles()
+{
+	for (auto & s : m_shuttles)
+	{
+		if (s->needShuttleUnit())
+		{
+			for (const auto & unit : m_validUnits)
+			{
+				if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
+				{
+					if (!isAssigned(unit))
+					{
+						s->assignShuttleUnit(unit);
+						break;
+					}
+				}
+			}
 		}
 	}
 }
@@ -127,7 +177,7 @@ void GameCommander::setScoutUnits()
 	}
 	else if (m_scoutManager.getNumScouts() == 0)
 	{
-		for (auto & unit : m_validUnits)
+		for (const auto & unit : m_validUnits)
 		{
 			BOT_ASSERT(unit, "Have a null unit in our valid units\n");
 
@@ -164,7 +214,7 @@ void GameCommander::setHarassUnits()
 	sc2::Units marines = m_harassManager.getMarines();
 	if (marines.size()>0)
 	{
-		for (auto & m : marines)
+		for (const auto & m : marines)
 		{
 			assignUnit(m, m_harassUnits);
 		}
@@ -414,3 +464,9 @@ void GameCommander::requestGuards(const bool req)
 	m_combatCommander.requestGuards(req);
 }
 
+std::shared_ptr<shuttle> GameCommander::requestShuttleService(sc2::Units passengers, const sc2::Point2D targetPos)
+{
+	std::shared_ptr<shuttle> newShuttle = std::make_shared<shuttle>(&m_bot, passengers, targetPos);
+	m_shuttles.push_back(newShuttle);
+	return newShuttle;
+}
