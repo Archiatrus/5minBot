@@ -572,7 +572,7 @@ void ProductionManager::defaultMacro()
 				}
 				else if (m_bot.Observation()->GetUnit(unit->add_on_tag)->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORYTECHLAB)
 				{
-					const int numWidowMines = static_cast<int>(m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_WIDOWMINE,sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED })).size());
+					const int numWidowMines = static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(Players::Self, { sc2::UNIT_TYPEID::TERRAN_WIDOWMINE,sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED }));
 					if (numWidowMines==0 && minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).mineralCost && gas >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).gasCost && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).supplyCost)
 					{
 						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::TRAIN_WIDOWMINE);

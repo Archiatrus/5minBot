@@ -253,7 +253,7 @@ size_t UnitInfoManager::getUnitTypeCount(int player, sc2::UnitTypeID type, bool 
 {
     size_t count = 0;
 
-    for (auto & unit : getUnits(player))
+    for (const auto & unit : getUnits(player))
     {
         if ((!type || type == unit->unit_type) && (!completed || unit->build_progress == 1.0f))
         {
@@ -262,6 +262,24 @@ size_t UnitInfoManager::getUnitTypeCount(int player, sc2::UnitTypeID type, bool 
     }
 
     return count;
+}
+
+size_t UnitInfoManager::getUnitTypeCount(int player, std::vector<sc2::UnitTypeID> types, bool completed) const
+{
+	size_t count = 0;
+
+	for (const auto & unit : getUnitInfoMap(player))
+	{
+		for (const auto & type : types)
+		{
+			if ((!type || type == unit.first->unit_type) && (!completed || unit.first->build_progress == 1.0f))
+			{
+				count++;
+			}
+		}
+	}
+
+	return count;
 }
 
 void UnitInfoManager::drawUnitInformation(float x,float y) const
