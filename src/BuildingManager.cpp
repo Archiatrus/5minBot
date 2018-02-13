@@ -197,24 +197,9 @@ void BuildingManager::constructAssignedBuildings()
                 // if it's a refinery, the build command has to be on the geyser unit tag
                 if (Util::IsRefineryType(b.type))
                 {
-					//For some reason the bot sometimes wants to build two refinaries at once
-					bool doubleRefinary = false;
-					for (auto & b2 : m_buildings)
-					{
-						if (b2.buildCommandGiven && Util::IsRefineryType(b2.type))
-						{
-							doubleRefinary = true;
-							break;
-						}
-					}
-					if (doubleRefinary)
-					{
-						toRemove.push_back(b);
-						continue;
-					}
                     // first we find the geyser at the desired location
                     const sc2::Unit * geyser = nullptr;
-                    for (auto unit : m_bot.Observation()->GetUnits())
+                    for (const auto & unit : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral))
                     {
                         if (Util::IsGeyser(unit) && Util::Dist(b.finalPosition, unit->pos) < 3)
                         {
@@ -327,7 +312,7 @@ void BuildingManager::checkForStartedConstruction()
 					m_bot.requestGuards(false);
 				}
                 // free this space
-				//but not if it is an rax or factory.
+				//but not if it is an starport or factory.
 				//this whole part should actually only be done if the building is destroyed.
 				if (b.type.ToType() != sc2::UNIT_TYPEID::TERRAN_FACTORY && b.type.ToType() != sc2::UNIT_TYPEID::TERRAN_STARPORT)
 				{

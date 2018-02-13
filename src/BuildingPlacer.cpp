@@ -320,7 +320,7 @@ sc2::Point2D BuildingPlacer::getRefineryPosition()
     double minGeyserDistanceFromHome = std::numeric_limits<double>::max();
     sc2::Point2D homePosition = m_bot.GetStartLocation();
 
-    for (const auto & unit : m_bot.Observation()->GetUnits())
+    for (const auto & unit : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral))
     {
         if (!Util::IsGeyser(unit))
         {
@@ -338,7 +338,6 @@ sc2::Point2D BuildingPlacer::getRefineryPosition()
                 nearDepot = true;
             }
         }
-
         if (nearDepot)
         {
             double homeDistance = Util::Dist(unit->pos, homePosition);
