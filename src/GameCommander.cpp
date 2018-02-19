@@ -74,17 +74,17 @@ void GameCommander::handleUnitAssignments()
 	setCombatUnits();
 }
 
-bool GameCommander::isAssigned(const sc2::Unit * unit) const
+bool GameCommander::isAssigned(CUnit_ptr unit) const
 {
-	return     (std::find(m_combatUnits.begin(), m_combatUnits.end(), unit) != m_combatUnits.end())
-		|| (std::find(m_scoutUnits.begin(), m_scoutUnits.end(), unit) != m_scoutUnits.end())
-		|| (std::find(m_harassUnits.begin(), m_harassUnits.end(), unit) != m_harassUnits.end())
+	return     (std::find_if(m_combatUnits.begin(), m_combatUnits.end(), [unit](auto & newUnit) {return unit->getTag() == newUnit->getTag(); }) != m_combatUnits.end())
+		|| (std::find_if(m_scoutUnits.begin(), m_scoutUnits.end(), [unit](auto & newUnit) {return unit->getTag() == newUnit->getTag(); }) != m_scoutUnits.end())
+		|| (std::find_if(m_harassUnits.begin(), m_harassUnits.end(), [unit](auto & newUnit) {return unit->getTag() == newUnit->getTag(); }) != m_harassUnits.end())
 		|| isShuttle(unit);
 }
 
-bool GameCommander::isShuttle(const sc2::Unit * unit) const
+bool GameCommander::isShuttle(CUnit_ptr unit) const
 {
-	if (unit->unit_type.ToType() != sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
+	if (unit->getUnitType().ToType() != sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 	{
 		return false;
 	}
@@ -114,7 +114,7 @@ void GameCommander::setValidUnits()
 	// make sure the unit is completed and alive and usable
 	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
 	{
-		if (m_bot.GetUnit(unit->tag) && unit->is_alive && unit->last_seen_game_loop == m_bot.Observation()->GetGameLoop() && unit->unit_type.ToType()!=sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
+		if (m_bot.GetUnit(unit->getTag()) && unit->isAlive() && unit->getLastSeenGameLoop() == m_bot.Observation()->GetGameLoop() && unit->getUnitType().ToType()!=sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
 		{
 			m_validUnits.push_back(unit);
 		}
@@ -129,7 +129,7 @@ void GameCommander::setShuttles()
 		{
 			for (const auto & unit : m_validUnits)
 			{
-				if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
+				if (unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 				{
 					if (!isAssigned(unit))
 					{
@@ -157,7 +157,7 @@ void GameCommander::setScoutUnits()
 				return;
 			}
 			// grab the closest worker to the supply provider to send to scout
-			const sc2::Unit * workerScout = m_bot.Workers().getClosestMineralWorkerTo(m_bot.GetStartLocation());
+			CUnit_ptr workerScout = m_bot.Workers().getClosestMineralWorkerTo(m_bot.GetStartLocation());
 
 			// if we find a worker (which we should) add it to the scout units
 			if (workerScout)
@@ -181,7 +181,7 @@ void GameCommander::setScoutUnits()
 		{
 			BOT_ASSERT(unit, "Have a null unit in our valid units\n");
 
-			if (!isAssigned(unit) && unit->unit_type == sc2::UNIT_TYPEID::TERRAN_REAPER)
+			if (!isAssigned(unit) && unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_REAPER)
 			{
 				m_scoutManager.setScout(unit);
 				m_scoutUnits.clear();
@@ -206,12 +206,12 @@ bool GameCommander::shouldSendInitialScout()
 void GameCommander::setHarassUnits()
 {
 	//Re-assign the ones already in the harass manager
-	const sc2::Unit * medivac = m_harassManager.getMedivac();
+	CUnit_ptr medivac = m_harassManager.getMedivac();
 	if (medivac)
 	{
 		assignUnit(medivac, m_harassUnits);
 	}
-	sc2::Units marines = m_harassManager.getMarines();
+	CUnits marines = m_harassManager.getMarines();
 	if (marines.size()>0)
 	{
 		for (const auto & m : marines)
@@ -219,12 +219,12 @@ void GameCommander::setHarassUnits()
 			assignUnit(m, m_harassUnits);
 		}
 	}
-	const sc2::Unit * liberator = m_harassManager.getLiberator();
+	CUnit_ptr liberator = m_harassManager.getLiberator();
 	if (liberator)
 	{
 		assignUnit(liberator, m_harassUnits);
 	}
-	const sc2::Unit * widowMine = m_harassManager.getWidowMine();
+	CUnit_ptr widowMine = m_harassManager.getWidowMine();
 	if (widowMine)
 	{
 		assignUnit(widowMine, m_harassUnits);
@@ -234,14 +234,14 @@ void GameCommander::setHarassUnits()
 	//We should only can add units, if we are not under attack or if we have many units already
 	if (m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size()>1 || ( !m_combatCommander.underAttack() || m_validUnits.size() > manyUnits))
 	{
-		sc2::Units enemies = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
+		CUnits enemies = m_bot.UnitInfo().getUnits(Players::Enemy);
 		for (const auto & unit : m_validUnits)
 		{
 			BOT_ASSERT(unit, "Have a null unit in our valid units\n");
 
 			if (!isAssigned(unit))
 			{
-				if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC && m_harassManager.needMedivac())
+				if (unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC && m_harassManager.needMedivac())
 				{
 					if (m_harassManager.setMedivac(unit))
 					{
@@ -249,13 +249,13 @@ void GameCommander::setHarassUnits()
 					}
 				}
 				//We only assign marines, after we have a medivac
-				else if (medivac && unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MARINE && unit->health == unit->health_max && m_harassManager.needMarine())
+				else if (medivac && unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MARINE && unit->getHealth() == unit->getHealthMax() && m_harassManager.needMarine())
 				{
 					//If the marine is currently close to an anti air enemy, the medivac does not know what to do
 					bool tooClose = false;
 					for (auto & e : enemies)
 					{
-						if (Util::Dist(e->pos, unit->pos) < Util::GetUnitTypeSight(unit->unit_type, m_bot))
+						if (Util::Dist(e->getPos(), unit->getPos()) < Util::GetUnitTypeSight(unit->getUnitType(), m_bot))
 						{
 							tooClose = true;
 						}
@@ -265,14 +265,14 @@ void GameCommander::setHarassUnits()
 						assignUnit(unit, m_harassUnits);
 					}
 				}
-				else if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_LIBERATOR && m_harassManager.needLiberator())
+				else if (unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_LIBERATOR && m_harassManager.needLiberator())
 				{
 					if (m_harassManager.setLiberator(unit))
 					{
 						assignUnit(unit, m_harassUnits);
 					}
 				}
-				else if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_WIDOWMINE && m_harassManager.needWidowMine())
+				else if (unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_WIDOWMINE && m_harassManager.needWidowMine())
 				{
 					if (m_harassManager.setWidowMine(unit))
 					{
@@ -291,41 +291,34 @@ void GameCommander::setCombatUnits()
     for (const auto & unit : m_validUnits)
     {
         BOT_ASSERT(unit, "Have a null unit in our valid units\n");
-        if (!isAssigned(unit) && Util::IsCombatUnitType(unit->unit_type, m_bot))
+        if (!isAssigned(unit) && Util::IsCombatUnitType(unit->getUnitType(), m_bot))
         {
             assignUnit(unit, m_combatUnits);
         }
     }
 }
 
-void GameCommander::onUnitCreate(const sc2::Unit * unit)
+void GameCommander::onUnitCreate(CUnit_ptr unit)
 {
-	if (Util::IsCombatUnitType(unit->unit_type,m_bot))
+	if (Util::IsCombatUnitType(unit->getUnitType(),m_bot))
 	{
 		sc2::Point2D pos(m_bot.Bases().getRallyPoint());
-		if (Util::Dist(unit->pos, pos) > 5)
+		if (Util::Dist(unit->getPos(), pos) > 5)
 		{
-			if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
+			if (unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 			{
 				Micro::SmartMove(unit, m_bot.Bases().getRallyPoint(), m_bot);
 				return;
 			}
 			else
 			{
-				std::map<const sc2::Unit *, UnitInfo> knownUnits = m_bot.UnitInfo().getUnitInfoMap(Players::Self);
-				if (knownUnits.find(unit) != knownUnits.end())
-				{
-					//We have seen this one already
-					return;
-				}
-
-				const sc2::Units Bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_BUNKER }));
+				CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
 				for (auto & b : Bunker)
 				{
-					if (b->build_progress==1.0f && b->cargo_space_taken != b->cargo_space_max)
+					if (b->getBuildProgress()==1.0f && b->getCargoSpaceTaken() != b->getCargoSpaceMax())
 					{
 						Micro::SmartRightClick(unit, b, m_bot);
-						m_bot.Actions()->UnitCommand(b, sc2::ABILITY_ID::LOAD, unit);
+						Micro::SmartAbility(b, sc2::ABILITY_ID::LOAD, unit,m_bot);
 						return;
 					}
 				}
@@ -334,28 +327,28 @@ void GameCommander::onUnitCreate(const sc2::Unit * unit)
 			}
 		}
 	}
-	else if (Util::IsTownHallType(unit->unit_type))
+	else if (Util::IsTownHallType(unit->getUnitType()))
 	{
 		m_bot.Bases().assignTownhallToBase(unit);
 	}
 }
 
-void GameCommander::OnBuildingConstructionComplete(const sc2::Unit * unit)
+void GameCommander::OnBuildingConstructionComplete(CUnit_ptr unit)
 {
-	if (Util::IsTownHallType(unit->unit_type))
+	if (Util::IsTownHallType(unit->getUnitType()))
 	{
 		m_bot.Bases().assignTownhallToBase(unit);
 	}
 }
 
-void GameCommander::onUnitDestroy(const sc2::Unit * unit)
+void GameCommander::onUnitDestroy(CUnit_ptr unit)
 {
     //_productionManager.onUnitDestroy(unit);
 }
 
-void GameCommander::OnUnitEnterVision(const sc2::Unit * unit)
+void GameCommander::OnUnitEnterVision(CUnit_ptr unit)
 {
-	if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_LIBERATOR || unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_BANSHEE || unit->unit_type.ToType() == sc2::UNIT_TYPEID::PROTOSS_COLOSSUS)
+	if (unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_LIBERATOR || unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_BANSHEE || unit->getUnitType().ToType() == sc2::UNIT_TYPEID::PROTOSS_COLOSSUS)
 	{
 		m_productionManager.requestVikings();
 	}
@@ -367,7 +360,7 @@ void GameCommander::OnDTdetected(const sc2::Point2D pos)
 	m_DTdetections.push_back(timePlace(m_bot.Observation()->GetGameLoop(),pos));
 }
 
-void GameCommander::assignUnit(const sc2::Unit * unit, std::vector<const sc2::Unit *> & units)
+void GameCommander::assignUnit(CUnit_ptr unit, CUnits & units)
 {
     if (std::find(m_scoutUnits.begin(), m_scoutUnits.end(), unit) != m_scoutUnits.end())
     {
@@ -432,24 +425,24 @@ void GameCommander::handleDTdetections()
 		{
 			return;
 		}
-		const sc2::Units CommandCenters = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND));
+		CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self,sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND);
 		for (const auto & unit : CommandCenters)
 		{
-			if (unit->build_progress == 1.0f)
+			if (unit->getBuildProgress() == 1.0f)
 			{
-				if (unit->energy >= 50)
+				if (unit->getEnergy() >= 50)
 				{
 					int nearbyUnits = 0;
-					for (const auto & unit : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self))
+					for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
 					{
-						if (Util::IsCombatUnitType(unit->unit_type,m_bot) &&  Util::Dist(m_DTdetections.back().m_place, unit->pos) < scanRadius)
+						if (unit->isCombatUnit() &&  Util::Dist(m_DTdetections.back().m_place, unit->getPos()) < scanRadius)
 						{
 							++nearbyUnits;
 						}
 					}
 					if (nearbyUnits > 5)
 					{
-						m_bot.Actions()->UnitCommand(unit, sc2::ABILITY_ID::EFFECT_SCAN, m_DTdetections.back().m_place);
+						Micro::SmartAbility(unit, sc2::ABILITY_ID::EFFECT_SCAN, m_DTdetections.back().m_place,m_bot);
 						m_productionManager.usedScan();
 						return;
 					}
@@ -464,7 +457,7 @@ void GameCommander::requestGuards(const bool req)
 	m_combatCommander.requestGuards(req);
 }
 
-std::shared_ptr<shuttle> GameCommander::requestShuttleService(sc2::Units passengers, const sc2::Point2D targetPos)
+std::shared_ptr<shuttle> GameCommander::requestShuttleService(CUnits passengers, const sc2::Point2D targetPos)
 {
 	std::shared_ptr<shuttle> newShuttle = std::make_shared<shuttle>(&m_bot, passengers, targetPos);
 	m_shuttles.push_back(newShuttle);

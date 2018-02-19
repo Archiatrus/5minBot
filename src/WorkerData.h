@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include "CUnit.h"
 
 class CCBot;
 
@@ -12,37 +13,37 @@ class WorkerData
 {
     CCBot & m_bot;
 
-    std::set<const sc2::Unit *>         m_workers;
-    std::set<const sc2::Unit *>         m_depots;
+    CUnits        m_workers;
+    CUnits         m_depots;
     std::map<int, int>                  m_workerJobCount;
-    std::map<const sc2::Unit *, int>    m_workerJobMap;
-    std::map<const sc2::Unit *, int>    m_refineryWorkerCount;
-    std::map<const sc2::Unit *, int>    m_depotWorkerCount;
-    std::map<const sc2::Unit *, const sc2::Unit *>  m_workerRefineryMap;
-    std::map<const sc2::Unit *, const sc2::Unit *>  m_workerDepotMap;
-	std::map<sc2::Tag, sc2::Units > m_repair_map;
+    std::map<CUnit_ptr, int>    m_workerJobMap;
+    std::map<CUnit_ptr, int>    m_refineryWorkerCount;
+    std::map<CUnit_ptr, int>    m_depotWorkerCount;
+    std::map<CUnit_ptr,CUnit_ptr>  m_workerRefineryMap;
+    std::map<CUnit_ptr,CUnit_ptr>  m_workerDepotMap;
+	std::map<sc2::Tag, CUnits > m_repair_map;
 
-    void clearPreviousJob(const sc2::Unit * unit);
+    void clearPreviousJob(const CUnit_ptr unit);
 
 public:
 
     WorkerData(CCBot & bot);
 
-    void    workerDestroyed(const sc2::Unit * unit);
+    void    workerDestroyed(const CUnit_ptr unit);
     void    updateAllWorkerData();
-    void    updateWorker(const sc2::Unit * unit);
-    void    setWorkerJob(const sc2::Unit * unit, int job, const sc2::Unit * jobUnit = 0);
+    void    updateWorker(const CUnit_ptr unit);
+    void    setWorkerJob(const CUnit_ptr unit, int job, const CUnit_ptr jobUnit = nullptr);
     void    drawDepotDebugInfo();
     size_t  getNumWorkers() const;
     int     getWorkerJobCount(int job) const;
-    int     getNumAssignedWorkers(const sc2::Unit * unit);
-    int     getWorkerJob(const sc2::Unit * unit) const;
-    const sc2::Unit * getMineralToMine(const sc2::Unit * unit) const;
-    const sc2::Unit * getWorkerDepot(const sc2::Unit * unit) const;
-    const char * getJobCode(const sc2::Unit * unit);
-    const std::set<const sc2::Unit *> & getWorkers() const;
-	std::vector<const sc2::Unit*> getMineralWorkers() const;
-	std::vector<const sc2::Unit*> getGasWorkers() const;
-	const size_t isBeingRepairedNum(const sc2::Unit * unit) const;
+    int     getNumAssignedWorkers(const CUnit_ptr unit);
+    int     getWorkerJob(const CUnit_ptr unit) const;
+    const CUnit_ptr getMineralToMine(const CUnit_ptr unit) const;
+    const CUnit_ptr getWorkerDepot(const CUnit_ptr unit) const;
+    const char * getJobCode(const CUnit_ptr unit);
+    const CUnits & getWorkers() const;
+	const CUnits getMineralWorkers() const;
+	const CUnits getGasWorkers() const;
+	const size_t isBeingRepairedNum(const CUnit_ptr unit) const;
 	void checkRepairedBuildings();
 };

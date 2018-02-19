@@ -25,7 +25,7 @@ void SquadData::clearSquadData()
         {
             BOT_ASSERT(unit, "null unit");
 
-            if (Util::IsWorker(unit))
+            if (unit->isWorker())
             {
                 m_bot.Workers().finishedWithWorker(unit);
             }
@@ -49,7 +49,7 @@ void SquadData::removeSquad(const std::string & squadName)
     {
         BOT_ASSERT(unit, "null unit");
 
-        if (Util::IsWorker(unit))
+        if (unit->isWorker())
         {
             m_bot.Workers().finishedWithWorker(unit);
         }
@@ -108,7 +108,7 @@ void SquadData::drawSquadInformation()
         {
             BOT_ASSERT(unit, "null unit");
 
-            Drawing::drawText(m_bot,unit->pos, squad.getName(), sc2::Colors::Green);
+            Drawing::drawText(m_bot,unit->getPos(), squad.getName(), sc2::Colors::Green);
         }
     }
 
@@ -117,15 +117,15 @@ void SquadData::drawSquadInformation()
 
 void SquadData::verifySquadUniqueMembership()
 {
-    std::vector<const sc2::Unit *> assigned;
+    CUnits assigned;
 
     for (const auto & kv : m_squads)
     {
         for (const auto & unit : kv.second.getUnits())
         {
-            if (std::find(assigned.begin(), assigned.end(), unit) != assigned.end())
+			if (std::find_if(assigned.begin(), assigned.end(), [unit](CUnit_ptr & newUnit) {return unit->getTag() == newUnit->getTag(); }) != assigned.end())
             {
-                std::cout << "Warning: Unit is in at least two squads: " << unit->tag << "\n";
+                std::cout << "Warning: Unit is in at least two squads: " << unit->getTag() << "\n";
             }
 
             assigned.push_back(unit);
@@ -133,12 +133,12 @@ void SquadData::verifySquadUniqueMembership()
     }
 }
 
-bool SquadData::unitIsInSquad(const sc2::Unit * unit) const
+bool SquadData::unitIsInSquad(const CUnit_ptr unit) const
 {
     return getUnitSquad(unit) != nullptr;
 }
 
-const Squad * SquadData::getUnitSquad(const sc2::Unit * unit) const
+const Squad * SquadData::getUnitSquad(const CUnit_ptr unit) const
 {
     for (const auto & kv : m_squads)
     {
@@ -151,7 +151,7 @@ const Squad * SquadData::getUnitSquad(const sc2::Unit * unit) const
     return nullptr;
 }
 
-Squad * SquadData::getUnitSquad(const sc2::Unit * unit)
+Squad * SquadData::getUnitSquad(const CUnit_ptr unit)
 {
     for (auto & kv : m_squads)
     {
@@ -164,7 +164,7 @@ Squad * SquadData::getUnitSquad(const sc2::Unit * unit)
     return nullptr;
 }
 
-void SquadData::assignUnitToSquad(const sc2::Unit * unit, Squad & squad)
+void SquadData::assignUnitToSquad(const CUnit_ptr unit, Squad & squad)
 {
     BOT_ASSERT(canAssignUnitToSquad(unit, squad), "We shouldn't be re-assigning this unit!");
 
@@ -178,12 +178,12 @@ void SquadData::assignUnitToSquad(const sc2::Unit * unit, Squad & squad)
     squad.addUnit(unit);
 }
 
-bool SquadData::canAssignUnitToSquad(const sc2::Unit * unit, const Squad & squad) const
+bool SquadData::canAssignUnitToSquad(const CUnit_ptr unit, const Squad & squad) const
 {
 
     const Squad * unitSquad = getUnitSquad(unit);
 	//It really should not happen, that the harass medivac reaches here. No idea how this happens
-	if (unit->cargo_space_taken > 0)
+	if (unit->getCargoSpaceTaken() > 0)
 	{
 		return false;
 	}

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CUnit.h"
 #include "Common.h"
 #include "Building.h"
 

@@ -31,12 +31,11 @@ void WorkerManager::onFrame()
 
 }
 
-void WorkerManager::setRepairWorker(const sc2::Unit * unitToRepair,int numWorkers)
+void WorkerManager::setRepairWorker(const CUnit_ptr unitToRepair,int numWorkers)
 {
-	auto test = isBeingRepairedNum(unitToRepair);
 	if (isBeingRepairedNum(unitToRepair)<numWorkers)
 	{
-		const sc2::Unit * worker = getClosestMineralWorkerTo(unitToRepair->pos);
+		const CUnit_ptr worker = getClosestMineralWorkerTo(unitToRepair->getPos());
 		if (worker)
 		{
 			m_workerData.setWorkerJob(worker, WorkerJobs::Repair, unitToRepair);
@@ -44,7 +43,7 @@ void WorkerManager::setRepairWorker(const sc2::Unit * unitToRepair,int numWorker
 		//Repair has higher priority than combat
 		else
 		{
-			const sc2::Unit * worker = getClosestCombatWorkerTo(unitToRepair->pos);
+			const CUnit_ptr worker = getClosestCombatWorkerTo(unitToRepair->getPos());
 			if (worker)
 			{
 				m_workerData.setWorkerJob(worker, WorkerJobs::Repair, unitToRepair);
@@ -53,12 +52,12 @@ void WorkerManager::setRepairWorker(const sc2::Unit * unitToRepair,int numWorker
 	}
 }
 
-void WorkerManager::setRepairWorker(const sc2::Unit * worker, const sc2::Unit * unitToRepair)
+void WorkerManager::setRepairWorker(const CUnit_ptr worker, const CUnit_ptr unitToRepair)
 {
     m_workerData.setWorkerJob(worker, WorkerJobs::Repair, unitToRepair);
 }
 
-void WorkerManager::stopRepairing(const sc2::Unit * worker)
+void WorkerManager::stopRepairing(const CUnit_ptr worker)
 {
     m_workerData.setWorkerJob(worker, WorkerJobs::Idle);
 }
@@ -74,7 +73,7 @@ void WorkerManager::handleGasWorkers()
 	{
 		for (const auto & gasWorker : m_workerData.getGasWorkers())
 		{
-			if (gasWorker->orders.empty() || gasWorker->orders[0].ability_id != sc2::ABILITY_ID::HARVEST_RETURN)
+			if (gasWorker->getOrders().empty() || gasWorker->getOrders().front().ability_id != sc2::ABILITY_ID::HARVEST_RETURN)
 			{
 				setMineralWorker(gasWorker);
 				numMinWorker++;
@@ -92,7 +91,7 @@ void WorkerManager::handleGasWorkers()
 		for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
 		{
 			// if that unit is a refinery
-			if (Util::IsRefinery(unit) && Util::IsCompleted(unit) && unit->vespene_contents > 0 )
+			if (unit->IsRefineryType() && unit->isCompleted() && unit->getVespeneContents() > 0 )
 			{
 				// get the number of workers currently assigned to it
 				int numAssigned = m_workerData.getNumAssignedWorkers(unit);
@@ -113,17 +112,17 @@ void WorkerManager::handleGasWorkers()
 }
 void WorkerManager::handleMineralWorkers()
 {
-	const sc2::Units CommandCenters = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER , sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND , sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS }));
+	const CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, Util::getTownHallTypes());
 	// for each unit we have
 	for (const auto & unit : CommandCenters)
 	{
 		// if that unit is a townhall
-		if (Util::IsCompleted(unit))
+		if (unit->isCompleted())
 		{
 			// get the number of workers currently assigned to it
-			int numAssigned = unit->assigned_harvesters;
+			int numAssigned = unit->getAssignedHarvesters();
 			// and the max number
-			int numMaxAssigned = unit->ideal_harvesters;
+			int numMaxAssigned = unit->getIdealHarvesters();
 			// if it's too much try to find another base
 			if (numAssigned > numMaxAssigned)
 			{
@@ -131,17 +130,17 @@ void WorkerManager::handleMineralWorkers()
 				for (const auto & unit_next : CommandCenters)
 				{
 					// if that unit is finished
-					if (Util::IsCompleted(unit_next))
+					if (unit_next->isCompleted())
 					{
-						int numAssigned_next = unit_next->assigned_harvesters;
-						int numMaxAssigned_next = unit_next->ideal_harvesters;
+						int numAssigned_next = unit_next->getAssignedHarvesters();
+						int numMaxAssigned_next = unit_next->getIdealHarvesters();
 						if (numAssigned_next<numMaxAssigned_next)
 						{
-							auto transfer_worker = getClosestMineralWorkerTo(unit->pos); //THIS WILL PROBABLY CALL THE SAME WORKER OVER AND OVER AGAIN UNTIL HE IS FAR ENOUGH AWAY :(
-							const sc2::Unit * mineralPatch = Util::getClostestMineral(unit_next->pos, m_bot);
+							auto transfer_worker = getClosestMineralWorkerTo(unit->getPos()); //THIS WILL PROBABLY CALL THE SAME WORKER OVER AND OVER AGAIN UNTIL HE IS FAR ENOUGH AWAY :(
+							const CUnit_ptr mineralPatch = Util::getClostestMineral(unit_next->getPos(), m_bot);
 							if (mineralPatch)
 							{
-								//Micro::SmartMove(unit, unit_next->pos, m_bot);
+								//Micro::SmartMove(unit, unit_next->getPos(), m_bot);
 								m_workerData.setWorkerJob(transfer_worker, WorkerJobs::Minerals, mineralPatch);
 								return;
 							}
@@ -168,7 +167,7 @@ void WorkerManager::handleIdleWorkers()
         }
 
         // if it is idle
-        if (Util::IsIdle(worker) || m_workerData.getWorkerJob(worker) == WorkerJobs::Idle)
+        if (worker->isIdle() || m_workerData.getWorkerJob(worker) == WorkerJobs::Idle)
         {
             setMineralWorker(worker);
         }
@@ -177,12 +176,12 @@ void WorkerManager::handleIdleWorkers()
 
 void WorkerManager::handleRepairWorkers()
 {
-	const sc2::Units buildings = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_BUNKER, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND,sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER }));
+	const CUnits buildings = m_bot.UnitInfo().getUnits(Players::Self, std::vector<sc2::UNIT_TYPEID>({sc2::UNIT_TYPEID::TERRAN_BUNKER, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND,sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER }));
 	for (const auto & b : buildings)
 	{
-		if (b->build_progress==1.0f && b->health < b->health_max)
+		if (b->isCompleted() && b->getHealth() < b->getHealthMax())
 		{
-			if (b->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_BUNKER)
+			if (b->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_BUNKER)
 			{
 				setRepairWorker(b, 6);
 			}
@@ -195,9 +194,9 @@ void WorkerManager::handleRepairWorkers()
 	m_workerData.checkRepairedBuildings();
 }
 
-const sc2::Unit * WorkerManager::getClosestMineralWorkerTo(const sc2::Point2D & pos) const
+const CUnit_ptr WorkerManager::getClosestMineralWorkerTo(const sc2::Point2D & pos) const
 {
-    const sc2::Unit * closestMineralWorker = nullptr;
+    CUnit_ptr closestMineralWorker = nullptr;
     double closestDist = std::numeric_limits<double>::max();
 
     // for each of our workers
@@ -206,12 +205,12 @@ const sc2::Unit * WorkerManager::getClosestMineralWorkerTo(const sc2::Point2D & 
 		if (!worker) { continue; }
 
 		// if it is a mineral worker
-		if (m_workerData.getWorkerJob(worker) == WorkerJobs::Minerals && worker->unit_type != sc2::UNIT_TYPEID::TERRAN_MULE)
+		if (m_workerData.getWorkerJob(worker) == WorkerJobs::Minerals && worker->getUnitType().ToType() != sc2::UNIT_TYPEID::TERRAN_MULE)
         {
 			//do not use worker if he carries minerals
-			if (worker->orders.empty() || worker->orders[0].ability_id!=sc2::ABILITY_ID::HARVEST_RETURN)
+			if (worker->getOrders().empty() || worker->getOrders()[0].ability_id!=sc2::ABILITY_ID::HARVEST_RETURN)
 			{
-				double dist = Util::Dist(worker->pos, pos);
+				double dist = Util::Dist(worker->getPos(), pos);
 
 				if (!closestMineralWorker || dist < closestDist)
 				{
@@ -225,9 +224,9 @@ const sc2::Unit * WorkerManager::getClosestMineralWorkerTo(const sc2::Point2D & 
     return closestMineralWorker;
 }
 
-const sc2::Unit * WorkerManager::getClosestCombatWorkerTo(const sc2::Point2D & pos) const
+const CUnit_ptr WorkerManager::getClosestCombatWorkerTo(const sc2::Point2D & pos) const
 {
-	const sc2::Unit * closestMineralWorker = nullptr;
+	CUnit_ptr closestMineralWorker = nullptr;
 	double closestDist = std::numeric_limits<double>::max();
 
 	// for each of our workers
@@ -236,10 +235,10 @@ const sc2::Unit * WorkerManager::getClosestCombatWorkerTo(const sc2::Point2D & p
 		if (!worker) { continue; }
 
 		// if it is a mineral worker
-		if (m_workerData.getWorkerJob(worker) == WorkerJobs::Combat && worker->unit_type != sc2::UNIT_TYPEID::TERRAN_MULE)
+		if (m_workerData.getWorkerJob(worker) == WorkerJobs::Combat && worker->getUnitType().ToType() != sc2::UNIT_TYPEID::TERRAN_MULE)
 		{
 			//do not use worker if he carries minerals
-			double dist = Util::Dist(worker->pos, pos);
+			double dist = Util::Dist(worker->getPos(), pos);
 
 			if (!closestMineralWorker || dist < closestDist)
 			{
@@ -252,36 +251,36 @@ const sc2::Unit * WorkerManager::getClosestCombatWorkerTo(const sc2::Point2D & p
 	return closestMineralWorker;
 }
 
-const size_t WorkerManager::isBeingRepairedNum(const sc2::Unit * unit) const
+const size_t WorkerManager::isBeingRepairedNum(const CUnit_ptr unit) const
 {
 	return m_workerData.isBeingRepairedNum(unit);
 }
 
 
 // set a worker to mine minerals
-void WorkerManager::setMineralWorker(const sc2::Unit * unit)
+void WorkerManager::setMineralWorker(const CUnit_ptr unit)
 {
     // check if there is a mineral available to send the worker to
 	// First we want to go to the closest base
-	const sc2::Unit * mineralPatch = Util::getClostestMineral(unit->pos, m_bot);
+	const CUnit_ptr mineralPatch = Util::getClostestMineral(unit->getPos(), m_bot);
 	if (mineralPatch)
 	{
 		m_workerData.setWorkerJob(unit, WorkerJobs::Minerals, mineralPatch);
 	}
 }
 
-const sc2::Unit * WorkerManager::getClosestDepot(const sc2::Unit * worker) const
+const CUnit_ptr WorkerManager::getClosestDepot(const CUnit_ptr worker) const
 {
-    const sc2::Unit * closestDepot = nullptr;
+    CUnit_ptr closestDepot = nullptr;
     double closestDistance = std::numeric_limits<double>::max();
 
-    for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
+    for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self,Util::getTownHallTypes()))
     {
         if (!unit) { continue; }
 
-        if (Util::IsTownHall(unit) && Util::IsCompleted(unit))
+        if (unit->isCompleted())
         {
-            double distance = Util::DistSq(unit->pos, worker->pos);
+            double distance = Util::DistSq(unit->getPos(), worker->getPos());
             if (!closestDepot || distance < closestDistance)
             {
                 closestDepot = unit;
@@ -295,17 +294,17 @@ const sc2::Unit * WorkerManager::getClosestDepot(const sc2::Unit * worker) const
 
 
 // other managers that need workers call this when they're done with a unit
-void WorkerManager::finishedWithWorker(const sc2::Unit * unit)
+void WorkerManager::finishedWithWorker(const CUnit_ptr unit)
 {
 	m_workerData.setWorkerJob(unit, WorkerJobs::Idle);
 }
 
-const sc2::Unit * WorkerManager::getGasWorker(const sc2::Unit * refinery) const
+const CUnit_ptr WorkerManager::getGasWorker(const CUnit_ptr refinery) const
 {
-    return getClosestMineralWorkerTo(refinery->pos);
+    return getClosestMineralWorkerTo(refinery->getPos());
 }
 
-void WorkerManager::setBuildingWorker(const sc2::Unit * worker, Building & b)
+void WorkerManager::setBuildingWorker(const CUnit_ptr worker, Building & b)
 {
     m_workerData.setWorkerJob(worker, WorkerJobs::Build, b.buildingUnit);
 }
@@ -313,9 +312,9 @@ void WorkerManager::setBuildingWorker(const sc2::Unit * worker, Building & b)
 // gets a builder for BuildingManager to use
 // if setJobAsBuilder is true (default), it will be flagged as a builder unit
 // set 'setJobAsBuilder' to false if we just want to see which worker will build a building
-const sc2::Unit * WorkerManager::getBuilder(Building & b, bool setJobAsBuilder) const
+const CUnit_ptr WorkerManager::getBuilder(Building & b, bool setJobAsBuilder) const
 {
-    const sc2::Unit * builderWorker = getClosestMineralWorkerTo(b.finalPosition);
+    const CUnit_ptr builderWorker = getClosestMineralWorkerTo(b.finalPosition);
 
     // if the worker exists (one may not have been found in rare cases)
     if (builderWorker && setJobAsBuilder)
@@ -327,12 +326,12 @@ const sc2::Unit * WorkerManager::getBuilder(Building & b, bool setJobAsBuilder) 
 }
 
 // sets a worker as a scout
-void WorkerManager::setScoutWorker(const sc2::Unit * workerTag)
+void WorkerManager::setScoutWorker(const CUnit_ptr workerTag)
 {
     m_workerData.setWorkerJob(workerTag, WorkerJobs::Scout);
 }
 
-void WorkerManager::setCombatWorker(const sc2::Unit * workerTag)
+void WorkerManager::setCombatWorker(const CUnit_ptr workerTag)
 {
     m_workerData.setWorkerJob(workerTag, WorkerJobs::Combat);
 }
@@ -348,12 +347,12 @@ void WorkerManager::drawResourceDebugInfo()
     {
         if (!worker) { continue; }
 
-        Drawing::drawText(m_bot,worker->pos, m_workerData.getJobCode(worker));
+        Drawing::drawText(m_bot,worker->getPos(), m_workerData.getJobCode(worker));
 
         auto depot = m_workerData.getWorkerDepot(worker);
         if (depot)
         {
-            Drawing::drawLine(m_bot,worker->pos, depot->pos);
+            Drawing::drawLine(m_bot,worker->getPos(), depot->getPos());
         }
     }
 }
@@ -378,23 +377,23 @@ void WorkerManager::drawWorkerInformation()
     Drawing::drawTextScreen(m_bot,sc2::Point2D(0.75f, 0.2f), ss.str());
 }
 
-bool WorkerManager::isFree(const sc2::Unit * worker) const
+bool WorkerManager::isFree(const CUnit_ptr worker) const
 {
     return m_workerData.getWorkerJob(worker) == WorkerJobs::Minerals || m_workerData.getWorkerJob(worker) == WorkerJobs::Idle;
 }
 
-bool WorkerManager::isWorkerScout(const sc2::Unit * worker) const
+bool WorkerManager::isWorkerScout(const CUnit_ptr worker) const
 {
     return (m_workerData.getWorkerJob(worker) == WorkerJobs::Scout);
 }
 
-bool WorkerManager::isRepairWorker(const sc2::Unit * worker) const
+bool WorkerManager::isRepairWorker(const CUnit_ptr worker) const
 {
 	return (m_workerData.getWorkerJob(worker) == WorkerJobs::Repair);
 }
 
 
-bool WorkerManager::isBuilder(const sc2::Unit * worker) const
+bool WorkerManager::isBuilder(const CUnit_ptr worker) const
 {
     return (m_workerData.getWorkerJob(worker) == WorkerJobs::Build);
 }
@@ -410,12 +409,12 @@ int WorkerManager::getNumGasWorkers()
 
 }
 
-std::vector<const sc2::Unit *> WorkerManager::getMineralWorkers() const
+const CUnits WorkerManager::getMineralWorkers() const
 {
 	return m_workerData.getMineralWorkers();
 }
 
-int WorkerManager::getNumAssignedWorkers(const sc2::Unit * unit) const
+int WorkerManager::getNumAssignedWorkers(const CUnit_ptr unit) const
 {
 	return  m_workerData.getNumAssignedWorkers(unit);
 }

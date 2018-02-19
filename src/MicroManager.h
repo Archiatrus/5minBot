@@ -20,24 +20,24 @@ class CCBot;
 
 class MicroManager
 {
-    std::vector<const sc2::Unit *> m_units;
+    CUnits m_units;
 
 protected:
 
     CCBot & m_bot;
     SquadOrder order;
 
-    virtual void executeMicro(const std::vector<const sc2::Unit *> & targets) = 0;
-    void trainSubUnits(const sc2::Unit * unit) const;
+    virtual void executeMicro(const CUnits & targets) = 0;
+    void trainSubUnits(CUnit_ptr unit) const;
 
 
 public:
 
     MicroManager(CCBot & bot);
 
-    const std::vector<const sc2::Unit *> & getUnits() const;
+    const CUnits & getUnits() const;
 
-    void setUnits(const std::vector<const sc2::Unit *> & u);
+    void setUnits(CUnits & u);
     void execute(const SquadOrder & order);
     void regroup(const sc2::Point2D & regroupPosition) const;
 

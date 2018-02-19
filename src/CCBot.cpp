@@ -119,7 +119,8 @@ void CCBot::OnUnitCreated(const sc2::Unit * unit)
 {
 	Timer t;
 	t.start();
-	m_gameCommander.onUnitCreate(unit);
+	const CUnit_ptr cunit = UnitInfo().OnUnitCreate(unit);
+	m_gameCommander.onUnitCreate(cunit);
 	if (useAutoObserver)
 	{
 		m_cameraModule.moveCameraUnitCreated(unit);
@@ -131,7 +132,8 @@ void CCBot::OnBuildingConstructionComplete(const sc2::Unit * unit)
 {
 	Timer t;
 	t.start();
-	m_gameCommander.OnBuildingConstructionComplete(unit);
+	const CUnit_ptr cunit = UnitInfo().getUnit(unit->tag);
+	m_gameCommander.OnBuildingConstructionComplete(cunit);
 	m_time[Observation()->GetGameLoop()][2] = t.getElapsedTimeInMilliSec();
 }
 
@@ -140,7 +142,8 @@ void CCBot::OnUnitEnterVision(const sc2::Unit * unit)
 {
 	Timer t;
 	t.start();
-	m_gameCommander.OnUnitEnterVision(unit);
+	const CUnit_ptr cunit = UnitInfo().getUnit(unit->tag);
+	m_gameCommander.OnUnitEnterVision(cunit);
 	m_time[Observation()->GetGameLoop()][3] = t.getElapsedTimeInMilliSec();
 }
 
@@ -149,7 +152,33 @@ void CCBot::OnDTdetected(const sc2::Point2D pos)
 	m_gameCommander.OnDTdetected(pos);
 }
 
-
+void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
+{
+	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL3)
+	{
+		m_armor = 3;
+	}
+	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL2)
+	{
+		m_armor = 2;
+	}
+	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL1)
+	{
+		m_armor = 1;
+	}
+	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL3)
+	{
+		m_weapon = 3;
+	}
+	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL2)
+	{
+		m_weapon = 2;
+	}
+	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL1)
+	{
+		m_weapon = 1;
+	}
+}
 // TODO: Figure out my race
 const sc2::Race & CCBot::GetPlayerRace(int player) const
 {
@@ -177,7 +206,7 @@ const BaseLocationManager & CCBot::Bases() const
     return m_bases;
 }
 
-const UnitInfoManager & CCBot::UnitInfo() const
+UnitInfoManager & CCBot::UnitInfo()
 {
     return m_unitInfo;
 }
@@ -202,9 +231,9 @@ WorkerManager & CCBot::Workers()
     return m_workers;
 }
 
-const sc2::Unit * CCBot::GetUnit(const UnitTag & tag) const
+const CUnit_ptr CCBot::GetUnit(const UnitTag & tag)
 {
-    return Observation()->GetUnit(tag);
+    return UnitInfo().getUnit(tag);
 }
 
 sc2::Point2D CCBot::GetStartLocation() const
@@ -227,12 +256,20 @@ void CCBot::requestGuards(const bool req)
 	m_gameCommander.requestGuards(req);
 }
 
-std::shared_ptr<shuttle> CCBot::requestShuttleService(sc2::Units passengers, const sc2::Point2D targetPos)
+std::shared_ptr<shuttle> CCBot::requestShuttleService(const CUnits passengers, const sc2::Point2D targetPos)
 {
 	return m_gameCommander.requestShuttleService(passengers,targetPos);
 }
 
+const int CCBot::getArmor() const
+{
+	return m_armor;
+}
 
+const int CCBot::getWeapon() const
+{
+	return m_weapon;
+}
 
 void * CreateNewAgent()
 {

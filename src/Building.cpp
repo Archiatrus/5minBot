@@ -31,8 +31,9 @@ Building::Building(sc2::UnitTypeID t, sc2::Point2D desired)
 bool Building::operator == (const Building & b) 
 {
 	// buildings are equal if their worker unit and building unit are equal
-    return      (b.buildingUnit == buildingUnit) 
-             && (b.builderUnit  == builderUnit) 
+    return   b.buildingUnit && b.builderUnit && buildingUnit
+			 &&(b.buildingUnit->getTag() == buildingUnit->getTag())
+             && (b.builderUnit->getTag() == builderUnit->getTag())
              && (b.finalPosition.x == finalPosition.x)
              && (b.finalPosition.y == finalPosition.y);
 }

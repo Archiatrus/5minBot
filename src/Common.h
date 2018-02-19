@@ -2,6 +2,7 @@
 
 #include "sc2api/sc2_api.h"
 #include "BotAssert.h"
+#include <map>
 #include <iostream>
 #include <vector>
 #include <cassert>
@@ -14,7 +15,7 @@ typedef uint64_t UnitTag;
 
 namespace Players
 {
-    enum {Self = 0, Enemy = 1};
+    enum {Self = sc2::Unit::Alliance::Self, Enemy = sc2::Unit::Alliance::Enemy, Neutral = sc2::Unit::Alliance::Neutral};
 }
 
 namespace sc2

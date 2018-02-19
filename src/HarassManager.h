@@ -22,28 +22,28 @@ class Hitsquad
 	CCBot &   m_bot;
 
 	int			m_status;
-	const sc2::Unit * m_medivac;
-	sc2::Units	m_marines;
-	sc2::Units	m_doomedMarines;
+	CUnit_ptr m_medivac;
+	CUnits	m_marines;
+	CUnits	m_doomedMarines;
 	std::queue<sc2::Point2D> m_wayPoints;
 	int m_pathPlanCounter;
 
 	void checkForCasualties();
-	const sc2::Unit * getTargetMarines(sc2::Units targets) const;
+	CUnit_ptr getTargetMarines(CUnits targets) const;
 	const bool manhattenMove(const BaseLocation * target);
-	sc2::Units getNearbyEnemyUnits() const;
+	CUnits getNearbyEnemyUnits() const;
 	const BaseLocation * getSavePosition() const;
-	const bool shouldWeFlee(sc2::Units targets) const;
+	const bool shouldWeFlee(CUnits targets) const;
 	void escapePathPlaning();
 
 public:
-	Hitsquad(CCBot & bot, const sc2::Unit * medivac);
+	Hitsquad(CCBot & bot, CUnit_ptr medivac);
 
-	const bool	addMedivac(const sc2::Unit * medivac);
-	const bool	addMarine(const sc2::Unit * marine);
+	const bool	addMedivac(CUnit_ptr medivac);
+	const bool	addMarine(CUnit_ptr marine);
 	const int	getNumMarines() const;
-	sc2::Units	getMarines() const;
-	const sc2::Unit * getMedivac() const;
+	CUnits	getMarines() const;
+	CUnit_ptr getMedivac() const;
 	const int getStatus() const;
 	void harass(const BaseLocation *pos);
 };
@@ -51,7 +51,7 @@ public:
 class WMHarass
 {
 	CCBot &   m_bot;
-	const sc2::Unit * m_widowmine;
+	CUnit_ptr m_widowmine;
 	uint32_t m_lastLoopEnemySeen;
 	int m_status;
 	std::shared_ptr<shuttle> m_shuttle;
@@ -63,8 +63,8 @@ public:
 	WMHarass(CCBot & bot);
 
 
-	const bool	addWidowMine(const sc2::Unit * widowMine);
-	const sc2::Unit * getwidowMine() const;
+	const bool	addWidowMine(CUnit_ptr widowMine);
+	CUnit_ptr getwidowMine() const;
 	void harass(const sc2::Point2D pos);
 };
 
@@ -73,7 +73,7 @@ class HarassManager
 	CCBot &   m_bot;
 
 	std::vector<Hitsquad>	m_hitSquads;
-	const sc2::Unit* m_liberator;
+	CUnit_ptr m_liberator;
 	WMHarass m_WMHarass;
 	const int	m_numHitSquads = 1;
 
@@ -99,14 +99,14 @@ public:
 	const bool needLiberator() const;
 	const bool needWidowMine() const;
 
-	const bool setMedivac(const sc2::Unit * medivac);
-	const bool setMarine(const sc2::Unit * marine);
-	const bool setLiberator(const sc2::Unit * liberator);
-	const bool setWidowMine(const sc2::Unit * widowMine);
+	const bool setMedivac(CUnit_ptr medivac);
+	const bool setMarine(CUnit_ptr marine);
+	const bool setLiberator(CUnit_ptr liberator);
+	const bool setWidowMine(CUnit_ptr widowMine);
 
-	const sc2::Unit * getMedivac();
-	const sc2::Units getMarines();
-	const sc2::Unit * getLiberator();
-	const sc2::Unit * getWidowMine();
+	CUnit_ptr getMedivac();
+	CUnits getMarines();
+	CUnit_ptr getLiberator();
+	CUnit_ptr getWidowMine();
 
 };

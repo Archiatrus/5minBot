@@ -11,8 +11,8 @@ class SiegeManager : public MicroManager
 public:
 
 	SiegeManager(CCBot & bot);
-	void    executeMicro(const std::vector<const sc2::Unit *> & targets);
-	void    assignTargets(const std::vector<const sc2::Unit *> & targets);
-	int     getAttackPriority(const sc2::Unit * attacker, const sc2::Unit * unit);
-	const sc2::Unit * getTarget(const sc2::Unit * siegeUnit, const std::vector<const sc2::Unit *> & targets);
+	void    executeMicro(const CUnits & targets);
+	void    assignTargets(const CUnits & targets);
+	int     getAttackPriority(const CUnit_ptr attacker, const CUnit_ptr unit);
+	const CUnit_ptr getTarget(const CUnit_ptr siegeUnit, const CUnits & targets);
 };

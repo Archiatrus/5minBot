@@ -6,7 +6,7 @@
 
 const int NearBaseLocationTileDistance = 20;
 
-BaseLocation::BaseLocation(CCBot & bot, int baseID, const std::vector<const sc2::Unit *> & resources)
+BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 	: m_bot(bot)
 	, m_baseID(baseID)
 	, m_isStartLocation(false)
@@ -16,10 +16,10 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const std::vector<const sc2:
 	, m_bottom(std::numeric_limits<float>::max())
 	, m_numEnemyCombatUnits(0)
 {
-    m_isPlayerStartLocation[0] = false;
-    m_isPlayerStartLocation[1] = false;
-    m_isPlayerOccupying[0] = false;
-    m_isPlayerOccupying[1] = false;
+    m_isPlayerStartLocation[Players::Self] = false;
+    m_isPlayerStartLocation[Players::Enemy] = false;
+    m_isPlayerOccupying[Players::Self] = false;
+    m_isPlayerOccupying[Players::Enemy] = false;
 
 	float resourceCenterX = 0;
 	float resourceCenterY = 0;
@@ -28,37 +28,37 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const std::vector<const sc2:
 
 
     // add each of the resources to its corresponding container
-    for (const auto & resource : resources)
+    for (const CUnit_ptr & resource : resources)
     {
-        if (Util::IsMineral(resource))
+        if (resource->isMineral())
         {
             m_minerals.push_back(resource);
-            m_mineralPositions.push_back(resource->pos);
+            m_mineralPositions.push_back(resource->getPos());
 
             // add the position of the minerals to the center
-            resourceCenterX += resource->pos.x;
-            resourceCenterY += resource->pos.y;
-			mineralsCenterX += resource->pos.x;
-			mineralsCenterY += resource->pos.y;
+            resourceCenterX += resource->getPos().x;
+            resourceCenterY += resource->getPos().y;
+			mineralsCenterX += resource->getPos().x;
+			mineralsCenterY += resource->getPos().y;
         }
         else
         {
             m_geysers.push_back(resource);
-            m_geyserPositions.push_back(resource->pos);
+            m_geyserPositions.push_back(resource->getPos());
 
             // pull the resource center toward the geyser if it exists
-            resourceCenterX += resource->pos.x;
-            resourceCenterY += resource->pos.y;
+            resourceCenterX += resource->getPos().x;
+            resourceCenterY += resource->getPos().y;
         }
 
         // set the limits of the base location bounding box
         float resWidth = 1;
         float resHeight = 0.5;
 
-        m_left   = std::min(m_left,   resource->pos.x - resWidth);
-        m_right  = std::max(m_right,  resource->pos.x + resWidth);
-        m_top    = std::max(m_top,    resource->pos.y + resHeight);
-        m_bottom = std::min(m_bottom, resource->pos.y - resHeight);
+        m_left   = std::min(m_left,   resource->getPos().x - resWidth);
+        m_right  = std::max(m_right,  resource->getPos().x + resWidth);
+        m_top    = std::max(m_top,    resource->getPos().y + resHeight);
+        m_bottom = std::min(m_bottom, resource->getPos().y - resHeight);
     }
 
     // calculate the center of the resources
@@ -82,25 +82,15 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const std::vector<const sc2:
     }
     
     // if this base location position is near our own resource depot, it's our start location
-    for (const auto & unit : m_bot.Observation()->GetUnits())
+    for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self,sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER))
     {
-        if (Util::GetPlayer(unit) == Players::Self && Util::IsTownHall(unit) && containsPosition(unit->pos))
+        if (containsPosition(unit->getPos()))
         {
             m_isPlayerStartLocation[Players::Self] = true;
             m_isStartLocation = true;
             m_isPlayerOccupying[Players::Self] = true;
 			m_townhall = unit;
             break;
-        }
-    }
-    
-    // if it's not a start location, we need to calculate the depot position
-    if (!isStartLocation())
-    {
-        // the position of the depot will be the closest spot we can build one from the resource center
-        for (const auto & tile : getClosestTiles())
-        {
-            // TODO: m_depotPosition = depot position for this base location
         }
     }
 }
@@ -157,12 +147,12 @@ bool BaseLocation::containsPosition(const sc2::Point2D & pos) const
     return getGroundDistance(pos) < NearBaseLocationTileDistance;
 }
 
-const std::vector<const sc2::Unit *> & BaseLocation::getGeysers() const
+const CUnits & BaseLocation::getGeysers() const
 {
     return m_geysers;
 }
 
-const std::vector<const sc2::Unit *> & BaseLocation::getMinerals() const
+const CUnits & BaseLocation::getMinerals() const
 {
     return m_minerals;
 }
@@ -188,28 +178,35 @@ const std::vector<sc2::Point2D> & BaseLocation::getClosestTiles() const
     return m_distanceMap.getSortedTiles();
 }
 
-const sc2::Unit * BaseLocation::getTownHall() const
+const CUnit_ptr BaseLocation::getTownHall() const
 {
 	return m_townhall;
 }
 
-void BaseLocation::setTownHall(const sc2::Unit * townHall)
+void BaseLocation::setTownHall(const CUnit_ptr townHall)
 {
 	m_townhall = townHall;
 	//it seems we have a new base. Time to update the mineral nodes.
-	sc2::Units resources = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral, sc2::IsUnits(Util::getMineralTypes()));
+	CUnits resources = m_bot.UnitInfo().getUnits(Players::Neutral, Util::getMineralTypes());
 	m_minerals.clear();
+	CUnit_ptr closestMineral=nullptr;
+	float minDist = 10.0f;
 	for (const auto & resource : resources)
 	{
-		if (Util::Dist(townHall->pos, resource->pos)<10)
+		float dist = Util::Dist(townHall->getPos(), resource->getPos());
+		if (dist<10.0f)
 		{
 			m_minerals.push_back(resource);
+			if (minDist > dist)
+			{
+				closestMineral = resource;
+				minDist = dist;
+			}
 		}
 	}
-	auto minerals = Util::getClostestMineral(townHall->pos, m_bot);
-	if (minerals)
+	if (closestMineral)
 	{
-		m_bot.Actions()->UnitCommand(townHall, sc2::ABILITY_ID::RALLY_BUILDING, minerals);
+		Micro::SmartAbility(townHall, sc2::ABILITY_ID::RALLY_BUILDING, closestMineral,m_bot);
 	}
 }
 

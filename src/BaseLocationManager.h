@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sc2api/sc2_api.h"
+#include "CUnit.h"
 #include "BaseLocation.h"
 
 class CCBot;
@@ -34,5 +35,5 @@ public:
     sc2::Point2D getNextExpansion(int player) const;
 	sc2::Point2D getNewestExpansion(int player) const;
 	const sc2::Point2D getRallyPoint() const;
-	void BaseLocationManager::assignTownhallToBase(const sc2::Unit * townHall) const;
+	void BaseLocationManager::assignTownhallToBase(const CUnit_ptr townHall) const;
 };

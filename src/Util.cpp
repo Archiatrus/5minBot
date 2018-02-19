@@ -203,7 +203,7 @@ bool Util::UnitOutrangesMe(const sc2::UnitTypeID me, const sc2::UnitTypeID attac
 	return bot.Observation()->GetUnitTypeData()[me].weapons[0].range<= bot.Observation()->GetUnitTypeData()[attacker].weapons[0].range;
 }
 
-sc2::Point2D Util::CalcCenter(const std::vector<const sc2::Unit *> & units)
+sc2::Point2D Util::CalcCenter(const CUnits & units)
 {
     if (units.empty())
     {
@@ -216,8 +216,8 @@ sc2::Point2D Util::CalcCenter(const std::vector<const sc2::Unit *> & units)
     for (const auto & unit : units)
     {
         BOT_ASSERT(unit, "Unit pointer was null");
-        cx += unit->pos.x;
-        cy += unit->pos.y;
+        cx += unit->getPos().x;
+        cy += unit->getPos().y;
     }
 
     return sc2::Point2D(cx / units.size(), cy / units.size());
@@ -291,17 +291,17 @@ int Util::GetPlayer(const sc2::Unit * unit)
     BOT_ASSERT(unit, "Unit pointer was null");
     if (unit->alliance == sc2::Unit::Alliance::Self)
     {
-        return 0;
+        return Players::Self;
     }
 
     if (unit->alliance == sc2::Unit::Alliance::Enemy)
     {
-        return 1;
+        return Players::Enemy;
     }
 
     if (unit->alliance == sc2::Unit::Alliance::Neutral)
     {
-        return 2;
+        return Players::Neutral;
     }
 
     return -1;
@@ -350,19 +350,19 @@ bool Util::IsSupplyProvider(const sc2::Unit * unit)
     return IsSupplyProviderType(unit->unit_type);
 }
 
-void Util::swapBuildings(const sc2::Unit * a, const sc2::Unit * b, CCBot & bot)
+void Util::swapBuildings(const CUnit_ptr a, const CUnit_ptr b, CCBot & bot)
 {
-	if (!a->is_flying)
+	if (!a->isFlying())
 	{
-		bot.Actions()->UnitCommand(a, sc2::ABILITY_ID::LIFT);
-		bot.Actions()->UnitCommand(b, sc2::ABILITY_ID::LIFT);
+		Micro::SmartAbility(a, sc2::ABILITY_ID::LIFT,bot);
+		Micro::SmartAbility(b, sc2::ABILITY_ID::LIFT,bot);
 	}
 	else
 	{
-		const sc2::Point2D a_pos = a->pos;
-		const sc2::Point2D b_pos = b->pos;
-		bot.Actions()->UnitCommand(a, sc2::ABILITY_ID::LAND,b_pos);
-		bot.Actions()->UnitCommand(b, sc2::ABILITY_ID::LAND,a_pos);
+		const sc2::Point2D a_pos = a->getPos();
+		const sc2::Point2D b_pos = b->getPos();
+		Micro::SmartAbility(a, sc2::ABILITY_ID::LAND,b_pos, bot);
+		Micro::SmartAbility(b, sc2::ABILITY_ID::LAND,a_pos, bot);
 	}
 	return;
 }
@@ -639,15 +639,15 @@ bool Util::canHitMe(const sc2::Unit * me, const sc2::Unit * hitter, CCBot & bot)
 	return false;
 }
 
-const sc2::Unit * Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
+const CUnit_ptr Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 {
 	const std::set<const BaseLocation *> bases = bot.Bases().getOccupiedBaseLocations(Players::Self);
 	std::map<int, const BaseLocation *> orderedBases;
 	for (const auto & base : bases)
 	{
 		//We don't care for not finished bases.
-		const sc2::Unit * townHall = base->getTownHall();
-		if (townHall && townHall->build_progress != 1.0f && townHall->assigned_harvesters<24)
+		const CUnit_ptr townHall = base->getTownHall();
+		if (townHall && townHall->getBuildProgress() != 1.0f && townHall->getAssignedHarvesters()<24)
 		{
 			continue;
 		}
@@ -656,14 +656,14 @@ const sc2::Unit * Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 	}
 	for (const auto & baseMap : orderedBases)
 	{
-		const std::vector<const sc2::Unit *> mineralPatches = baseMap.second->getMinerals();
-		std::map<int, const sc2::Unit *> orderedMinerals;
+		const CUnits mineralPatches = baseMap.second->getMinerals();
+		std::map<int, CUnit_ptr> orderedMinerals;
 		for (const auto & mineralPatch : mineralPatches)
 		{
-			int distance = bot.Map().getGroundDistance(mineralPatch->pos, pos);
+			int distance = bot.Map().getGroundDistance(mineralPatch->getPos(), pos);
 
 			//Bad things happen if it is not alive or just snapshot
-			if (mineralPatch->is_alive && mineralPatch->display_type == sc2::Unit::DisplayType::Visible && mineralPatch->mineral_contents > 200)
+			if (mineralPatch->isAlive() && mineralPatch->getDisplayType() == sc2::Unit::DisplayType::Visible && mineralPatch->getMineralContents() > 200)
 			{
 				orderedMinerals[distance] = mineralPatch;
 			}
@@ -688,11 +688,11 @@ const sc2::Unit * Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 	}
 	for (const auto & baseMap : orderedBases2)
 	{
-		const std::vector<const sc2::Unit *> mineralPatches = baseMap.second->getMinerals();
+		const CUnits mineralPatches = baseMap.second->getMinerals();
 		for (const auto & mineralPatch : mineralPatches)
 		{
 			//Bad things happen if it is not alive or just snapshot. But they are probably snapshots if we get till here.
-			if (mineralPatch->is_alive && mineralPatch->display_type == sc2::Unit::DisplayType::Visible && mineralPatch->mineral_contents > 200)
+			if (mineralPatch->isAlive() && mineralPatch->getDisplayType() == sc2::Unit::DisplayType::Visible && mineralPatch->getMineralContents() > 200)
 			{
 				return mineralPatch;
 			}
@@ -717,6 +717,45 @@ std::vector<sc2::UNIT_TYPEID> Util::getMineralTypes()
 												sc2::UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD750 };
 	return minerals;
 }
+
+std::vector<sc2::UNIT_TYPEID> Util::getGeyserTypes()
+{
+	std::vector<sc2::UNIT_TYPEID> geysers = {
+		sc2::UNIT_TYPEID::NEUTRAL_VESPENEGEYSER,
+		sc2::UNIT_TYPEID::NEUTRAL_PROTOSSVESPENEGEYSER,
+		sc2::UNIT_TYPEID::NEUTRAL_SPACEPLATFORMGEYSER,
+		sc2::UNIT_TYPEID::NEUTRAL_PURIFIERVESPENEGEYSER,
+		sc2::UNIT_TYPEID::NEUTRAL_SHAKURASVESPENEGEYSER,
+		sc2::UNIT_TYPEID::NEUTRAL_RICHVESPENEGEYSER};
+	return geysers;
+}
+
+std::vector<sc2::UNIT_TYPEID> Util::getTownHallTypes()
+{
+	std::vector<sc2::UNIT_TYPEID> townHalls = {
+        sc2::UNIT_TYPEID::ZERG_HATCHERY,
+		sc2::UNIT_TYPEID::ZERG_LAIR,
+		sc2::UNIT_TYPEID::ZERG_HIVE,
+		sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER,
+		sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND,
+		sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMANDFLYING,
+		sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS,
+		sc2::UNIT_TYPEID::PROTOSS_NEXUS};
+	return townHalls;
+}
+
+std::vector<sc2::UNIT_TYPEID> Util::getWorkerTypes()
+{
+	std::vector<sc2::UNIT_TYPEID> workers = {
+		sc2::UNIT_TYPEID::TERRAN_SCV,
+		sc2::UNIT_TYPEID::TERRAN_MULE,
+		sc2::UNIT_TYPEID::PROTOSS_PROBE,
+		sc2::UNIT_TYPEID::ZERG_DRONE,
+		sc2::UNIT_TYPEID::ZERG_DRONEBURROWED };
+	return workers;
+}
+
+
 
 const sc2::UpgradeID Util::abilityIDToUpgradeID(const sc2::ABILITY_ID id)
 {
@@ -763,25 +802,4 @@ const bool Util::isBadEffect(const sc2::EffectID id)
 		return true;
 	}
 	return false;
-}
-
-std::vector<const sc2::Unit *> Util::getEnemyUnitsInSight(const sc2::Unit * unit, CCBot & bot)
-{
-	std::vector<const sc2::Unit *> enemyUnitsInSight;
-	if (!unit) { return enemyUnitsInSight; }
-
-	UnitTag enemyUnitTag = 0;
-	float sightDistance = Util::GetUnitTypeSight(unit->unit_type.ToType(), bot);
-	// for each enemy unit (and building?)
-	for (const auto &enemy : bot.UnitInfo().getUnits(Players::Enemy))
-	{
-		const float dist = Util::Dist(unit->pos, enemy->pos);
-
-		if ((Util::IsCombatUnitType(enemy->unit_type, bot) || Util::IsWorkerType(enemy->unit_type)) && dist < sightDistance)
-		{
-			enemyUnitsInSight.push_back(enemy);
-		}
-	}
-
-	return enemyUnitsInSight;
 }

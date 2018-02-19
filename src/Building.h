@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CUnit.h"
 #include "Common.h"
 
 namespace BuildingStatus
@@ -15,8 +16,8 @@ public:
     sc2::Point2D    finalPosition;
     sc2::Point2D    position;
     sc2::UnitTypeID type;
-    const sc2::Unit * buildingUnit;
-    const sc2::Unit * builderUnit;
+    CUnit_ptr buildingUnit;
+	CUnit_ptr builderUnit;
     size_t          status;
     int             lastOrderFrame;
     bool            buildCommandGiven;

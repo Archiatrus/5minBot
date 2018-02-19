@@ -23,20 +23,13 @@ void BaseLocationManager::onStart()
     const int clusterDistance = 14;
     
     // stores each cluster of resources based on some ground distance
-    std::vector<std::vector<const sc2::Unit *>> resourceClusters;
-    for (const auto & mineral : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral))
+    std::vector<CUnits> resourceClusters;
+    for (const auto & mineral : m_bot.UnitInfo().getUnits(Players::Neutral,Util::getMineralTypes()))
     {
-        // skip minerals that don't have more than 100 starting minerals
-        // these are probably stupid map-blocking minerals to confuse us
-        if (!Util::IsMineral(mineral))
-        {
-            continue;
-        }
-
         bool foundCluster = false;
         for (auto & cluster : resourceClusters)
         {
-            float dist = Util::Dist(mineral->pos, Util::CalcCenter(cluster));
+            float dist = Util::Dist(mineral->getPos(), Util::CalcCenter(cluster));
             
             // quick initial air distance check to eliminate most resources
             if (dist < clusterDistance)
@@ -54,23 +47,18 @@ void BaseLocationManager::onStart()
 
         if (!foundCluster)
         {
-            resourceClusters.push_back(std::vector<const sc2::Unit *>());
+            resourceClusters.push_back(std::vector<CUnit_ptr>());
             resourceClusters.back().push_back(mineral);
         }
     }
 
     // add geysers only to existing resource clusters
-    for (const auto & geyser : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral))
+    for (const auto & geyser : m_bot.UnitInfo().getUnits(Players::Neutral, Util::getGeyserTypes()))
     {
-        if (!Util::IsGeyser(geyser))
-        {
-            continue;
-        }
-
         for (auto & cluster : resourceClusters)
         {
             //int groundDist = m_bot.Map().getGroundDistance(geyser.pos, Util::CalcCenter(cluster));
-            float groundDist = Util::Dist(geyser->pos, Util::CalcCenter(cluster));
+            float groundDist = Util::Dist(geyser->getPos(), Util::CalcCenter(cluster));
 
             if (groundDist >= 0 && groundDist < clusterDistance)
             {
@@ -154,15 +142,14 @@ void BaseLocationManager::onFrame()
 
 	//We start with the enemy to avoid situation with proxys locations declared as enemy region
 	// update enemy base occupations
-	for (const auto & kv : m_bot.UnitInfo().getUnitInfoMap(Players::Enemy))
+	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Enemy))
 	{
-		const UnitInfo & ui = kv.second;
-		if (!m_bot.Data(ui.type).isBuilding || ui.lastHealth == 0)
+		if (!unit->isBuilding() || !unit->isAlive())
 		{
 			continue;
 		}
 
-		BaseLocation * baseLocation = getBaseLocation(ui.lastPosition);
+		BaseLocation * baseLocation = getBaseLocation(unit->getPos());
 
 
 		if (baseLocation != nullptr)
@@ -170,15 +157,15 @@ void BaseLocationManager::onFrame()
 			baseLocation->setPlayerOccupying(Players::Enemy, true);
 		}
 	}
-    for (const auto & unit : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self))
+    for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
     {
         // we only care about buildings on the ground
-        if (!m_bot.Data(unit->unit_type).isBuilding || unit->is_flying || !unit->is_alive)
+        if (!unit->isBuilding() || unit->isFlying()|| !unit->isAlive())
         {
             continue;
         }
 
-        BaseLocation * baseLocation = getBaseLocation(unit->pos);
+        BaseLocation * baseLocation = getBaseLocation(unit->getPos());
 
         if (baseLocation != nullptr)
         {
@@ -254,15 +241,14 @@ void BaseLocationManager::onFrame()
     }
 
     // We want to assign the number of enemy combat units to each base to determine which one is the safest to attack
-	for (const auto & kv : m_bot.UnitInfo().getUnitInfoMap(Players::Enemy))
+	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Enemy))
 	{
-		const UnitInfo & ui = kv.second;
-		if (!Util::IsCombatUnitType(ui.type,m_bot) || ui.lastHealth == 0)
+		if (!unit->isCombatUnit() || !unit->isAlive())
 		{
 			continue;
 		}
 
-		BaseLocation * baseLocation = getBaseLocation(ui.lastPosition);
+		BaseLocation * baseLocation = getBaseLocation(unit->getPos());
 
 
 
@@ -328,7 +314,7 @@ const sc2::Point2D BaseLocationManager::getRallyPoint() const
 	//GET NEWEST EXPANSION
 	sc2::Point2D fixpoint = getNewestExpansion(Players::Self);
 	//Or bunker
-	const sc2::Units bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnit(sc2::UNIT_TYPEID::TERRAN_BUNKER));
+	const CUnits bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
 
 	std::vector<const BaseLocation *> startingBases = getStartingBaseLocations();
 	sc2::Point2D targetPos(0.0f, 0.0f);
@@ -341,9 +327,9 @@ const sc2::Point2D BaseLocationManager::getRallyPoint() const
 	bool bunkerRally = false;
 	for (const auto & b : bunker)
 	{
-		if (Util::Dist(fixpoint, targetPos) > Util::Dist(b->pos, targetPos))
+		if (Util::Dist(fixpoint, targetPos) > Util::Dist(b->getPos(), targetPos))
 		{
-			fixpoint = b->pos;
+			fixpoint = b->getPos();
 			bunkerRally = true;
 		}
 	}
@@ -436,10 +422,10 @@ sc2::Point2D BaseLocationManager::getNewestExpansion(int player) const
 	}
 }
 
-void BaseLocationManager::assignTownhallToBase(const sc2::Unit * townHall) const
+void BaseLocationManager::assignTownhallToBase(const CUnit_ptr townHall) const
 {
 
-	BaseLocation * baseLocation = getBaseLocation(townHall->pos);
+	BaseLocation * baseLocation = getBaseLocation(townHall->getPos());
 	if (baseLocation)
 	{
 		baseLocation->setTownHall(townHall);

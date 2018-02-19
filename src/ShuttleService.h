@@ -1,5 +1,6 @@
 #pragma once
 #include "sc2api/sc2_api.h"
+#include "CUnit.h"
 #include "Common.h"
 #include <queue>
 
@@ -13,8 +14,8 @@ namespace ShuttleStatus
 class shuttle
 {
 	CCBot * m_bot;
-	const sc2::Unit* m_shuttle;
-	sc2::Units m_passengers;
+	CUnit_ptr m_shuttle;
+	CUnits m_passengers;
 	sc2::Point2D m_targetPos;
 	int m_status;
 	std::queue<sc2::Point2D> m_wayPoints;
@@ -24,13 +25,13 @@ class shuttle
 	void unloadPassangers();
 
 public:
-	shuttle(CCBot * const bot, sc2::Units passengers, sc2::Point2D targetPos);
+	shuttle(CCBot * const bot, CUnits passengers, sc2::Point2D targetPos);
 
 	//Really bad at naming things rn
 	void hereItGoes();
-	const bool isShuttle(const sc2::Unit* unit) const;
+	const bool isShuttle(CUnit_ptr unit) const;
 	void updateTargetPos(const sc2::Point2D newTargetPos);
 	const bool needShuttleUnit() const;
-	void assignShuttleUnit(const sc2::Unit* unit);
+	void assignShuttleUnit(CUnit_ptr unit);
 	int getShuttleStatus() const;
 };

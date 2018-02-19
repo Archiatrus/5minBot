@@ -1,8 +1,6 @@
 #pragma once
 
-#include <map>
-#include <vector>
-#include "sc2api/sc2_api.h"
+#include "CUnit.h"
 #include "DistanceMap.h"
 
 class CCBot;
@@ -14,10 +12,10 @@ class BaseLocation
 
     sc2::Point2D                m_depotPosition;
     sc2::Point2D                m_centerOfResources;
-	const sc2::Unit*			m_townhall;
+	CUnit_ptr					m_townhall;
 	sc2::Point2D				m_centerOfBase;
-    std::vector<const sc2::Unit *> m_geysers;
-    std::vector<const sc2::Unit *> m_minerals;
+    CUnits						m_geysers;
+    CUnits						m_minerals;
 
     std::vector<sc2::Point2D>   m_mineralPositions;
     std::vector<sc2::Point2D>   m_geyserPositions;
@@ -34,7 +32,7 @@ class BaseLocation
 	int							m_numEnemyCombatUnits;
 public:
 
-    BaseLocation(CCBot & bot, int baseID, const std::vector<const sc2::Unit *> & resources);
+    BaseLocation(CCBot & bot, int baseID, const CUnits resources);
     
     int getGroundDistance(const sc2::Point2D & pos) const;
     bool isStartLocation() const;
@@ -47,18 +45,18 @@ public:
     const sc2::Point2D & getDepotPosition() const;
     const sc2::Point2D & getPosition() const;
 	const sc2::Point2D & getBasePosition() const;
-    const std::vector<const sc2::Unit *> & getGeysers() const;
-    const std::vector<const sc2::Unit *> & getMinerals() const;
+    const CUnits & getGeysers() const;
+    const CUnits & getMinerals() const;
     bool isOccupiedByPlayer(int player) const;
     bool isExplored() const;
     bool isInResourceBox(int x, int y) const;
 
     void setPlayerOccupying(int player, bool occupying);
-	void setTownHall(const sc2::Unit * townHall);
+	void setTownHall(const CUnit_ptr townHall);
 
     const std::vector<sc2::Point2D> & getClosestTiles() const;
 
-	const sc2::Unit * getTownHall() const;
+	const CUnit_ptr getTownHall() const;
 
     void draw();
 };

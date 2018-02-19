@@ -8,23 +8,23 @@ SiegeManager::SiegeManager(CCBot & bot)
 
 }
 
-void SiegeManager::executeMicro(const std::vector<const sc2::Unit *> & targets)
+void SiegeManager::executeMicro(const CUnits & targets)
 {
 	assignTargets(targets);
 }
 
-void SiegeManager::assignTargets(const std::vector<const sc2::Unit *> & targets)
+void SiegeManager::assignTargets(const CUnits & targets)
 {
-	const std::vector<const sc2::Unit *> & SiegeUnits = getUnits();
+	const CUnits & SiegeUnits = getUnits();
 
 	// figure out targets
-	std::vector<const sc2::Unit *> SiegeUnitTargets;
+	CUnits SiegeUnitTargets;
 	for (const auto & target : targets)
 	{
 		if (!target) { continue; }
-		if (target->is_flying) { continue; }
-		if (target->unit_type == sc2::UNIT_TYPEID::ZERG_EGG) { continue; }
-		if (target->unit_type == sc2::UNIT_TYPEID::ZERG_LARVA) { continue; }
+		if (target->isFlying()) { continue; }
+		if (target->getUnitType() == sc2::UNIT_TYPEID::ZERG_EGG) { continue; }
+		if (target->getUnitType() == sc2::UNIT_TYPEID::ZERG_LARVA) { continue; }
 
 		SiegeUnitTargets.push_back(target);
 	}
@@ -41,40 +41,36 @@ void SiegeManager::assignTargets(const std::vector<const sc2::Unit *> & targets)
 			if (!SiegeUnitTargets.empty())
 			{
 				// find the best target for this Unit
-				const sc2::Unit * target = getTarget(siegeUnit, SiegeUnitTargets);
+				const CUnit_ptr target = getTarget(siegeUnit, SiegeUnitTargets);
 				//if we have a target
 				if (target)
 				{
 					//If the tank is in mobile mode
-					if (siegeUnit->unit_type == sc2::UNIT_TYPEID::TERRAN_SIEGETANK)
+					if (siegeUnit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_SIEGETANK)
 					{
-						if (Util::Dist(siegeUnit->pos, target->pos) <= 13.0f)
+						if (Util::Dist(siegeUnit->getPos(), target->getPos()) <= 13.0f)
 						{
-							if (siegeUnit->orders.empty() || siegeUnit->orders.back().ability_id != sc2::ABILITY_ID::MORPH_SIEGEMODE)
-							{
-								m_bot.Actions()->UnitCommand(siegeUnit, sc2::ABILITY_ID::MORPH_SIEGEMODE);
-							}
+							Micro::SmartAbility(siegeUnit, sc2::ABILITY_ID::MORPH_SIEGEMODE, m_bot);
 						}
 						else
 						{
-							Micro::SmartAttackMove(siegeUnit, target->pos, m_bot);
+							Micro::SmartAttackMove(siegeUnit, target->getPos(), m_bot);
 						}
 					}
 					//if we are stationary
 					else
 					{
 						//Attack if near enough
-						if (Util::Dist(siegeUnit->pos, target->pos) <= 15.0f)
+						const float dist = Util::Dist(siegeUnit->getPos(), target->getPos());
+						const float range = siegeUnit->getAttackRange(target);
+						if (dist <= range)
 						{
 							Micro::SmartAttackUnit(siegeUnit, target, m_bot);
 						}
 						//go to mobile mode
-						else
+						else if (dist > range + 2.0f)
 						{
-							if (siegeUnit->orders.empty() || siegeUnit->orders.back().ability_id != sc2::ABILITY_ID::MORPH_UNSIEGE)
-							{
-								m_bot.Actions()->UnitCommand(siegeUnit, sc2::ABILITY_ID::MORPH_UNSIEGE);
-							}
+							Micro::SmartAbility(siegeUnit, sc2::ABILITY_ID::MORPH_UNSIEGE, m_bot);
 						}
 					}
 				}
@@ -82,15 +78,12 @@ void SiegeManager::assignTargets(const std::vector<const sc2::Unit *> & targets)
 				else
 				{
 					// if we're not near the order position
-					if (Util::Dist(siegeUnit->pos, order.getPosition()) > 4)
+					if (Util::Dist(siegeUnit->getPos(), order.getPosition()) > 4)
 					{
 						// move to it
-						if (siegeUnit->unit_type == sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED)
+						if (siegeUnit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED)
 						{
-							if (siegeUnit->orders.empty() || siegeUnit->orders.back().ability_id != sc2::ABILITY_ID::MORPH_UNSIEGE)
-							{
-								m_bot.Actions()->UnitCommand(siegeUnit, sc2::ABILITY_ID::MORPH_UNSIEGE);
-							}
+							Micro::SmartAbility(siegeUnit, sc2::ABILITY_ID::MORPH_UNSIEGE, m_bot);
 						}
 						else
 						{
@@ -99,9 +92,9 @@ void SiegeManager::assignTargets(const std::vector<const sc2::Unit *> & targets)
 					}
 					else
 					{
-						if (siegeUnit->unit_type == sc2::UNIT_TYPEID::TERRAN_SIEGETANK && (siegeUnit->orders.empty() || siegeUnit->orders.back().ability_id != sc2::ABILITY_ID::MORPH_SIEGEMODE))
+						if (siegeUnit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_SIEGETANK)
 						{
-							m_bot.Actions()->UnitCommand(siegeUnit, sc2::ABILITY_ID::MORPH_SIEGEMODE);
+							Micro::SmartAbility(siegeUnit, sc2::ABILITY_ID::MORPH_SIEGEMODE,m_bot);
 						}
 					}
 				}
@@ -110,15 +103,12 @@ void SiegeManager::assignTargets(const std::vector<const sc2::Unit *> & targets)
 			else
 			{
 				// if we're not near the order position
-				if (Util::Dist(siegeUnit->pos, order.getPosition()) > 4)
+				if (Util::Dist(siegeUnit->getPos(), order.getPosition()) > 4)
 				{
 					// move to it
-					if (siegeUnit->unit_type == sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED)
+					if (siegeUnit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED)
 					{
-						if (siegeUnit->orders.empty() || siegeUnit->orders.back().ability_id != sc2::ABILITY_ID::MORPH_UNSIEGE)
-						{
-							m_bot.Actions()->UnitCommand(siegeUnit, sc2::ABILITY_ID::MORPH_UNSIEGE);
-						}
+						Micro::SmartAbility(siegeUnit, sc2::ABILITY_ID::MORPH_UNSIEGE, m_bot);
 					}
 					else
 					{
@@ -127,32 +117,27 @@ void SiegeManager::assignTargets(const std::vector<const sc2::Unit *> & targets)
 				}
 				else
 				{
-					if (siegeUnit->unit_type == sc2::UNIT_TYPEID::TERRAN_SIEGETANK && (siegeUnit->orders.empty() || siegeUnit->orders.back().ability_id != sc2::ABILITY_ID::MORPH_SIEGEMODE))
+					if (siegeUnit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_SIEGETANK)
 					{
-						m_bot.Actions()->UnitCommand(siegeUnit, sc2::ABILITY_ID::MORPH_SIEGEMODE);
+						Micro::SmartAbility(siegeUnit, sc2::ABILITY_ID::MORPH_SIEGEMODE, m_bot);
 					}
 				}
 			}
-		}
-
-		if (m_bot.Config().DrawUnitTargetInfo)
-		{
-			// TODO: draw the line to the unit's target
 		}
 	}
 }
 
 // get a target for the meleeUnit to attack
-const sc2::Unit * SiegeManager::getTarget(const sc2::Unit * siegeUnit, const std::vector<const sc2::Unit *> & targets)
+const CUnit_ptr SiegeManager::getTarget(const CUnit_ptr siegeUnit, const CUnits & targets)
 {
 	BOT_ASSERT(siegeUnit, "null melee unit in getTarget");
 	int highPriorityFar = 0;
 	int highPriorityNear = 0;
 	double closestDist = std::numeric_limits<double>::max();
 	double lowestHealth = std::numeric_limits<double>::max();
-	const sc2::Unit * closestTargetOutsideRange = nullptr;
-	const sc2::Unit * weakestTargetInsideRange = nullptr;
-	const float range = 13; //We want the sieged range
+	CUnit_ptr closestTargetOutsideRange = nullptr;
+	CUnit_ptr weakestTargetInsideRange = nullptr;
+	const float range = 13.0; //We want the sieged range
 	// for each target possiblity
 	// We have three levels: in range, in sight, somewhere.
 	// We want to attack the weakest/highest prio target in range
@@ -162,12 +147,12 @@ const sc2::Unit * SiegeManager::getTarget(const sc2::Unit * siegeUnit, const std
 	{
 		BOT_ASSERT(targetUnit, "null target unit in getTarget");
 		//Ignore dead units or ones we can not hit
-		if (!targetUnit->is_alive || !Util::canHitMe(targetUnit, siegeUnit, m_bot))
+		if (!targetUnit->isAlive() || !targetUnit->canHitMe(siegeUnit))
 		{
 			continue;
 		}
 		int priority = getAttackPriority(siegeUnit, targetUnit);
-		float distance = Util::Dist(siegeUnit->pos, targetUnit->pos);
+		float distance = Util::Dist(siegeUnit->getPos(), targetUnit->getPos());
 		//Tanks have a minimum range
 		if (distance < 2.0f)
 		{
@@ -177,7 +162,7 @@ const sc2::Unit * SiegeManager::getTarget(const sc2::Unit * siegeUnit, const std
 		if (distance > range)
 		{
 			// If in sight we just add 20 to prio. This should make sure that a unit in sight has higher priority than any unit outside of range
-			if (distance <= Util::GetUnitTypeSight(siegeUnit->unit_type, m_bot))
+			if (distance <= siegeUnit->getSightRange())
 			{
 				priority += 20;
 			}
@@ -191,9 +176,9 @@ const sc2::Unit * SiegeManager::getTarget(const sc2::Unit * siegeUnit, const std
 		}
 		else
 		{
-			if (!weakestTargetInsideRange || (priority > highPriorityNear) || (priority == highPriorityNear && targetUnit->health + targetUnit->shield < lowestHealth))
+			if (!weakestTargetInsideRange || (priority > highPriorityNear) || (priority == highPriorityNear && targetUnit->getHealth() < lowestHealth))
 			{
-				lowestHealth = targetUnit->health + targetUnit->shield;
+				lowestHealth = targetUnit->getHealth();
 				highPriorityNear = priority;
 				weakestTargetInsideRange = targetUnit;
 			}
@@ -204,31 +189,31 @@ const sc2::Unit * SiegeManager::getTarget(const sc2::Unit * siegeUnit, const std
 }
 
 // get the attack priority of a type in relation to a zergling
-int SiegeManager::getAttackPriority(const sc2::Unit * attacker, const sc2::Unit * unit)
+int SiegeManager::getAttackPriority(const CUnit_ptr attacker, const CUnit_ptr unit)
 {
 	BOT_ASSERT(unit, "null unit in getAttackPriority");
 
-	if (Util::IsCombatUnit(unit, m_bot))
+	if (unit->isCombatUnit())
 	{
-		if (unit->unit_type == sc2::UNIT_TYPEID::ZERG_BANELING)
+		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_BANELING)
 		{
 			return 11;
 		}
 		return 10;
 	}
-	if (unit->unit_type == sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON || unit->unit_type == sc2::UNIT_TYPEID::ZERG_SPINECRAWLER)
+	if (unit->getUnitType() == sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON || unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPINECRAWLER)
 	{
 		return 10;
 	}
-	if (Util::IsWorker(unit))
+	if (unit->isWorker())
 	{
 		return 10;
 	}
-	if (unit->unit_type == sc2::UNIT_TYPEID::PROTOSS_PYLON || unit->unit_type == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || unit->unit_type == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
+	if (unit->getUnitType() == sc2::UNIT_TYPEID::PROTOSS_PYLON || unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
 	{
 		return 5;
 	}
-	if (Util::IsTownHallType(unit->unit_type))
+	if (Util::IsTownHallType(unit->getUnitType()))
 	{
 		return 4;
 	}

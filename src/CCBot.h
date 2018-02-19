@@ -15,53 +15,62 @@
 #include "AutoObserver\CameraModule.h"
 #include "Drawing.h"
 
-class CCBot : public sc2::Agent 
+class CCBot : public sc2::Agent
 {
-    sc2::Race               m_playerRace[2];
+	sc2::Race               m_playerRace[2];
 
-    MapTools                m_map;
-    BaseLocationManager     m_bases;
-    UnitInfoManager         m_unitInfo;
-    WorkerManager           m_workers;
-    StrategyManager         m_strategy;
-    BotConfig               m_config;
-    TechTree                m_techTree;
+	MapTools                m_map;
+	BaseLocationManager     m_bases;
+	UnitInfoManager         m_unitInfo;
+	WorkerManager           m_workers;
+	StrategyManager         m_strategy;
+	BotConfig               m_config;
+	TechTree                m_techTree;
 
-    GameCommander           m_gameCommander;
+	GameCommander           m_gameCommander;
 	CameraModuleAgent		m_cameraModule;
+
+	int m_armor;
+	int m_weapon;
 
 	std::vector<std::vector<double>> m_time;
 
-    void OnError(const std::vector<sc2::ClientError> & client_errors, 
-                 const std::vector<std::string> & protocol_errors = {}) override;
+	void OnError(const std::vector<sc2::ClientError> & client_errors,
+		const std::vector<std::string> & protocol_errors = {}) override;
+
+	void OnUpgradeCompleted(sc2::UpgradeID upgrade) override;
 
 public:
 
-    CCBot();
-    void OnGameStart() override;
-    void OnStep() override;
+	CCBot();
+	void OnGameStart() override;
+	void OnStep() override;
 
-	void OnUnitCreated(const sc2::Unit * unit) override;
 	void OnBuildingConstructionComplete(const sc2::Unit * unit) override;
+	void OnUnitCreated(const sc2::Unit * unit) override;
 	void OnUnitEnterVision(const sc2::Unit * unit) override;
 
 	void OnDTdetected(const sc2::Point2D pos);
 
-          BotConfig & Config();
-          WorkerManager & Workers();
-    const BaseLocationManager & Bases() const;
-    const MapTools & Map() const;
-    const UnitInfoManager & UnitInfo() const;
-    const StrategyManager & Strategy() const;
-    const TypeData & Data(const sc2::UnitTypeID & type) const;
-    const TypeData & Data(const sc2::UpgradeID & type) const;
-    const TypeData & Data(const BuildType & type) const;
-    const sc2::Race & GetPlayerRace(int player) const;
-    sc2::Point2D GetStartLocation() const;
-    const sc2::Unit * GetUnit(const UnitTag & tag) const;
+
+	BotConfig & Config();
+	WorkerManager & Workers();
+	const BaseLocationManager & Bases() const;
+	const MapTools & Map() const;
+	UnitInfoManager & UnitInfo();
+	const StrategyManager & Strategy() const;
+	const TypeData & Data(const sc2::UnitTypeID & type) const;
+	const TypeData & Data(const sc2::UpgradeID & type) const;
+	const TypeData & Data(const BuildType & type) const;
+	const sc2::Race & GetPlayerRace(int player) const;
+	sc2::Point2D GetStartLocation() const;
+	const CUnit_ptr GetUnit(const UnitTag & tag);
 	const ProductionManager & Production();
 	void requestGuards(const bool req);
-	std::shared_ptr<shuttle> requestShuttleService(sc2::Units passengers, const sc2::Point2D targetPos);
+	std::shared_ptr<shuttle> requestShuttleService(const CUnits passengers, const sc2::Point2D targetPos);
+
+	const int getArmor() const;
+	const int getWeapon() const;
 };
 
 extern bool useDebug;

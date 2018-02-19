@@ -28,20 +28,20 @@ class GameCommander
 	HarassManager			m_harassManager;
     CombatCommander         m_combatCommander;
 
-    std::vector<const sc2::Unit *>    m_validUnits;
-    std::vector<const sc2::Unit *>    m_combatUnits;
-	std::vector<const sc2::Unit *>    m_scoutUnits;
-	std::vector<const sc2::Unit *>    m_harassUnits;
+    CUnits    m_validUnits;
+	CUnits    m_combatUnits;
+	CUnits    m_scoutUnits;
+	CUnits    m_harassUnits;
 	std::vector<std::shared_ptr<shuttle>>	m_shuttles;
 
 	std::vector<timePlace> m_DTdetections;
 
     bool                    m_initialScoutSet;
 
-    void assignUnit(const sc2::Unit * unit, std::vector<const sc2::Unit *> & units);
-    bool isAssigned(const sc2::Unit * unit) const;
+    void assignUnit(CUnit_ptr, CUnits & units);
+    bool isAssigned(CUnit_ptr unit) const;
 
-	bool isShuttle(const sc2::Unit * unit) const;
+	bool isShuttle(CUnit_ptr unit) const;
 
 	void handleShuttleService();
 
@@ -66,14 +66,14 @@ public:
     bool shouldSendInitialScout();
 
 
-    void onUnitCreate(const sc2::Unit * unit);
-	void OnBuildingConstructionComplete(const sc2::Unit * unit);
-    void onUnitDestroy(const sc2::Unit * unit);
-	void OnUnitEnterVision(const sc2::Unit * unit);
+    void onUnitCreate(CUnit_ptr unit);
+	void OnBuildingConstructionComplete(CUnit_ptr unit);
+    void onUnitDestroy(CUnit_ptr unit);
+	void OnUnitEnterVision(CUnit_ptr unit);
 	void OnDTdetected(const sc2::Point2D pos);
 
 	const ProductionManager & Production() const;
 	void handleDTdetections();
 	void requestGuards(const bool req);
-	std::shared_ptr<shuttle> requestShuttleService(sc2::Units passengers, const sc2::Point2D targetPos);
+	std::shared_ptr<shuttle> requestShuttleService(CUnits passengers, const sc2::Point2D targetPos);
 };

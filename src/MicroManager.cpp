@@ -7,7 +7,7 @@ MicroManager::MicroManager(CCBot & bot)
 {
 }
 
-void MicroManager::setUnits(const std::vector<const sc2::Unit *> & u)
+void MicroManager::setUnits(CUnits & u)
 {
     m_units = u;
 }
@@ -22,24 +22,24 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 	if (inputOrder.getType() == SquadOrderTypes::Idle)
 	{
 		const sc2::Point2D pos(m_bot.Bases().getRallyPoint());
-		sc2::Units moveUnits;
-		sc2::Units attackMoveUnits;
+		CUnits moveUnits;
+		CUnits attackMoveUnits;
 		for (const auto & unit : m_units)
 		{
-			if (Util::Dist(unit->pos, pos) > 5.0f)
+			if (Util::Dist(unit->getPos(), pos) > 5.0f)
 			{
-				if (Util::IsCombatUnitType(unit->unit_type, m_bot))
+				if (unit->isCombatUnit())
 				{
-					const sc2::Units Bunker = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_BUNKER }));
+					CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
 					bool bunkerTime = false;
 					if (Bunker.size() > 0)
 					{
 						for (const auto & b : Bunker)
 						{
-							if (b->cargo_space_taken != b->cargo_space_max)
+							if (b->getCargoSpaceTaken() != b->getCargoSpaceMax())
 							{
 								Micro::SmartRightClick(unit, b, m_bot);
-								m_bot.Actions()->UnitCommand(b, sc2::ABILITY_ID::LOAD, unit);
+								Micro::SmartAbility(b, sc2::ABILITY_ID::LOAD, unit,m_bot);
 								bunkerTime = true;
 								break;
 							}
@@ -74,16 +74,16 @@ void MicroManager::execute(const SquadOrder & inputOrder)
     order = inputOrder;
 
     // Discover enemies within region of interest
-    std::set<const sc2::Unit *> nearbyEnemies;
+    CUnits nearbyEnemies;
 
     // if the order is to defend, we only care about units in the radius of the defense
     if (order.getType() == SquadOrderTypes::Defend || inputOrder.getType() == SquadOrderTypes::GuardDuty)
     {
         for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
         {
-            if (Util::Dist(enemyUnit->pos, order.getPosition()) < order.getRadius())
+            if (Util::Dist(enemyUnit->getPos(), order.getPosition()) < order.getRadius())
             {
-                nearbyEnemies.insert(enemyUnit);
+                nearbyEnemies.push_back(enemyUnit);
             }
         }
 
@@ -92,9 +92,9 @@ void MicroManager::execute(const SquadOrder & inputOrder)
     {
         for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
         {
-            if (Util::Dist(enemyUnit->pos, order.getPosition()) < order.getRadius())
+            if (Util::Dist(enemyUnit->getPos(), order.getPosition()) < order.getRadius())
             {
-                nearbyEnemies.insert(enemyUnit);
+                nearbyEnemies.push_back(enemyUnit);
             }
         }
 
@@ -104,16 +104,13 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 
             for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
             {
-                if (Util::Dist(enemyUnit->pos, unit->pos) < order.getRadius())
+                if (Util::Dist(enemyUnit->getPos(), unit->getPos()) < order.getRadius())
                 {
-                    nearbyEnemies.insert(enemyUnit);
+                    nearbyEnemies.push_back(enemyUnit);
                 }
             }
         }
     }
-
-    std::vector<const sc2::Unit *> targetUnitTags;
-    std::copy(nearbyEnemies.begin(), nearbyEnemies.end(), std::back_inserter(targetUnitTags));
 
     // the following block of code attacks all units on the way to the order position
     // we want to do this if the order is attack, defend, or harass
@@ -122,20 +119,20 @@ void MicroManager::execute(const SquadOrder & inputOrder)
         // if this is a defense squad then we care about all units in the area
         if (order.getType() == SquadOrderTypes::Defend || order.getType() == SquadOrderTypes::GuardDuty)
         {
-            executeMicro(targetUnitTags);
+            executeMicro(nearbyEnemies);
         }
         // otherwise we only care about workers if they are in their own region
         // this is because their scout can run around and drag our units around the map
         else
         {
             // if this is the an attack squad
-            std::vector<const sc2::Unit *> workersRemoved;
-            for (const auto enemyUnit : targetUnitTags)
+            CUnits workersRemoved;
+            for (const auto enemyUnit : nearbyEnemies)
             {
                 BOT_ASSERT(enemyUnit, "null enemy unit target");
 
                 // if its not a worker add it to the targets
-                if (!Util::IsWorker(enemyUnit))
+                if (!enemyUnit->isWorker())
                 {
                     workersRemoved.push_back(enemyUnit);
                 }
@@ -145,7 +142,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
                     for (const BaseLocation * enemyBaseLocation : m_bot.Bases().getOccupiedBaseLocations(Players::Enemy))
                     {
                         // only add it if it's in their region
-                        if (enemyBaseLocation->containsPosition(enemyUnit->pos))
+                        if (enemyBaseLocation->containsPosition(enemyUnit->getPos()))
                         {
                             workersRemoved.push_back(enemyUnit);
                         }
@@ -159,17 +156,17 @@ void MicroManager::execute(const SquadOrder & inputOrder)
     }
 }
 
-const std::vector<const sc2::Unit *> & MicroManager::getUnits() const
+const CUnits & MicroManager::getUnits() const
 {
     return m_units;
 }
 
 void MicroManager::regroup(const sc2::Point2D & regroupPosition) const
 {
-	sc2::Units regroupUnits;
+	CUnits regroupUnits;
 	for (const auto & unit : m_units)
 	{
-		if (Util::Dist(unit->pos, regroupPosition) > 8.0f)
+		if (Util::Dist(unit->getPos(), regroupPosition) > 8.0f)
 		{
 			regroupUnits.push_back(unit);
 		}
@@ -178,7 +175,7 @@ void MicroManager::regroup(const sc2::Point2D & regroupPosition) const
 	Micro::SmartAttackMove(regroupUnits, regroupPosition, m_bot);
 }
 
-void MicroManager::trainSubUnits(const sc2::Unit * unit) const
+void MicroManager::trainSubUnits(CUnit_ptr unit) const
 {
     // TODO: something here
 }

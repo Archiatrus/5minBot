@@ -88,11 +88,11 @@ bool BuildingPlacer::canBuildHere(int bx, int by, const Building & b) const
         return false;
     }
 	//Don't build below flying buildings
-	const sc2::Units flyingBuildings = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_BARRACKSFLYING,sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING, sc2::UNIT_TYPEID::TERRAN_STARPORTFLYING }));
+	const CUnits flyingBuildings = m_bot.UnitInfo().getUnits(Players::Self,std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::TERRAN_BARRACKSFLYING,sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING, sc2::UNIT_TYPEID::TERRAN_STARPORTFLYING }));
 	sc2::Point2D loc(static_cast<float>(bx), static_cast<float>(by));
 	for (const auto & unit : flyingBuildings)
 	{
-		if (Util::Dist(loc, unit->pos) < 3)
+		if (Util::Dist(loc, unit->getPos()) < 3)
 		{
 			return false;
 		}
@@ -320,34 +320,29 @@ sc2::Point2D BuildingPlacer::getRefineryPosition()
     double minGeyserDistanceFromHome = std::numeric_limits<double>::max();
     sc2::Point2D homePosition = m_bot.GetStartLocation();
 
-    for (const auto & unit : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral))
+    for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Neutral,Util::getGeyserTypes()))
     {
-        if (!Util::IsGeyser(unit))
-        {
-            continue;
-        }
-
-        sc2::Point2D geyserPos(unit->pos);
+        sc2::Point2D geyserPos(unit->getPos());
 
         // check to see if it's next to one of our depots
         bool nearDepot = false;
-        for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
+        for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self,Util::getTownHallTypes()))
         {
-            if (Util::IsTownHall(unit) && Util::Dist(unit->pos, geyserPos) < 10)
+            if (Util::Dist(unit->getPos(), geyserPos) < 10)
             {
                 nearDepot = true;
             }
         }
         if (nearDepot)
         {
-            double homeDistance = Util::Dist(unit->pos, homePosition);
+            double homeDistance = Util::Dist(unit->getPos(), homePosition);
 
 			if (m_bot.Query()->Placement(sc2::ABILITY_ID::BUILD_REFINERY, geyserPos))
 			{
 				if (homeDistance < minGeyserDistanceFromHome)
 				{
 					minGeyserDistanceFromHome = homeDistance;
-					closestGeyser = unit->pos;
+					closestGeyser = unit->getPos();
 				}
 			}
         }

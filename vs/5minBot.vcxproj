@@ -160,6 +160,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4099; 4996</DisableSpecificWarnings>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_SCL_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -451,6 +452,7 @@
     <ClCompile Include="..\src\BuildOrder.cpp" />
     <ClCompile Include="..\src\BuildOrderQueue.cpp" />
     <ClCompile Include="..\src\CombatCommander.cpp" />
+    <ClCompile Include="..\src\CUnit.cpp" />
     <ClCompile Include="..\src\DistanceMap.cpp" />
     <ClCompile Include="..\src\Drawing.cpp" />
     <ClCompile Include="..\src\GameCommander.cpp" />
@@ -494,6 +496,7 @@
     <ClInclude Include="..\src\CombatCommander.h" />
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\BotConfig.h" />
+    <ClInclude Include="..\src\CUnit.h" />
     <ClInclude Include="..\src\DistanceMap.h" />
     <ClInclude Include="..\src\Drawing.h" />
     <ClInclude Include="..\src\GameCommander.h" />

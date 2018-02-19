@@ -12,7 +12,7 @@ class WorkerManager
     mutable WorkerData  m_workerData;
     const sc2::Unit *   m_previousClosestWorker;
 
-    void        setMineralWorker(const sc2::Unit * unit);
+    void        setMineralWorker(const CUnit_ptr unit);
     
     void        handleIdleWorkers();
     void        handleGasWorkers();
@@ -28,32 +28,32 @@ public:
 
 	
 
-    void        finishedWithWorker(const sc2::Unit * unit);
+    void        finishedWithWorker(const CUnit_ptr unit);
     void        drawResourceDebugInfo();
     void        drawWorkerInformation();
-    void        setScoutWorker(const sc2::Unit * worker);
-    void        setCombatWorker(const sc2::Unit * worker);
-    void        setBuildingWorker(const sc2::Unit * worker, Building & b);
-    void        setRepairWorker(const sc2::Unit * worker,const sc2::Unit * unitToRepair);
-	void		setRepairWorker(const sc2::Unit * unitToRepair, int numWorkers = 1);
-    void        stopRepairing(const sc2::Unit * worker);
+    void        setScoutWorker(const CUnit_ptr worker);
+    void        setCombatWorker(const CUnit_ptr worker);
+    void        setBuildingWorker(const CUnit_ptr worker, Building & b);
+    void        setRepairWorker(const CUnit_ptr worker,const CUnit_ptr unitToRepair);
+	void		setRepairWorker(const CUnit_ptr unitToRepair, int numWorkers = 1);
+    void        stopRepairing(const CUnit_ptr worker);
 
     int         getNumMineralWorkers();
     int         getNumGasWorkers();
-    bool        isWorkerScout(const sc2::Unit * worker) const;
-	bool		isRepairWorker(const sc2::Unit * worker) const;
-    bool        isFree(const sc2::Unit * worker) const;
-    bool        isBuilder(const sc2::Unit * worker) const;
+    bool        isWorkerScout(const CUnit_ptr worker) const;
+	bool		isRepairWorker(const CUnit_ptr worker) const;
+    bool        isFree(const CUnit_ptr worker) const;
+    bool        isBuilder(const CUnit_ptr worker) const;
 
-    const sc2::Unit * getBuilder(Building & b,bool setJobAsBuilder = true) const;
-	std::vector <const sc2::Unit* >  getMineralWorkers() const;
-	int getNumAssignedWorkers(const sc2::Unit * unit) const;
-    const sc2::Unit * getClosestDepot(const sc2::Unit * worker) const;
-    const sc2::Unit * getGasWorker(const sc2::Unit * refinery) const;
-    const sc2::Unit * getClosestMineralWorkerTo(const sc2::Point2D & pos) const;
+    const CUnit_ptr getBuilder(Building & b,bool setJobAsBuilder = true) const;
+	const CUnits  getMineralWorkers() const;
+	int getNumAssignedWorkers(const CUnit_ptr unit) const;
+    const CUnit_ptr getClosestDepot(const CUnit_ptr worker) const;
+    const CUnit_ptr getGasWorker(const CUnit_ptr refinery) const;
+    const CUnit_ptr getClosestMineralWorkerTo(const sc2::Point2D & pos) const;
 
-	const sc2::Unit * getClosestCombatWorkerTo(const sc2::Point2D & pos) const;
+	const CUnit_ptr getClosestCombatWorkerTo(const sc2::Point2D & pos) const;
 
-	const size_t WorkerManager::isBeingRepairedNum(const sc2::Unit * unit) const;
+	const size_t WorkerManager::isBeingRepairedNum(const CUnit_ptr unit) const;
 };
 

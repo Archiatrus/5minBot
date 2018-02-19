@@ -13,7 +13,7 @@ class Squad
     CCBot &             m_bot;
 
     std::string         m_name;
-    std::set<const sc2::Unit *> m_units;
+    CUnits m_units;
     std::string         m_regroupStatus;
     int                 m_lastRetreatSwitch;
     bool                m_lastRetreatSwitchVal;
@@ -24,16 +24,16 @@ class Squad
 	RangedManager       m_rangedManager;
 	SiegeManager		m_siegeManager;
 
-    std::map<const sc2::Unit *, bool> m_nearEnemy;
+    std::map<const CUnit_ptr, bool> m_nearEnemy;
 
-    const sc2::Unit * unitClosestToEnemy() const;
+    const CUnit_ptr unitClosestToEnemy() const;
 
     void updateUnits();
     void addUnitsToMicroManagers();
     void setNearEnemyUnits();
     void setAllUnits();
 
-    bool isUnitNearEnemy(const sc2::Unit * unit) const;
+    bool isUnitNearEnemy(const CUnit_ptr unit) const;
     const bool needsToRegroup();
     int  squadUnitsNear(const sc2::Point2D & pos) const;
 
@@ -44,11 +44,11 @@ public:
 
     void onFrame();
     void setSquadOrder(const SquadOrder & so);
-    void addUnit(const sc2::Unit * unit);
-    void removeUnit(const sc2::Unit * unit);
+    void addUnit(const CUnit_ptr unit);
+    void removeUnit(const CUnit_ptr unit);
     void clear();
 
-    bool containsUnit(const sc2::Unit * unit) const;
+    bool containsUnit(const CUnit_ptr unit) const;
     bool isEmpty() const;
     size_t getPriority() const;
     void setPriority(const size_t & priority);
@@ -57,7 +57,7 @@ public:
     sc2::Point2D calcCenter() const;
     sc2::Point2D calcRegroupPosition() const;
 
-    const std::set<const sc2::Unit *> & getUnits() const;
+    const CUnits & getUnits() const;
     const SquadOrder & getSquadOrder() const;
 };
 

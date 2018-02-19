@@ -1,6 +1,7 @@
 #include "UnitInfoManager.h"
 #include "Util.h"
 #include "CCBot.h"
+#include "CUnit.h"
 
 #include <sstream>
 
@@ -13,111 +14,45 @@ UnitInfoManager::UnitInfoManager(CCBot & bot)
 
 void UnitInfoManager::onStart()
 {
-
+	updateUnitInfo();
 }
 
 void UnitInfoManager::onFrame()
 {
     updateUnitInfo();
-    drawUnitInformation(100, 100);
-    drawSelectedUnitDebugInfo();
 }
 
 void UnitInfoManager::updateUnitInfo()
 {
-    m_units[Players::Self].clear();
-    m_units[Players::Enemy].clear();
-
-	//DT detection
-	const std::vector<sc2::UpgradeID> upgrades = m_bot.Observation()->GetUpgrades();
-	int armor = 0;
-	if (std::find(upgrades.begin(), upgrades.end(), sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL3) != upgrades.end())
+	for (const auto & unit : m_bot.Observation()->GetUnits())
 	{
-		armor = 3;
+		m_unitDataBase[Util::GetPlayer(unit)][unit->unit_type].insert(unit, m_bot);
 	}
-	else if (std::find(upgrades.begin(), upgrades.end(), sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL2) != upgrades.end())
+	for (auto & playerData : m_unitDataBase)
 	{
-		armor = 2;
-	}
-	else if (std::find(upgrades.begin(), upgrades.end(), sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL1) != upgrades.end())
-	{
-		armor = 1;
-	}
-	if (m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Protoss && m_unitData.size() > 1)
-	{
-		for (const auto & kv : getUnitData(Players::Self).getUnitInfoMap())
+		for (auto & units : playerData.second)
 		{
-			const float lostHealth = kv.second.lastHealth - kv.first->health;
-			if (lostHealth == 45.0f-armor || lostHealth == 50.0f - armor || lostHealth == 55.0f - armor || lostHealth == 60.0f - armor)
-			{
-				m_bot.OnDTdetected(kv.first->pos);
-			}
+			units.second.removeDead();
 		}
 	}
+}
 
-	for (auto & unit : m_bot.Observation()->GetUnits())
+const size_t UnitInfoManager::getNumCombatUnits(int player) const
+{
+	if (m_unitDataBase.find(player) == m_unitDataBase.end())
 	{
-		if (Util::GetPlayer(unit) == Players::Self || Util::GetPlayer(unit) == Players::Enemy)
-		{
-			updateUnit(unit);
-			m_units[Util::GetPlayer(unit)].push_back(unit);
-		}
+		return 0;
 	}
+	size_t numCombatUnits = 0;
 
-	// Update the location of units we can not see now and the last seen position is visible
-	if (m_unitData.size() > 1)
-	{
-		for (auto& kv : getUnitData(Players::Enemy).getUnitInfoMap())
+	for (const auto & units : m_unitDataBase.at(player))
 		{
-			if (kv.first->last_seen_game_loop!=m_bot.Observation()->GetGameLoop() && !Util::IsBuildingType(kv.second.type, m_bot) && !Util::IsBurrowedType(kv.second.type) && m_bot.Observation()->GetVisibility(kv.second.lastPosition) == sc2::Visibility::Visible)
-			{
-				m_unitData[Players::Enemy].lostPosition(kv.first);
-			}
-		}
-	}
-
-	// remove bad enemy units
-    m_unitData[Players::Self].removeBadUnits();
-    m_unitData[Players::Enemy].removeBadUnits();
-}
-
-const std::map<const sc2::Unit *, UnitInfo> & UnitInfoManager::getUnitInfoMap(int player) const
-{
-    return getUnitData(player).getUnitInfoMap();
-}
-
-const std::vector<const sc2::Unit *> & UnitInfoManager::getUnits(int player) const
-{
-    BOT_ASSERT(m_units.find(player) != m_units.end(), "Couldn't find player units: %d", player);
-
-    return m_units.at(player);
-}
-const int UnitInfoManager::getNumCombatUnits(int player) const
-{
-	BOT_ASSERT(m_units.find(player) != m_units.end(), "Couldn't find player units: %d", player);
-
-	int numCombatUnits = 0;
-	for (auto& kv : getUnitData(player).getUnitInfoMap())
-	{
-		if (Util::IsCombatUnit(kv.first,m_bot))
+		if (Util::IsCombatUnitType(units.first,m_bot))
 		{
-			numCombatUnits++;
+			numCombatUnits += units.second.getUnits().size();
 		}
 	}
 	return numCombatUnits;
-}
-const std::vector<const sc2::Unit *> UnitInfoManager::getBuildings(int player) const
-{
-	BOT_ASSERT(m_units.find(player) != m_units.end(), "Couldn't find player units: %d", player);
-	std::vector<const sc2::Unit *> buildings;
-	for (auto & unit : m_units.at(player))
-	{
-		if (m_bot.Data(unit->unit_type).isBuilding)
-		{
-			buildings.push_back(unit);
-		}
-	}
-	return buildings;
 }
 
 static std::string GetAbilityText(sc2::AbilityID ability_id) {
@@ -248,110 +183,35 @@ void UnitInfoManager::drawSelectedUnitDebugInfo()
     
 }
 
-// passing in a unit type of 0 returns a count of all units
-size_t UnitInfoManager::getUnitTypeCount(int player, sc2::UnitTypeID type, bool completed) const
+const size_t UnitInfoManager::getUnitTypeCount(int player, sc2::UnitTypeID type, bool completed) const
 {
+	if (!type || m_unitDataBase.find(player) == m_unitDataBase.end() || m_unitDataBase.at(player).find(type)== m_unitDataBase.at(player).end())
+	{
+		return 0;
+	}
     size_t count = 0;
-
-    for (const auto & unit : getUnits(player))
+	if (!completed)
+	{
+		return m_unitDataBase.at(player).at(type).getUnits().size();
+	}
+    for (const auto & unit : m_unitDataBase.at(player).at(type).getUnits())
     {
-        if ((!type || type == unit->unit_type) && (!completed || unit->build_progress == 1.0f))
+        if (unit->isCompleted())
         {
             count++;
         }
     }
-
     return count;
 }
 
-size_t UnitInfoManager::getUnitTypeCount(int player, std::vector<sc2::UnitTypeID> types, bool completed) const
+const size_t UnitInfoManager::getUnitTypeCount(int player, std::vector<sc2::UnitTypeID> types, bool completed) const
 {
 	size_t count = 0;
-
-	for (const auto & unit : getUnitInfoMap(player))
+	for (const auto & type : types)
 	{
-		for (const auto & type : types)
-		{
-			if ((!type || type == unit.first->unit_type) && (!completed || unit.first->build_progress == 1.0f))
-			{
-				count++;
-			}
-		}
+		count += getUnitTypeCount(player, type, completed);
 	}
-
 	return count;
-}
-
-void UnitInfoManager::drawUnitInformation(float x,float y) const
-{
-	if (!useDebug)
-	{
-		return;
-	}
-    if (!m_bot.Config().DrawEnemyUnitInfo)
-    {
-        //return;
-    }
-
-    std::stringstream ss;
-
-    // for each unit in the queue
-    for (int t(0); t < 255; t++)
-    {
-        int numUnits =      m_unitData.at(Players::Self).getNumUnits(t);
-        int numDeadUnits =  m_unitData.at(Players::Enemy).getNumDeadUnits(t);
-
-        // if there exist units in the vector
-        if (numUnits > 0)
-        {
-            ss << numUnits << "   " << numDeadUnits << "   " << sc2::UnitTypeToName(t) << "\n";
-        }
-    }
-    
-    for (auto & kv : getUnitData(Players::Enemy).getUnitInfoMap())
-    {
-        Drawing::drawSphere(m_bot,kv.second.lastPosition, 0.5f);
-        Drawing::drawText(m_bot, kv.second.lastPosition,sc2::UnitTypeToName(kv.second.type));
-    }
-
-
-}
-
-void UnitInfoManager::updateUnit(const sc2::Unit * unit)
-{
-    if (!(Util::GetPlayer(unit) == Players::Self || Util::GetPlayer(unit) == Players::Enemy))
-    {
-        return;
-    }
-	//KD8 charges are not really our units
-	if (unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
-	{
-		return;
-	}
-	//If it is not just a snap shot
-	if (unit->display_type != sc2::Unit::DisplayType::Snapshot)
-	{
-		if (unit->is_alive)
-		{
-			m_unitData[Util::GetPlayer(unit)].updateUnit(unit);
-		}
-		else
-		{
-			m_unitData[Util::GetPlayer(unit)].killUnit(unit);
-		}
-	}
-	//else if we see the position and still get only a snapshot
-	else if (m_bot.Observation()->GetVisibility(unit->pos) == sc2::Visibility::Visible)
-	{
-		//and there should be a building(actually only buildings should be here), but there is not, it seems to be dead
-		if (Util::IsBuildingType(unit->unit_type, m_bot))
-		{
-			if (!m_bot.GetUnit(unit->tag))
-			{
-				m_unitData[Util::GetPlayer(unit)].killUnit(unit);
-			}
-		}
-	}
 }
 
 // is the unit valid?
@@ -380,26 +240,111 @@ bool UnitInfoManager::isValidUnit(const sc2::Unit * unit)
     // s'all good baby baby
     return true;
 }
-
-void UnitInfoManager::getNearbyForce(std::vector<UnitInfo> & unitInfo, sc2::Point2D p, int player, float radius) const
+const CUnit_ptr UnitInfoManager::OnUnitCreate(const sc2::Unit * unit)
 {
-    bool hasBunker = false;
-    // for each unit we know about for that player
-    for (const auto & kv : getUnitData(player).getUnitInfoMap())
-    {
-        const UnitInfo & ui(kv.second);
-
-        // if it's a combat unit we care about
-        // and it's finished! 
-        if (Util::IsCombatUnitType(ui.type, m_bot) && Util::Dist(ui.lastPosition,p) <= radius)
-        {
-            // add it to the vector
-            unitInfo.push_back(ui);
-        }
-    }
+	return m_unitDataBase[Util::GetPlayer(unit)][unit->unit_type].insert(unit, m_bot);
 }
 
-const UnitData & UnitInfoManager::getUnitData(int player) const
+const std::shared_ptr<CUnit> UnitInfoManager::getUnit(sc2::Tag unitTag)
 {
-    return m_unitData.find(player)->second;
+	const sc2::Unit * unit = m_bot.Observation()->GetUnit(unitTag);
+	if (unit)
+	{
+		int player = unit->owner;
+		sc2::UnitTypeID type = unit->unit_type;
+		if (m_unitDataBase.find(player) == m_unitDataBase.end() || m_unitDataBase.at(player).find(type) == m_unitDataBase.at(player).end())
+		{
+			return m_unitDataBase[Util::GetPlayer(unit)][unit->unit_type].insert(unit, m_bot);
+		}
+		for (const auto & unit : m_unitDataBase.at(player).at(type).getUnits())
+		{
+			if (unit->getTag() == unitTag)
+			{
+				return unit;
+			}
+		}
+	}
+	else
+	{
+		for (auto & playerData : m_unitDataBase)
+		{
+			for (auto & unitData : playerData.second)
+			{
+				for (auto & unit : unitData.second.getUnits())
+				{
+					if (unit->getTag() == unitTag)
+					{
+						return unit;
+					}
+				}
+			}
+		}
+	}
+	return nullptr;
+}
+
+const std::vector<std::shared_ptr<CUnit>> UnitInfoManager::getUnits(int player) const
+{
+	std::vector<std::shared_ptr<CUnit>> allUnits;
+	if (m_unitDataBase.find(player) == m_unitDataBase.end())
+	{
+		return allUnits;
+	}
+	for (const auto & u : m_unitDataBase.at(player))
+	{
+		std::vector<std::shared_ptr<CUnit>> newUnits(u.second.getUnits());
+		//Too cowardly to do std::make_move_iterator
+		allUnits.insert(allUnits.end(),newUnits.begin(),newUnits.end());
+	}
+	return allUnits;
+}
+
+const std::vector<std::shared_ptr<CUnit>> UnitInfoManager::getUnits(int player, sc2::UnitTypeID type) const
+{
+	std::vector<std::shared_ptr<CUnit>> allUnits;
+	if (m_unitDataBase.find(player) == m_unitDataBase.end() || m_unitDataBase.at(player).find(type)== m_unitDataBase.at(player).end())
+	{
+		return allUnits;
+	}
+	return m_unitDataBase.at(player).at(type).getUnits();
+}
+
+const std::vector<std::shared_ptr<CUnit>> UnitInfoManager::getUnits(int player, std::vector<sc2::UnitTypeID> types) const
+{
+	std::vector<std::shared_ptr<CUnit>> allUnits;
+	if (m_unitDataBase.find(player) == m_unitDataBase.end())
+	{
+		return allUnits;
+	}
+	for (const auto & type : types)
+	{
+		if (m_unitDataBase.at(player).find(type) == m_unitDataBase.at(player).end())
+		{
+			continue;
+		}
+		std::vector<std::shared_ptr<CUnit>> newUnits(m_unitDataBase.at(player).at(type).getUnits());
+		//Too cowardly to do std::make_move_iterator
+		allUnits.insert(allUnits.end(), newUnits.begin(), newUnits.end());
+	}
+	return allUnits;
+}
+
+const std::vector<std::shared_ptr<CUnit>> UnitInfoManager::getUnits(int player, std::vector<sc2::UNIT_TYPEID> types) const
+{
+	std::vector<std::shared_ptr<CUnit>> allUnits;
+	if (m_unitDataBase.find(player) == m_unitDataBase.end())
+	{
+		return allUnits;
+	}
+	for (const auto & type : types)
+	{
+		if (m_unitDataBase.at(player).find(type) == m_unitDataBase.at(player).end())
+		{
+			continue;
+		}
+		std::vector<std::shared_ptr<CUnit>> newUnits(m_unitDataBase.at(player).at(type).getUnits());
+		//Too cowardly to do std::make_move_iterator
+		allUnits.insert(allUnits.end(), newUnits.begin(), newUnits.end());
+	}
+	return allUnits;
 }

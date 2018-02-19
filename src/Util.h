@@ -51,14 +51,14 @@ namespace Util
 	sc2::UnitTypeID GetSupplyProvider(const sc2::Race & race);
     std::string     GetStringFromRace(const sc2::Race & race);
     sc2::Race       GetRaceFromString(const std::string & race);
-    sc2::Point2D    CalcCenter(const std::vector<const sc2::Unit *> & units);
+    sc2::Point2D    CalcCenter(const CUnits & units);
 
     sc2::UnitTypeID GetUnitTypeIDFromName(const std::string & name, CCBot & bot);
     sc2::UpgradeID  GetUpgradeIDFromName(const std::string & name, CCBot & bot);
     sc2::BuffID     GetBuffIDFromName(const std::string & name, CCBot & bot);
     sc2::AbilityID  GetAbilityIDFromName(const std::string & name, CCBot & bot);
 
-	void swapBuildings(const sc2::Unit * a, const sc2::Unit * b, CCBot & bot);
+	void swapBuildings(const CUnit_ptr a, const CUnit_ptr b, CCBot & bot);
 
     float Dist(const sc2::Point2D & p1, const sc2::Point2D & p2);
 	float Dist(const sc2::Point2D & p1);
@@ -71,15 +71,15 @@ namespace Util
 
 	const bool isBadEffect(sc2::EffectID id);
 
-	std::vector<const sc2::Unit*> getEnemyUnitsInSight(const sc2::Unit * unit, CCBot & bot);
-
-    // Kevin-provided helper functions
     void    VisualizeGrids(const sc2::ObservationInterface* obs, sc2::DebugInterface* debug);
     float   TerainHeight(const sc2::GameInfo& info, const sc2::Point2D& point);
     bool    Placement(const sc2::GameInfo& info, const sc2::Point2D& point);
     bool    Pathable(const sc2::GameInfo& info, const sc2::Point2D& point);
-	const sc2::Unit * getClostestMineral(sc2::Point2D pos, CCBot & bot);
+	const CUnit_ptr getClostestMineral(sc2::Point2D pos, CCBot & bot);
 	std::vector<sc2::UNIT_TYPEID> getMineralTypes();
+	std::vector<sc2::UNIT_TYPEID> getGeyserTypes();
+	std::vector<sc2::UNIT_TYPEID> getTownHallTypes();
+	std::vector<sc2::UNIT_TYPEID> getWorkerTypes();
 	const sc2::UpgradeID abilityIDToUpgradeID(const sc2::ABILITY_ID id);
 
 };

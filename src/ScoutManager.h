@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CUnit.h"
 #include "Common.h"
 #include <queue>
 
@@ -9,7 +10,7 @@ class ScoutManager
 {
     CCBot &   m_bot;
 
-    const sc2::Unit * m_scoutUnit;
+	CUnit_ptr m_scoutUnit;
     std::string     m_scoutStatus;
     int             m_numScouts;
     bool            m_scoutUnderAttack;
@@ -19,12 +20,11 @@ class ScoutManager
 
     bool            enemyWorkerInRadiusOf(const sc2::Point2D & pos) const;
     sc2::Point2D    getFleePosition() const;
-    const sc2::Unit * closestEnemyWorkerTo(const sc2::Point2D & pos) const;
-	const sc2::Unit * closestEnemyCombatTo(const sc2::Point2D & pos) const;
-	std::vector<const sc2::Unit*> getEnemyUnitsInSight(const sc2::Point2D & pos) const;
-	bool enemyTooClose(std::vector<const sc2::Unit*> enemyUnitsInSight);
-	bool attackEnemyCombat(std::vector<const sc2::Unit*> enemyUnitsInSight);
-	bool attackEnemyWorker(std::vector<const sc2::Unit*> enemyUnitsInSight);
+    CUnit_ptr closestEnemyWorkerTo(const sc2::Point2D & pos) const;
+	CUnit_ptr closestEnemyCombatTo(const sc2::Point2D & pos) const;
+	bool enemyTooClose(CUnits enemyUnitsInSight);
+	bool attackEnemyCombat(CUnits enemyUnitsInSight);
+	bool attackEnemyWorker(CUnits enemyUnitsInSight);
     void            moveScouts();
     void            drawScoutInformation();
 	void			scoutDamaged();
@@ -37,11 +37,11 @@ public:
     void onStart();
     void onFrame();
 	void checkOurBases();
-    void setWorkerScout(const sc2::Unit * unit);
-	void setScout(const sc2::Unit * unit);
+    void setWorkerScout(CUnit_ptr unit);
+	void setScout(CUnit_ptr unit);
 	int getNumScouts();
 	void updateNearestUnoccupiedBases(sc2::Point2D pos,int player);
 	const bool dontBlowYourselfUp() const;
 	void scoutRequested();
-	void raiseAlarm(std::vector<const sc2::Unit *> enemyUnitsInSight);
+	void raiseAlarm(CUnits enemyUnitsInSight);
 };
