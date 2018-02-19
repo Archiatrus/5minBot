@@ -73,19 +73,13 @@ void CCBot::OnStep()
 		m_cameraModule.onFrame();
 	}
 
-	if (!useDebug)
-	{
-		return;
-	}
 	//OnStep,OnUnitCreated,OnBuildingConstructionComplete,OnUnitEnterVision
 	m_time.push_back({ 0.0,0.0,0.0,0.0 });
 	m_time[Observation()->GetGameLoop()][0] = t.getElapsedTimeInMilliSec();
 	double ms=0.0;
 	if (Observation()->GetGameLoop() > 1)
 	{
-		auto test2 = Observation()->GetGameLoop();
-		auto test = Observation()->GetGameLoop() - 1;
-		for (const auto k : m_time[test])
+		for (const auto k : m_time[Observation()->GetGameLoop() - 1])
 		{
 			ms += k;
 		}
@@ -112,6 +106,11 @@ void CCBot::OnStep()
 	//{
 	//	Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_DARKTEMPLAR, Bases().getNextExpansion(Players::Self), 2, 1);
 	//}
+
+	if (!useDebug)
+	{
+		return;
+	}
 	Debug()->SendDebug();
 }
 

@@ -16,7 +16,7 @@
 
 
 #ifndef LADDEREXE
-bool useDebug = true;
+bool useDebug = false;
 bool useAutoObserver = false;
 #else
 bool useDebug = false;
