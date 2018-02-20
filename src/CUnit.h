@@ -105,7 +105,7 @@ class CUnitsData
 	std::vector<std::shared_ptr<CUnit>> m_units;
 
 public:
-	const std::shared_ptr<CUnit> & insert(const sc2::Unit * unit, CCBot & bot);
+	const std::shared_ptr<CUnit> insert(const sc2::Unit * unit, CCBot & bot);
 	void removeDead();
 	const std::vector<std::shared_ptr<CUnit>>& getUnits() const;
 };

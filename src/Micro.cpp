@@ -97,7 +97,12 @@ void Micro::SmartAttackMove(CUnits & attacker, const sc2::Point2D & targetPositi
 
 void Micro::SmartMove(CUnit_ptr attacker, CUnit_ptr target, CCBot & bot, bool queue)
 {
-	SmartMove(attacker, target->getPos(), bot, queue);
+	//SmartMove(attacker, target->getPos(), bot, queue);
+	if (!attacker->getOrders().empty() && attacker->getOrders().back().ability_id == sc2::ABILITY_ID::MOVE && attacker->getOrders().back().target_unit_tag==target->getTag())
+	{
+		return;
+	}
+	bot.Actions()->UnitCommand(attacker->getUnit_ptr(), sc2::ABILITY_ID::MOVE, target->getUnit_ptr(), queue);
 }
 
 void Micro::SmartMove(CUnit_ptr attacker, const sc2::Point2D & targetPosition, CCBot & bot,bool queue)

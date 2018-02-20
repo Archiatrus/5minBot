@@ -17,7 +17,7 @@
 
 class CCBot : public sc2::Agent
 {
-	sc2::Race               m_playerRace[2];
+	std::map<int,sc2::Race> m_playerRace;
 
 	MapTools                m_map;
 	BaseLocationManager     m_bases;

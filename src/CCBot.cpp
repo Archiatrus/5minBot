@@ -18,6 +18,8 @@ CCBot::CCBot()
     , m_strategy(*this)
     , m_techTree(*this)
 	, m_cameraModule(this)
+	, m_armor(0)
+	, m_weapon(0)
 {
     
 }
@@ -119,10 +121,13 @@ void CCBot::OnUnitCreated(const sc2::Unit * unit)
 	Timer t;
 	t.start();
 	const CUnit_ptr cunit = UnitInfo().OnUnitCreate(unit);
-	m_gameCommander.onUnitCreate(cunit);
-	if (useAutoObserver)
+	if (cunit)
 	{
-		m_cameraModule.moveCameraUnitCreated(unit);
+		m_gameCommander.onUnitCreate(cunit);
+		if (useAutoObserver)
+		{
+			m_cameraModule.moveCameraUnitCreated(unit);
+		}
 	}
 	m_time[Observation()->GetGameLoop()][1] = t.getElapsedTimeInMilliSec();
 }
@@ -141,8 +146,11 @@ void CCBot::OnUnitEnterVision(const sc2::Unit * unit)
 {
 	Timer t;
 	t.start();
-	const CUnit_ptr cunit = UnitInfo().getUnit(unit->tag);
-	m_gameCommander.OnUnitEnterVision(cunit);
+	const CUnit_ptr cunit = UnitInfo().OnUnitCreate(unit);
+	if (cunit)
+	{
+		m_gameCommander.OnUnitEnterVision(cunit);
+	}
 	m_time[Observation()->GetGameLoop()][3] = t.getElapsedTimeInMilliSec();
 }
 
@@ -179,10 +187,10 @@ void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 	}
 }
 // TODO: Figure out my race
-const sc2::Race & CCBot::GetPlayerRace(int player) const
+const sc2::Race & CCBot::GetPlayerRace(const int player) const
 {
     BOT_ASSERT(player == Players::Self || player == Players::Enemy, "invalid player for GetPlayerRace");
-    return m_playerRace[player];
+    return m_playerRace.at(player);
 }
 
 BotConfig & CCBot::Config()

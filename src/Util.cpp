@@ -151,7 +151,7 @@ const BaseLocation * Util::getClosestBase(sc2::Point2D pos,const CCBot &bot)
 {
 	const std::vector<const BaseLocation *> bases = bot.Bases().getBaseLocations();
 	int minDistance = std::numeric_limits<int>::max();
-	const BaseLocation * closestBase;
+	const BaseLocation * closestBase=nullptr;
 	for (const auto & base : bases)
 	{
 		int distance=base->getGroundDistance(pos);

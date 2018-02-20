@@ -296,9 +296,9 @@ bool CUnit::isWorker() const
 	return Util::IsWorkerType(getUnitType());
 }
 
-bool CUnit::canHitMe(std::shared_ptr<CUnit> enemy) const
+bool CUnit::canHitMe(const std::shared_ptr<CUnit> enemy) const
 {
-	if (enemy->getBuildProgress() != 1.0f)
+	if (!enemy->isCompleted())
 	{
 		return false;
 	}
@@ -306,10 +306,9 @@ bool CUnit::canHitMe(std::shared_ptr<CUnit> enemy) const
 	{
 		return true;
 	}
-	std::vector<sc2::Weapon> weapons = m_bot->Observation()->GetUnitTypeData()[enemy->getUnitType()].weapons;
 	if (isFlying())
 	{
-		for (const auto & weapon : weapons)
+		for (const auto & weapon : m_bot->Observation()->GetUnitTypeData()[enemy->getUnitType()].weapons)
 		{
 			if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
 			{
@@ -324,7 +323,7 @@ bool CUnit::canHitMe(std::shared_ptr<CUnit> enemy) const
 		{
 			return true;
 		}
-		for (const auto & weapon : weapons)
+		for (const auto & weapon : m_bot->Observation()->GetUnitTypeData()[enemy->getUnitType()].weapons)
 		{
 			if (weapon.type == sc2::Weapon::TargetType::Ground || weapon.type == sc2::Weapon::TargetType::Any)
 			{
@@ -528,14 +527,14 @@ const std::vector<std::shared_ptr<CUnit>> &CUnitsData::getUnits() const
 	return m_units;
 }
 
-const std::shared_ptr<CUnit> & CUnitsData::insert(const sc2::Unit * unit, CCBot & bot)
+const std::shared_ptr<CUnit> CUnitsData::insert(const sc2::Unit * unit, CCBot & bot)
 {
 	for (const auto & u : m_units)
 	{
 		if (u->getTag() == unit->tag)
 		{
 			u->update();
-			return u;
+			return nullptr;
 		}
 	}
 	m_units.push_back(std::make_shared<CUnit>(unit, &bot));

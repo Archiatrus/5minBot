@@ -256,11 +256,11 @@ const std::shared_ptr<CUnit> UnitInfoManager::getUnit(sc2::Tag unitTag)
 		{
 			return m_unitDataBase[Util::GetPlayer(unit)][unit->unit_type].insert(unit, m_bot);
 		}
-		for (const auto & unit : m_unitDataBase.at(player).at(type).getUnits())
+		for (const auto & cunit : m_unitDataBase.at(player).at(type).getUnits())
 		{
-			if (unit->getTag() == unitTag)
+			if (cunit->getTag() == unitTag)
 			{
-				return unit;
+				return cunit;
 			}
 		}
 	}
@@ -270,13 +270,34 @@ const std::shared_ptr<CUnit> UnitInfoManager::getUnit(sc2::Tag unitTag)
 		{
 			for (auto & unitData : playerData.second)
 			{
-				for (auto & unit : unitData.second.getUnits())
+				for (auto & cunit : unitData.second.getUnits())
 				{
-					if (unit->getTag() == unitTag)
+					if (cunit->getTag() == unitTag)
 					{
-						return unit;
+						return cunit;
 					}
 				}
+			}
+		}
+	}
+	return nullptr;
+}
+
+const std::shared_ptr<CUnit> UnitInfoManager::getUnit(const sc2::Unit * unit)
+{
+	if (unit)
+	{
+		int player = unit->owner;
+		sc2::UnitTypeID type = unit->unit_type;
+		if (m_unitDataBase.find(player) == m_unitDataBase.end() || m_unitDataBase.at(player).find(type) == m_unitDataBase.at(player).end())
+		{
+			m_unitDataBase[Util::GetPlayer(unit)][unit->unit_type].insert(unit, m_bot);
+		}
+		for (const auto & cunit : m_unitDataBase.at(player).at(type).getUnits())
+		{
+			if (cunit->getTag() == unit->tag)
+			{
+				return cunit;
 			}
 		}
 	}

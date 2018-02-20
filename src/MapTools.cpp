@@ -710,7 +710,7 @@ const bool MapTools::hasPocketBase() const
 	}
 	//Any enemy base is fine
 	const sc2::Point2D enemyStartBase = m_bot.Observation()->GetGameInfo().enemy_start_locations.front();
-	return homeBase->getGroundDistance(enemyStartBase) <= firstExe->getGroundDistance(enemyStartBase);
+	return firstExe ? homeBase->getGroundDistance(enemyStartBase) <= firstExe->getGroundDistance(enemyStartBase) : false;
 }
 
 const float MapTools::getHeight(const sc2::Point2D pos) const

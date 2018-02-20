@@ -138,7 +138,7 @@ void WorkerManager::handleMineralWorkers()
 						{
 							auto transfer_worker = getClosestMineralWorkerTo(unit->getPos()); //THIS WILL PROBABLY CALL THE SAME WORKER OVER AND OVER AGAIN UNTIL HE IS FAR ENOUGH AWAY :(
 							const CUnit_ptr mineralPatch = Util::getClostestMineral(unit_next->getPos(), m_bot);
-							if (mineralPatch)
+							if (mineralPatch && transfer_worker)
 							{
 								//Micro::SmartMove(unit, unit_next->getPos(), m_bot);
 								m_workerData.setWorkerJob(transfer_worker, WorkerJobs::Minerals, mineralPatch);

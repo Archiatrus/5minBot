@@ -14,9 +14,6 @@ class ProductionManager
     BuildingManager m_buildingManager;
 	std::deque<BuildOrderItem> m_newQueue;
 
-	int m_weapons;
-	int m_armor;
-
 	bool m_scoutRequested;
 	bool m_vikingRequested;
 	int m_scansRequested;

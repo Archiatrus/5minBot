@@ -20,8 +20,6 @@ bool startedResearch = false;
 ProductionManager::ProductionManager(CCBot & bot)
 	: m_bot(bot)
 	, m_buildingManager(bot)
-	, m_weapons(0)
-	, m_armor(0)
 	, m_scoutRequested(false)
 	, m_vikingRequested(false)
 	, m_scansRequested(0)
@@ -360,88 +358,74 @@ void ProductionManager::defaultMacro()
 	const CUnits Armories = m_bot.UnitInfo().getUnits(sc2::Unit::Alliance::Self, sc2::UNIT_TYPEID::TERRAN_ARMORY);
 	const int numArmories = static_cast<int>(Armories.size());
 	const int numArmoriesFinished = buildingsFinished(Armories);
+
+	const int weapon = m_bot.getWeapon();
+	const int armor = m_bot.getArmor();
 	for (const auto & unit : Engibays)
 	{
-		if (unit->isCompleted() || unit->isIdle())
+		if (unit->isCompleted() && unit->isIdle())
 		{
-			if (!startedResearch)
+
+			//If you have enough minerals but not enough gas do not block. That mins could be marines.
+			//Weapons first
+			if ((weapon == 0 && armor == 0 && gas >= 100) || (weapon == 1 && armor == 1 && gas >= 175 && numArmoriesFinished > 0) || (weapon == 2 && armor == 2 && gas >= 250))
 			{
-					//If you have enough minerals but not enough gas do not block. That mins could be marines.
-				//Weapons first
-				if ((m_weapons == 0 && m_armor == 0 && gas >= 100) || (m_weapons == 1 && m_armor == 1 && gas >= 175 && numArmoriesFinished>0) || (m_weapons == 2 && m_armor == 2 && gas >= 250))
+				if ((weapon == 0 && minerals >= 100) || (weapon == 1 && minerals >= 175) || (weapon == 2 && minerals >= 250))
 				{
-					if ((m_weapons == 0 && minerals >= 100) || (m_weapons == 1 && minerals >= 175) || (m_weapons == 2 && minerals >= 250))
-					{
-						Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONS,m_bot);
-						startedResearch = true;
-					}
-					std::cout << "Weapon++" << std::endl;
-					return;
+					Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONS, m_bot);
 				}
-				if ((m_weapons == 1 && m_armor == 0 && gas >= 100) || (m_weapons == 2 && m_armor == 1 && gas >= 175) || (m_weapons == 3 && m_armor == 2 && gas >= 250))
-				{
-					if ((m_armor == 0 && minerals >= 100) || (m_armor == 1 && minerals >= 175) || (m_armor == 2 && minerals >= 250))
-					{
-						Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMOR,m_bot);
-						startedResearch = true;
-					}
-					std::cout << "Armor++" << std::endl;
-					return;
-				}
-				
-				/*
-				//THE METHOD BELOW WOULD BE MUCH NICER... BUT THERE IS A BUG :/
-				std::vector<sc2::AvailableAbility> abilities = m_bot.Query()->GetAbilitiesForUnit(unit).abilities;
-				// Weapons and armor research has consecutive numbers
-				//First weapons
-				for (sc2::AvailableAbility & ability : abilities)
-				{
-					if (ability.ability_id >= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONSLEVEL1 && ability.ability_id <= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONSLEVEL3)
-					{
-						const sc2::UpgradeID upgradeID = Util::abilityIDToUpgradeID(ability.ability_id);
-						if (gas >= m_bot.UnitInfo().getUpgradeData().at(upgradeID).vespene_cost)
-						{
-							if (minerals >= m_bot.UnitInfo().getUpgradeData().at(upgradeID).mineral_cost)
-							{
-								m_bot.Actions()->UnitCommand(unit, ability.ability_id);
-							}
-							std::cout << "Weapon ++" << std::endl;
-							return;
-						}
-					}
-				}
-				//Then armor
-				for (sc2::AvailableAbility & ability : abilities)
-				{
-					if (ability.ability_id >= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMORLEVEL1 && ability.ability_id <= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMORLEVEL3)
-					{
-						const sc2::UpgradeID upgradeID = Util::abilityIDToUpgradeID(ability.ability_id);
-						if (gas >= m_bot.UnitInfo().getUpgradeData().at(upgradeID).vespene_cost)
-						{
-							if (minerals >= m_bot.UnitInfo().getUpgradeData().at(upgradeID).mineral_cost)
-							{
-								m_bot.Actions()->UnitCommand(unit, ability.ability_id);
-							}
-							std::cout << "Armor ++" << std::endl;
-							return;
-						}
-					}
-				}
-				*/
+				std::cout << "Weapon++" << std::endl;
+				return;
 			}
-			else if (startedResearch && !unit->isIdle())
+			if ((weapon == 1 && armor == 0 && gas >= 100) || (weapon == 2 && armor == 1 && gas >= 175) || (weapon == 3 && armor == 2 && gas >= 250))
 			{
-				startedResearch = false;
-				const sc2::AbilityID research = unit->getOrders().front().ability_id;
-				if (research == sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONS)
+				if ((armor == 0 && minerals >= 100) || (armor == 1 && minerals >= 175) || (armor == 2 && minerals >= 250))
 				{
-					m_weapons++;
+					Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMOR, m_bot);
 				}
-				else if (research == sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMOR)
+				std::cout << "Armor++" << std::endl;
+				return;
+			}
+
+			/*
+			//THE METHOD BELOW WOULD BE MUCH NICER... BUT THERE IS A BUG :/
+			std::vector<sc2::AvailableAbility> abilities = m_bot.Query()->GetAbilitiesForUnit(unit).abilities;
+			// Weapons and armor research has consecutive numbers
+			//First weapons
+			for (sc2::AvailableAbility & ability : abilities)
+			{
+				if (ability.ability_id >= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONSLEVEL1 && ability.ability_id <= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONSLEVEL3)
 				{
-					m_armor++;
+					const sc2::UpgradeID upgradeID = Util::abilityIDToUpgradeID(ability.ability_id);
+					if (gas >= m_bot.UnitInfo().getUpgradeData().at(upgradeID).vespene_cost)
+					{
+						if (minerals >= m_bot.UnitInfo().getUpgradeData().at(upgradeID).mineral_cost)
+						{
+							m_bot.Actions()->UnitCommand(unit, ability.ability_id);
+						}
+						std::cout << "Weapon ++" << std::endl;
+						return;
+					}
 				}
 			}
+			//Then armor
+			for (sc2::AvailableAbility & ability : abilities)
+			{
+				if (ability.ability_id >= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMORLEVEL1 && ability.ability_id <= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMORLEVEL3)
+				{
+					const sc2::UpgradeID upgradeID = Util::abilityIDToUpgradeID(ability.ability_id);
+					if (gas >= m_bot.UnitInfo().getUpgradeData().at(upgradeID).vespene_cost)
+					{
+						if (minerals >= m_bot.UnitInfo().getUpgradeData().at(upgradeID).mineral_cost)
+						{
+							m_bot.Actions()->UnitCommand(unit, ability.ability_id);
+						}
+						std::cout << "Armor ++" << std::endl;
+						return;
+					}
+				}
+			}
+			*/
 		}
 	}
 	//Every rax has to build
@@ -682,34 +666,34 @@ void ProductionManager::defaultMacro()
 
 	//Armory
 	//Needed for upgrades after +1
-	if (m_weapons == 1 && m_armor == 1 && gas >= 100 && numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ARMORY) == 0)
+	if (weapon == 1 && armor == 0 && gas >= 100 && numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ARMORY) == 0)
 	{
-		if (minerals >= 150)
+		//A armory needs 46 seconds to build.
+		//+1 weapons needs 114 seconds.
+		//So only after 68/114 seconds we need to build the armory
+		//Since it always takes a while we do it 10sec earlier
+		float maxProgress = 0.0f;
+		for (const auto & engi : Engibays)
 		{
-			//A armory needs 46 seconds to build.
-			//+1 weapons needs 114 seconds.
-			//So only after 68/114 seconds we need to build the armory
-			//Since it always takes a while we do it 10sec earlier
-			float maxProgress = 0.0f;
-			for (const auto & engi : Engibays)
+			if (engi->getOrders().empty())
 			{
-				if (engi->getOrders().empty())
-				{
-					maxProgress = 1.0f;
-					break;
-				}
-				float progress = engi->getOrders().front().progress;
-				if (maxProgress < progress)
-				{
-					maxProgress = progress;
-				}
+				maxProgress = 1.0f;
+				break;
 			}
-			if (maxProgress >= 58.0f / 114.0f)
+			float progress = engi->getOrders().front().progress;
+			if (maxProgress < progress)
+			{
+				maxProgress = progress;
+			}
+		}
+		if (maxProgress >= 58.0f / 114.0f)
+		{
+			if (minerals >= 150)
 			{
 				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_ARMORY), BUILDING, false));
 			}
+			return;
 		}
-		return;
 	}
 
 	//Factories. For now just one.

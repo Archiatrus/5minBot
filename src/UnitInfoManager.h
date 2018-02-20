@@ -39,6 +39,7 @@ public:
 
 	const CUnit_ptr OnUnitCreate(const sc2::Unit * unit);
 	const std::shared_ptr<CUnit> getUnit(sc2::Tag unitTag);
+	const std::shared_ptr<CUnit> getUnit(const sc2::Unit * unit);
 	const std::vector<std::shared_ptr<CUnit>> getUnits(int player) const;
 	const std::vector<std::shared_ptr<CUnit>> getUnits(int player, sc2::UnitTypeID type) const;
 	const std::vector<std::shared_ptr<CUnit>> getUnits(int player, std::vector<sc2::UnitTypeID> types) const;
