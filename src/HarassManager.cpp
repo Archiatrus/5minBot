@@ -187,6 +187,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		{
 			m_status = HarassStatus::Refueling;
 		}
+		int injuredCounter = 0;
 		for (const auto & m : m_marines)
 		{
 			//This is still buggy since we can not drop individual marines
@@ -198,9 +199,16 @@ void Hitsquad::harass(const BaseLocation * target)
 					{
 						Micro::SmartRightClick(m, m_medivac, m_bot);
 						Micro::SmartRightClick(m_medivac, m, m_bot);
+						++injuredCounter;
+						break;
 					}
 				}
 			}
+		}
+		if (injuredCounter == m_marines.size())
+		{
+			m_status = HarassStatus::Fleeing;
+			return;
 		}
 		break;
 	}
