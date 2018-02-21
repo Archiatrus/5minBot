@@ -52,6 +52,8 @@ void CCBot::OnGameStart()
 	if (useAutoObserver)
 	{
 		m_cameraModule.onStart();
+		//Whatever...
+		m_time.push_back({ 0.0,0.0,0.0,0.0 });
 	}
 	Actions()->SendChat("5minBot");
 	m_time.push_back({ 0.0,0.0,0.0,0.0 });
