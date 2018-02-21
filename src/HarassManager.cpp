@@ -368,7 +368,7 @@ CUnits Hitsquad::getNearbyEnemyUnits() const
 	CUnits enemyUnits = m_bot.UnitInfo().getUnits(Players::Enemy);
 	CUnits nearbyEnemyUnits;
 	const sc2::Point2D pos = m_medivac->getPos();
-	const float range = Util::GetUnitTypeSight(m_medivac->getUnitType().ToType(), m_bot);
+	const float range = m_medivac->getSightRange();
 	for (const auto & t : enemyUnits)
 	{
 		if (Util::Dist(pos, t->getPos()) <= range)

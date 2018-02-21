@@ -31,7 +31,7 @@ class CCBot : public sc2::Agent
 	CameraModuleAgent		m_cameraModule;
 
 	int m_armor;
-	int m_weapon;
+	int m_weapons;
 
 	std::vector<std::vector<double>> m_time;
 

@@ -255,7 +255,7 @@ void GameCommander::setHarassUnits()
 					bool tooClose = false;
 					for (auto & e : enemies)
 					{
-						if (Util::Dist(e->getPos(), unit->getPos()) < Util::GetUnitTypeSight(unit->getUnitType(), m_bot))
+						if (Util::Dist(e->getPos(), unit->getPos()) < unit->getSightRange())
 						{
 							tooClose = true;
 						}

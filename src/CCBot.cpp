@@ -19,7 +19,7 @@ CCBot::CCBot()
     , m_techTree(*this)
 	, m_cameraModule(this)
 	, m_armor(0)
-	, m_weapon(0)
+	, m_weapons(0)
 {
     
 }
@@ -137,7 +137,10 @@ void CCBot::OnBuildingConstructionComplete(const sc2::Unit * unit)
 	Timer t;
 	t.start();
 	const CUnit_ptr cunit = UnitInfo().getUnit(unit->tag);
-	m_gameCommander.OnBuildingConstructionComplete(cunit);
+	if (cunit)
+	{
+		m_gameCommander.OnBuildingConstructionComplete(cunit);
+	}
 	m_time[Observation()->GetGameLoop()][2] = t.getElapsedTimeInMilliSec();
 }
 
@@ -175,15 +178,15 @@ void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL3)
 	{
-		m_weapon = 3;
+		m_weapons = 3;
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL2)
 	{
-		m_weapon = 2;
+		m_weapons = 2;
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL1)
 	{
-		m_weapon = 1;
+		m_weapons = 1;
 	}
 }
 // TODO: Figure out my race
@@ -275,7 +278,7 @@ const int CCBot::getArmor() const
 
 const int CCBot::getWeapon() const
 {
-	return m_weapon;
+	return m_weapons;
 }
 
 void * CreateNewAgent()

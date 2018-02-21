@@ -8,13 +8,16 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 	m_bot(bot),
 	m_unit(unit),
 	m_unitTypeId(unit->unit_type),
+	m_healthPointsMax(unit->health_max),
+	m_shieldMax(unit->shield_max),
+	m_maxEnergy(unit->energy_max),
+	m_isBuilding(Util::IsBuildingType(unit->unit_type, *bot)),
+	m_isCombatUnit(Util::IsCombatUnitType(unit->unit_type, *bot)),
+	m_weapons(bot->Observation()->GetUnitTypeData()[unit->unit_type].weapons),
 	m_pos(unit->pos),
 	m_healthPoints(unit->health),
-	m_healthPointsMax(unit->health_max),
 	m_shield(unit->shield),
-	m_shieldMax(unit->shield_max),
 	m_energy(unit->energy),
-	m_maxEnergy(unit->energy_max),
 	m_mineralContents(unit->mineral_contents),
 	m_vespeneContents(unit->vespene_contents),
 	m_isFlying(unit->is_flying),
@@ -200,11 +203,8 @@ void CUnit::update()
 		}
 		m_pos = m_unit->pos;
 		m_healthPoints= m_unit->health;
-		m_healthPointsMax= m_unit->health_max;
 		m_shield= m_unit->shield;
-		m_shieldMax= m_unit->shield_max;
 		m_energy= m_unit->energy;
-		m_maxEnergy= m_unit->energy_max;
 		m_mineralContents= m_unit->mineral_contents;
 		m_vespeneContents= m_unit->vespene_contents;
 		m_isFlying= m_unit->is_flying;
@@ -244,7 +244,7 @@ float CUnit::getHealthMax() const
 
 bool CUnit::isBuilding() const
 {
-	return Util::IsBuildingType(m_unit->unit_type, *m_bot);
+	return m_isBuilding;
 }
 
 bool CUnit::isMineral() const
@@ -288,7 +288,7 @@ bool CUnit::isTownHall() const
 
 bool CUnit::isCombatUnit() const
 {
-	return Util::IsCombatUnitType(getUnitType(), *m_bot);
+	return m_isCombatUnit;
 }
 
 bool CUnit::isWorker() const
@@ -308,7 +308,7 @@ bool CUnit::canHitMe(const std::shared_ptr<CUnit> enemy) const
 	}
 	if (isFlying())
 	{
-		for (const auto & weapon : m_bot->Observation()->GetUnitTypeData()[enemy->getUnitType()].weapons)
+		for (const auto & weapon : enemy->getWeapons())
 		{
 			if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
 			{
@@ -323,7 +323,7 @@ bool CUnit::canHitMe(const std::shared_ptr<CUnit> enemy) const
 		{
 			return true;
 		}
-		for (const auto & weapon : m_bot->Observation()->GetUnitTypeData()[enemy->getUnitType()].weapons)
+		for (const auto & weapon : enemy->getWeapons())
 		{
 			if (weapon.type == sc2::Weapon::TargetType::Ground || weapon.type == sc2::Weapon::TargetType::Any)
 			{
@@ -359,12 +359,11 @@ const float CUnit::getSightRange() const
 
 const std::vector<sc2::Weapon> CUnit::getWeapons(sc2::Weapon::TargetType type) const
 {
-	const std::vector<sc2::Weapon> & weapons = m_bot->Observation()->GetUnitTypeData()[getUnitType()].weapons;
 	if (type == sc2::Weapon::TargetType::Any)
 	{
-		return weapons;
+		return m_weapons;
 	}
-	for (const auto & weapon : weapons)
+	for (const auto & weapon : m_weapons)
 	{
 		if (weapon.type == type || weapon.type == sc2::Weapon::TargetType::Any)
 		{
@@ -376,9 +375,7 @@ const std::vector<sc2::Weapon> CUnit::getWeapons(sc2::Weapon::TargetType type) c
 
 const float CUnit::getAttackRange(std::shared_ptr<CUnit> target) const
 {
-	const auto & weapons = m_bot->Observation()->GetUnitTypeData()[getUnitType()].weapons;
-
-	if (weapons.empty())
+	if (m_weapons.empty())
 	{
 		if (getUnitType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 		{
@@ -389,7 +386,7 @@ const float CUnit::getAttackRange(std::shared_ptr<CUnit> target) const
 
 	if (target->isFlying())
 	{
-		for (const auto & weapon : weapons)
+		for (const auto & weapon : m_weapons)
 		{
 			if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
 			{
@@ -399,7 +396,7 @@ const float CUnit::getAttackRange(std::shared_ptr<CUnit> target) const
 	}
 	else
 	{
-		for (const auto & weapon : weapons)
+		for (const auto & weapon : m_weapons)
 		{
 			if (weapon.type == sc2::Weapon::TargetType::Ground || weapon.type == sc2::Weapon::TargetType::Any)
 			{
@@ -412,9 +409,7 @@ const float CUnit::getAttackRange(std::shared_ptr<CUnit> target) const
 
 const float CUnit::getAttackRange() const
 {
-	const auto & weapons = m_bot->Observation()->GetUnitTypeData()[getUnitType()].weapons;
-
-	if (weapons.empty())
+	if (m_weapons.empty())
 	{
 		if (getUnitType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 		{
@@ -424,7 +419,7 @@ const float CUnit::getAttackRange() const
 	}
 
 	float maxRange = 0.0f;
-	for (const auto & weapon : weapons)
+	for (const auto & weapon : m_weapons)
 	{
 		if (maxRange < weapon.range)
 		{
@@ -453,7 +448,7 @@ const std::vector<sc2::Attribute> CUnit::getAttributes() const
 const bool CUnit::hasAttribute(sc2::Attribute attribute) const
 {
 	const std::vector<sc2::Attribute> attributes = getAttributes();
-	return std::find(attributes.begin(), attributes.end(), sc2::Attribute::Biological) != attributes.end();
+	return std::find(attributes.begin(), attributes.end(), attribute) != attributes.end();
 }
 
 bool CUnit::isDetector() const

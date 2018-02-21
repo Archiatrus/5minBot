@@ -8,15 +8,19 @@ class CUnit
 {
 	CCBot * m_bot;
 	const sc2::Unit * m_unit;
-	sc2::UnitTypeID m_unitTypeId;
+	
+	const sc2::UnitTypeID m_unitTypeId;
+	const float	m_healthPointsMax;
+	const float m_shieldMax;
+	const float m_maxEnergy;
+	const bool m_isBuilding;
+	const bool m_isCombatUnit;
+	const std::vector<sc2::Weapon> m_weapons;
 
 	sc2::Point3D m_pos;
 	float	m_healthPoints;
-	float	m_healthPointsMax;
 	float 	m_shield;
-	float 	m_shieldMax;
 	float 	m_energy;
-	float 	m_maxEnergy;
 	int		m_mineralContents;
 	int		m_vespeneContents;
 	bool	m_isFlying;

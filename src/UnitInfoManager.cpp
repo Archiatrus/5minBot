@@ -26,7 +26,7 @@ void UnitInfoManager::updateUnitInfo()
 {
 	for (const auto & unit : m_bot.Observation()->GetUnits())
 	{
-		m_unitDataBase[Util::GetPlayer(unit)][unit->unit_type].insert(unit, m_bot);
+		m_unitDataBase[unit->alliance][unit->unit_type].insert(unit, m_bot);
 	}
 	for (auto & playerData : m_unitDataBase)
 	{
@@ -242,7 +242,7 @@ bool UnitInfoManager::isValidUnit(const sc2::Unit * unit)
 }
 const CUnit_ptr UnitInfoManager::OnUnitCreate(const sc2::Unit * unit)
 {
-	return m_unitDataBase[Util::GetPlayer(unit)][unit->unit_type].insert(unit, m_bot);
+	return m_unitDataBase[unit->alliance][unit->unit_type].insert(unit, m_bot);
 }
 
 const std::shared_ptr<CUnit> UnitInfoManager::getUnit(sc2::Tag unitTag)
@@ -254,7 +254,7 @@ const std::shared_ptr<CUnit> UnitInfoManager::getUnit(sc2::Tag unitTag)
 		sc2::UnitTypeID type = unit->unit_type;
 		if (m_unitDataBase.find(player) == m_unitDataBase.end() || m_unitDataBase.at(player).find(type) == m_unitDataBase.at(player).end())
 		{
-			return m_unitDataBase[Util::GetPlayer(unit)][unit->unit_type].insert(unit, m_bot);
+			return m_unitDataBase[unit->alliance][unit->unit_type].insert(unit, m_bot);
 		}
 		for (const auto & cunit : m_unitDataBase.at(player).at(type).getUnits())
 		{
@@ -291,7 +291,7 @@ const std::shared_ptr<CUnit> UnitInfoManager::getUnit(const sc2::Unit * unit)
 		sc2::UnitTypeID type = unit->unit_type;
 		if (m_unitDataBase.find(player) == m_unitDataBase.end() || m_unitDataBase.at(player).find(type) == m_unitDataBase.at(player).end())
 		{
-			m_unitDataBase[Util::GetPlayer(unit)][unit->unit_type].insert(unit, m_bot);
+			m_unitDataBase[unit->alliance][unit->unit_type].insert(unit, m_bot);
 		}
 		for (const auto & cunit : m_unitDataBase.at(player).at(type).getUnits())
 		{

@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 	{
 		// Add the custom bot, it will control the players.
 		CCBot bot;
-		
+		//CCBot bot2;
 		sc2::Coordinator coordinator;
 		if (!coordinator.LoadSettings(argc, argv))
 		{
@@ -49,6 +49,7 @@ int main(int argc, char* argv[])
 			CreateParticipant(sc2::Race::Terran, &bot),
 			//sc2::PlayerSetup(sc2::PlayerType::Observer,Util::GetRaceFromString(enemyRaceString)),
 			CreateComputer(sc2::Race::Protoss, sc2::Difficulty::CheatInsane)
+			//CreateParticipant(sc2::Race::Terran, &bot2),
 		});
 		// Start the game.
 		coordinator.LaunchStarcraft();
