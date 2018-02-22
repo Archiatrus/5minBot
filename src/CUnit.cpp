@@ -33,7 +33,7 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 	m_AAWeapons.attacks = 0;
 	m_AAWeapons.range = 0.0f;
 	m_AAWeapons.speed = 1.0f;//For dps I divide dmg/speed
-	m_groundWeapons.type = sc2::Weapon::TargetType::Air;
+	m_groundWeapons.type = sc2::Weapon::TargetType::Ground;
 	m_groundWeapons.damage_ = 0.0f;
 	m_groundWeapons.attacks = 0;
 	m_groundWeapons.range = 0.0f;
@@ -45,7 +45,7 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 		{
 			m_AAWeapons = weapon;
 		}
-		if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
+		if (weapon.type == sc2::Weapon::TargetType::Ground || weapon.type == sc2::Weapon::TargetType::Any)
 		{
 			m_groundWeapons = weapon;
 		}
