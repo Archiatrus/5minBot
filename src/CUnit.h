@@ -15,7 +15,7 @@ class CUnit
 	const float m_maxEnergy;
 	const bool m_isBuilding;
 	const bool m_isCombatUnit;
-	const std::vector<sc2::Weapon> m_weapons;
+	const float m_sight;
 
 	sc2::Point3D m_pos;
 	float	m_healthPoints;
@@ -26,6 +26,9 @@ class CUnit
 	bool	m_isFlying;
 	bool	m_isBurrowed;
 	float 	m_weaponCooldown;
+
+	sc2::Weapon m_groundWeapons;
+	sc2::Weapon m_AAWeapons;
 public:
 
 	CUnit(const sc2::Unit * unit,CCBot * bot);
@@ -89,7 +92,7 @@ public:
 	bool canHitMe(std::shared_ptr<CUnit> enemy) const;
 	std::vector<std::shared_ptr<CUnit>> getEnemyUnitsInSight() const;
 	const float getSightRange() const;
-	const std::vector<sc2::Weapon> getWeapons(sc2::Weapon::TargetType type = sc2::Weapon::TargetType::Any) const;
+	const sc2::Weapon getWeapon(sc2::Weapon::TargetType type = sc2::Weapon::TargetType::Any) const;
 	const float getAttackRange(std::shared_ptr<CUnit> target) const;
 	const float getAttackRange() const;
 	const sc2::Unit * getUnit_ptr() const;

@@ -13,7 +13,7 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 	m_maxEnergy(unit->energy_max),
 	m_isBuilding(Util::IsBuildingType(unit->unit_type, *bot)),
 	m_isCombatUnit(Util::IsCombatUnitType(unit->unit_type, *bot)),
-	m_weapons(bot->Observation()->GetUnitTypeData()[unit->unit_type].weapons),
+	m_sight(m_bot->Observation()->GetUnitTypeData()[getUnitType()].sight_range),
 	m_pos(unit->pos),
 	m_healthPoints(unit->health),
 	m_shield(unit->shield),
@@ -22,8 +22,22 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 	m_vespeneContents(unit->vespene_contents),
 	m_isFlying(unit->is_flying),
 	m_isBurrowed(unit->is_burrowed),
-	m_weaponCooldown(unit->weapon_cooldown)
+	m_weaponCooldown(unit->weapon_cooldown),
+	m_AAWeapons(sc2::Weapon()),
+	m_groundWeapons(sc2::Weapon())
+
 {
+	for (const auto & weapon : bot->Observation()->GetUnitTypeData()[unit->unit_type].weapons)
+	{
+		if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
+		{
+			m_AAWeapons = weapon;
+		}
+		if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
+		{
+			m_groundWeapons = weapon;
+		}
+	}
 
 }
 
@@ -177,7 +191,7 @@ bool CUnit::isPowered() const
 
 bool CUnit::isAlive() const
 {
-	return m_unit->is_alive && m_healthPoints > 0.0f;
+	return m_unit->is_alive && (m_healthPointsMax==0 || m_healthPoints > 0.0f);
 }
 
 
@@ -308,30 +322,9 @@ bool CUnit::canHitMe(const std::shared_ptr<CUnit> enemy) const
 	}
 	if (isFlying())
 	{
-		for (const auto & weapon : enemy->getWeapons())
-		{
-			if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
-			{
-				return true;
-			}
-		}
+		return enemy->getWeapon(sc2::Weapon::TargetType::Air).damage_ > 0.0f;
 	}
-	else
-	{
-		//Banelings have no weapon?
-		if (enemy->getUnitType().ToType() == sc2::UNIT_TYPEID::ZERG_BANELING)
-		{
-			return true;
-		}
-		for (const auto & weapon : enemy->getWeapons())
-		{
-			if (weapon.type == sc2::Weapon::TargetType::Ground || weapon.type == sc2::Weapon::TargetType::Any)
-			{
-				return true;
-			}
-		}
-	}
-	return false;
+	return enemy->getWeapon(sc2::Weapon::TargetType::Ground).damage_ > 0.0f;
 }
 
 std::vector<std::shared_ptr<CUnit>> CUnit::getEnemyUnitsInSight() const
@@ -354,79 +347,41 @@ std::vector<std::shared_ptr<CUnit>> CUnit::getEnemyUnitsInSight() const
 
 const float CUnit::getSightRange() const
 {
-	return m_bot->Observation()->GetUnitTypeData()[getUnitType()].sight_range;
+	return m_sight;
 }
 
-const std::vector<sc2::Weapon> CUnit::getWeapons(sc2::Weapon::TargetType type) const
+const sc2::Weapon CUnit::getWeapon(sc2::Weapon::TargetType type) const
 {
-	if (type == sc2::Weapon::TargetType::Any)
+	if (type == sc2::Weapon::TargetType::Ground || type == sc2::Weapon::TargetType::Any)
 	{
-		return m_weapons;
+		return m_groundWeapons;
 	}
-	for (const auto & weapon : m_weapons)
-	{
-		if (weapon.type == type || weapon.type == sc2::Weapon::TargetType::Any)
-		{
-			return { weapon };
-		}
-	}
-	return std::vector<sc2::Weapon>();
+	return m_AAWeapons;
 }
 
 const float CUnit::getAttackRange(std::shared_ptr<CUnit> target) const
 {
-	if (m_weapons.empty())
+	if (getUnitType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 	{
-		if (getUnitType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
-		{
-			return 4.0f;
-		}
-		return 0.0f;
+		return 4.0f;
 	}
-
 	if (target->isFlying())
 	{
-		for (const auto & weapon : m_weapons)
-		{
-			if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
-			{
-				return weapon.range;
-			}
-		}
+				return m_AAWeapons.range;
 	}
 	else
 	{
-		for (const auto & weapon : m_weapons)
-		{
-			if (weapon.type == sc2::Weapon::TargetType::Ground || weapon.type == sc2::Weapon::TargetType::Any)
-			{
-				return weapon.range;
-			}
-		}
+		return m_groundWeapons.range;
 	}
-	return 0.0f;
 }
 
 const float CUnit::getAttackRange() const
 {
-	if (m_weapons.empty())
+	if (getUnitType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 	{
-		if (getUnitType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
-		{
-			return 4.0f;
-		}
-		return 0.0f;
+		return 4.0f;
 	}
-
-	float maxRange = 0.0f;
-	for (const auto & weapon : m_weapons)
-	{
-		if (maxRange < weapon.range)
-		{
-			maxRange = weapon.range;
-		}
-	}
-	return maxRange;
+	return m_groundWeapons.range>m_AAWeapons.range ? m_groundWeapons.range : m_AAWeapons.range;
 }
 
 const sc2::Unit * CUnit::getUnit_ptr() const
@@ -543,19 +498,15 @@ void CUnitsData::removeDead()
 		{
 			return true;
 		}
-		if (useDebug)
+		unit->drawSphere();
+		if (unit->isVisible() && (!unit->isAlive() || unit->changedUnitType()))
 		{
-			unit->drawSphere();
+			return true;
 		}
-		if (unit->isVisible())
-		{
-			//Change in unit type means it is now in another vector
-			return !unit->isAlive() || unit->changedUnitType();
-		}
-		else
+		else if (!unit->isVisible())
 		{
 			unit->update();
-			return false;
 		}
+		return false;
 	}), m_units.end());
 }

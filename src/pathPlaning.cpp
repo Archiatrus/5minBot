@@ -40,19 +40,16 @@ const float pathPlaning::calcThreatLvl(sc2::Point2D pos) const
 		if (enemy->isCombatUnit())
 		{
 			//Get its weapon
-			const std::vector<sc2::Weapon> weapons = enemy->getWeapons(sc2::Weapon::TargetType::Air);
+			const sc2::Weapon weapon = enemy->getWeapon(sc2::Weapon::TargetType::Air);
 			float dps = 0.0f;
 			//float range = 0.0f;
 			float range = enemy->getSightRange();
-			for (const auto & weapon : weapons)
-			{
 				//At the moment its only used for medivacs
-				if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
-				{
-					//I ignore bonus dmg for now.
-					dps = weapon.attacks * weapon.damage_ / weapon.speed;
-					//range = weapon.range + 2; //just to be sure +2
-				}
+			if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
+			{
+				//I ignore bonus dmg for now.
+				dps = weapon.attacks * weapon.damage_ / weapon.speed;
+				//range = weapon.range + 2; //just to be sure +2
 			}
 
 			//If we are in range.
