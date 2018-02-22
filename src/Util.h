@@ -16,6 +16,12 @@ namespace Util
         bool operator()(const sc2::Unit * unit, const sc2::ObservationInterface*);
     };
 
+	struct IsNoSnapShot
+	{
+		bool operator()(const sc2::Unit& unit) { return unit.display_type != sc2::Unit::DisplayType::Snapshot; };
+	};
+
+
     int GetPlayer(const sc2::Unit * unit);
     bool IsCombatUnit(const sc2::Unit * unit, CCBot & bot);
     bool IsCombatUnitType(const sc2::UnitTypeID & type, CCBot & bot);

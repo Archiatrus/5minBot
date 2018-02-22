@@ -14,7 +14,11 @@ UnitInfoManager::UnitInfoManager(CCBot & bot)
 
 void UnitInfoManager::onStart()
 {
-	updateUnitInfo();
+	//Once also the snapshots to get base positions
+	for (const auto & unit : m_bot.Observation()->GetUnits())
+	{
+		m_unitDataBase[unit->alliance][unit->unit_type].insert(unit, m_bot);
+	}
 }
 
 void UnitInfoManager::onFrame()
@@ -24,7 +28,7 @@ void UnitInfoManager::onFrame()
 
 void UnitInfoManager::updateUnitInfo()
 {
-	for (const auto & unit : m_bot.Observation()->GetUnits())
+	for (const auto & unit : m_bot.Observation()->GetUnits(Util::IsNoSnapShot()))
 	{
 		m_unitDataBase[unit->alliance][unit->unit_type].insert(unit, m_bot);
 	}

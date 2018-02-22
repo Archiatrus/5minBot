@@ -10,7 +10,7 @@ class CUnit
 	const sc2::Unit * m_unit;
 	
 	const sc2::UnitTypeID m_unitTypeId;
-	const float	m_healthPointsMax;
+	float	m_healthPointsMax;
 	const float m_shieldMax;
 	const float m_maxEnergy;
 	const bool m_isBuilding;

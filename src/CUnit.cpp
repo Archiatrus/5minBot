@@ -12,7 +12,7 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 	m_shieldMax(unit->shield_max),
 	m_maxEnergy(unit->energy_max),
 	m_isBuilding(Util::IsBuildingType(unit->unit_type, *bot)),
-	m_isCombatUnit(Util::IsCombatUnitType(unit->unit_type, *bot)),
+	m_isCombatUnit(unit->alliance!=sc2::Unit::Alliance::Neutral && Util::IsCombatUnitType(unit->unit_type, *bot)),
 	m_sight(m_bot->Observation()->GetUnitTypeData()[getUnitType()].sight_range),
 	m_pos(unit->pos),
 	m_healthPoints(unit->health),
@@ -27,6 +27,18 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 	m_groundWeapons(sc2::Weapon())
 
 {
+	//The default constructor is not setting the values...
+	m_AAWeapons.type = sc2::Weapon::TargetType::Air;
+	m_AAWeapons.damage_ = 0.0f;
+	m_AAWeapons.attacks = 0;
+	m_AAWeapons.range = 0.0f;
+	m_AAWeapons.speed = 1.0f;//For dps I divide dmg/speed
+	m_groundWeapons.type = sc2::Weapon::TargetType::Air;
+	m_groundWeapons.damage_ = 0.0f;
+	m_groundWeapons.attacks = 0;
+	m_groundWeapons.range = 0.0f;
+	m_groundWeapons.speed = 1.0f;//For dps I divide dmg/speed
+
 	for (const auto & weapon : bot->Observation()->GetUnitTypeData()[unit->unit_type].weapons)
 	{
 		if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
@@ -227,7 +239,7 @@ void CUnit::update()
 	}
 	else
 	{
-		if (m_bot->Observation()->GetVisibility(m_pos) == sc2::Visibility::Visible)
+		if (m_bot->Observation()->GetVisibility(m_pos) == sc2::Visibility::Visible && getAlliance()!=sc2::Unit::Alliance::Neutral)
 		{
 			if (isBuilding())
 			{
@@ -485,6 +497,12 @@ const std::shared_ptr<CUnit> CUnitsData::insert(const sc2::Unit * unit, CCBot & 
 		{
 			u->update();
 			return nullptr;
+		}
+		//Snapshots have different tags -.-
+		if (u->getDisplayType() == sc2::Unit::DisplayType::Snapshot && unit->display_type == sc2::Unit::DisplayType::Visible && Util::Dist(u->getPos(), unit->pos) <= 0.1f)
+		{
+			m_units.erase(std::find(m_units.begin(), m_units.end(), u));
+			break;
 		}
 	}
 	m_units.push_back(std::make_shared<CUnit>(unit, &bot));
