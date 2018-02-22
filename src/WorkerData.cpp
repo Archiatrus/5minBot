@@ -332,6 +332,10 @@ void WorkerData::checkRepairedBuildings()
 		if (!target || !target->isAlive() || target->getHealth() == target->getHealthMax())
 		{
 			targetsToDelete.push_back(m.first);
+			for (const auto & worker : m.second)
+			{
+				clearPreviousJob(worker);
+			}
 			continue;
 		}
 		CUnits & workers = m.second;

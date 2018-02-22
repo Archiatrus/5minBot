@@ -33,7 +33,10 @@ void SiegeManager::assignTargets(const CUnits & targets)
 	for (const auto & siegeUnit : SiegeUnits)
 	{
 		BOT_ASSERT(siegeUnit, "melee unit is null");
-
+		if (siegeUnit->getUnit_ptr()->is_selected)
+		{
+			int a = 1;
+		}
 		// if the order is to attack or defend
 		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend)
 		{

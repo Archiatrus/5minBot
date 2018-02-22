@@ -49,7 +49,7 @@ void ScoutManager::onFrame()
 
 void ScoutManager::checkOurBases()
 {
-	CUnit_ptr scout = m_scoutUnit;
+	CUnit_ptr & scout = m_scoutUnit;
 
 	//No scout or scout dead
 	if (!scout || !scout->isAlive())
@@ -61,6 +61,10 @@ void ScoutManager::checkOurBases()
 			m_numScouts = -1;
 			firstCheckOurBases = true;
 			m_targetBasesPositions = std::queue<sc2::Point2D>();
+		}
+		if (scout && m_bot.Observation()->GetGameLoop() - scout->getLastSeenGameLoop() > 1224)
+		{
+			m_numScouts = -1;
 		}
 
 		return;
