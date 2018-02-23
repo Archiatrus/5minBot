@@ -385,9 +385,35 @@ const ProductionManager & GameCommander::Production() const
 
 void GameCommander::handleDTdetections()
 {
-	if (m_bot.Observation()->GetGameLoop() == 5376)
+	if (m_bot.Observation()->GetGameLoop() == 5508)
 	{
 		m_productionManager.requestScan();
+	}
+	if (m_bot.Observation()->GetGameLoop() == 6732)
+	{
+		const sc2::Point2D pos = m_bot.Bases().getNextExpansion(Players::Enemy);
+		sc2::Point2D scanPos;
+		if (m_bot.Observation()->GetVisibility(pos) == sc2::Visibility::Hidden && m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size() < 2)
+		{
+			scanPos=pos;
+		}
+		else
+		{
+			scanPos=m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy)->getDepotPosition();
+		}
+		CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND);
+		for (const auto & unit : CommandCenters)
+		{
+			if (unit->isCompleted())
+			{
+				if (unit->getEnergy() >= 50)
+				{
+					Micro::SmartAbility(unit, sc2::ABILITY_ID::EFFECT_SCAN, scanPos, m_bot);
+					m_productionManager.usedScan();
+					return;
+				}
+			}
+		}
 	}
 	if (m_DTdetections.size() > 0)
 	{
