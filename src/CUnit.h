@@ -89,10 +89,10 @@ public:
 	bool isTownHall() const;
 	bool isCombatUnit() const;
 	bool isWorker() const;
-	bool canHitMe(std::shared_ptr<CUnit> enemy) const;
+	bool canHitMe(const std::shared_ptr<CUnit> & enemy) const;
 	std::vector<std::shared_ptr<CUnit>> getEnemyUnitsInSight() const;
 	const float getSightRange() const;
-	const sc2::Weapon getWeapon(sc2::Weapon::TargetType type = sc2::Weapon::TargetType::Any) const;
+	const sc2::Weapon & getWeapon(sc2::Weapon::TargetType type = sc2::Weapon::TargetType::Any) const;
 	const float getAttackRange(std::shared_ptr<CUnit> target) const;
 	const float getAttackRange() const;
 	const sc2::Unit * getUnit_ptr() const;

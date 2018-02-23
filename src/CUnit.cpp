@@ -45,7 +45,7 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 		{
 			m_AAWeapons = weapon;
 		}
-		if (weapon.type == sc2::Weapon::TargetType::Ground || weapon.type == sc2::Weapon::TargetType::Any)
+		if ((weapon.type == sc2::Weapon::TargetType::Ground || weapon.type == sc2::Weapon::TargetType::Any) && weapon.range > m_groundWeapons.range)//Siege tanks
 		{
 			m_groundWeapons = weapon;
 		}
@@ -322,7 +322,7 @@ bool CUnit::isWorker() const
 	return Util::IsWorkerType(getUnitType());
 }
 
-bool CUnit::canHitMe(const std::shared_ptr<CUnit> enemy) const
+bool CUnit::canHitMe(const std::shared_ptr<CUnit> & enemy) const
 {
 	if (!enemy->isCompleted())
 	{
@@ -362,7 +362,7 @@ const float CUnit::getSightRange() const
 	return m_sight;
 }
 
-const sc2::Weapon CUnit::getWeapon(sc2::Weapon::TargetType type) const
+const sc2::Weapon & CUnit::getWeapon(sc2::Weapon::TargetType type) const
 {
 	if (type == sc2::Weapon::TargetType::Ground || type == sc2::Weapon::TargetType::Any)
 	{
@@ -517,11 +517,15 @@ void CUnitsData::removeDead()
 			return true;
 		}
 		unit->drawSphere();
-		if (unit->isVisible() && (!unit->isAlive() || unit->changedUnitType()))
+		if (unit->getDisplayType() == sc2::Unit::DisplayType::Snapshot)
+		{
+			return false;
+		}
+		if (!unit->isAlive() || unit->changedUnitType())
 		{
 			return true;
 		}
-		else if (!unit->isVisible())
+		if (!unit->isVisible())
 		{
 			unit->update();
 		}
