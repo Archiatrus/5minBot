@@ -65,7 +65,14 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
     size_t numResources = m_minerals.size() + m_geysers.size();
 	sc2::Point2D centerMinerals(mineralsCenterX / m_minerals.size(), mineralsCenterY / m_minerals.size());
     m_centerOfResources = sc2::Point2D(m_left + (m_right-m_left)*0.5f, m_top + (m_bottom-m_top)*0.5f);
-	m_centerOfBase = m_centerOfResources + (m_centerOfResources - centerMinerals);
+	if (numResources == 16)
+	{
+		m_centerOfBase = m_centerOfResources + (m_centerOfResources - centerMinerals);
+	}
+	else
+	{
+		m_centerOfBase = m_centerOfResources;
+	}
 
     // compute this BaseLocation's DistanceMap, which will compute the ground distance
     // from the center of its recourses to every other tile on the map

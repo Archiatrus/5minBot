@@ -184,7 +184,7 @@ sc2::Point2D BuildingPlacer::getBuildLocationNear(const Building & b, int buildD
 	for (int i = idx->m_idx; i != idx->m_closestTiles.size(); ++i)
 	{
 		sc2::Point2D pos = idx->m_closestTiles[i];
-
+		Drawing::drawSphere(m_bot, pos, 1.0f);
         if (canBuildHereWithSpace((int)pos.x, (int)pos.y, b, buildDist))
         {
             double ms = t.getElapsedTimeInMilliSec();
