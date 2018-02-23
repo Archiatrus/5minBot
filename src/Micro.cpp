@@ -299,23 +299,21 @@ void Micro::SmartKiteTarget(CUnit_ptr rangedUnit, CUnit_ptr target, CCBot & bot,
 			}
 		}
 		//A normed vector to the target
-		sc2::Point2D RunningVector = target->getPos() - rangedUnit->getPos();
-		RunningVector /=  std::sqrt(std::pow(RunningVector.x, 2) + pow(RunningVector.y, 2));
 
 		sc2::Point2D targetPos=rangedUnit->getPos();
 		//If its a building we want range -1 distance
 		//The same is true if it outranges us. We dont want to block following units
 		if (target->isBuilding())
 		{
-			targetPos += (dist - (range - 1))*RunningVector;
+			targetPos += Util::normalizeVector(target->getPos() - rangedUnit->getPos(), dist - (range - 1));
 		}
 		else if (target->getAttackRange(rangedUnit) >= range || (!rangedUnit->canHitMe(target) && rangedUnit->getUnitType().ToType()!=sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER))
 		{
-			targetPos = target->getPos();
+			targetPos += Util::normalizeVector(target->getPos() - rangedUnit->getPos(), dist - (range - 1));
 		}
 		else
 		{
-			targetPos += (dist - range)*RunningVector;
+			targetPos += Util::normalizeVector(target->getPos() - rangedUnit->getPos(), dist - range);
 		}
 
 		SmartMove(rangedUnit, targetPos, bot, queue);
