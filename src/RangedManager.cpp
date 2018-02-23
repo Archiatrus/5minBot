@@ -279,7 +279,7 @@ const CUnit_ptr RangedManager::getTarget(const CUnit_ptr rangedUnit, const CUnit
 			continue;
 		}
 		const float range = rangedUnit->getAttackRange(targetUnit);
-		int priority = getAttackPriority(rangedUnit, targetUnit);
+		int priority = getAttackPriority(targetUnit);
 		const float distance = Util::Dist(rangedUnit->getPos(), targetUnit->getPos());
 		if (distance > range)
 		{
@@ -311,7 +311,7 @@ const CUnit_ptr RangedManager::getTarget(const CUnit_ptr rangedUnit, const CUnit
 }
 
 // get the attack priority of a type in relation to a zergling
-int RangedManager::getAttackPriority(const CUnit_ptr attacker, const CUnit_ptr unit)
+int RangedManager::getAttackPriority(const CUnit_ptr & unit)
 {
     BOT_ASSERT(unit, "null unit in getAttackPriority");
 

@@ -12,6 +12,6 @@ public:
     RangedManager(CCBot & bot);
     void    executeMicro(const CUnits & targets);
     void    assignTargets(const CUnits & targets);
-    int     getAttackPriority(const CUnit_ptr rangedUnit, const CUnit_ptr target);
+    int     getAttackPriority(const CUnit_ptr & target);
     const CUnit_ptr getTarget(const CUnit_ptr rangedUnit, const CUnits & targets);
 };
