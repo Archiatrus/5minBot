@@ -65,7 +65,7 @@ void SiegeManager::assignTargets(const CUnits & targets)
 					{
 						//Attack if near enough
 						const float dist = Util::Dist(siegeUnit->getPos(), target->getPos());
-						const float range = siegeUnit->getAttackRange(target);
+						const float range = 13.0;// siegeUnit->getAttackRange(target);
 						if (dist <= range)
 						{
 							Micro::SmartAttackUnit(siegeUnit, target, m_bot);
