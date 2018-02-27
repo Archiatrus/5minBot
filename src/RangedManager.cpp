@@ -39,9 +39,11 @@ void RangedManager::assignTargets(const CUnits & targets)
 	float minDist = std::numeric_limits<float>::max();
 	//Just checking if only medivacs available
 	bool justMedivacs = true;
+	//Being healed is not a buff. So we need to check every medivac if the injured unit is already healed.
+	const CUnits medivacs = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_MEDIVAC);
 	for (const auto & injured : rangedUnits)
 	{
-		if (!m_bot.GetUnit(injured->getTag()) || !injured->isAlive())
+		if (!injured->isAlive())
 		{
 			//its too late
 			continue;
@@ -57,17 +59,30 @@ void RangedManager::assignTargets(const CUnits & targets)
 		//We can only heal biological units
 		if (injured->hasAttribute(sc2::Attribute::Biological))
 		{
-			float healthMissing = injured->getHealthMax() - injured->getHealth();
-			if (healthMissing>0)
-			{
-				injuredUnits[healthMissing] = injured;
-			}
-			float dist = Util::DistSq(injured->getPos(), orderPos);
+			const float dist = Util::DistSq(injured->getPos(), orderPos);
 			if (!frontSoldier || minDist > dist)
 			{
 				frontSoldier = injured;
 				minDist = dist;
 			}
+			const float healthMissing = injured->getHealthMax() - injured->getHealth();
+			if (healthMissing>0)
+			{
+				bool isHealing = false;
+				for (const auto & medivac : medivacs)
+				{
+					if (!medivac->getOrders().empty() && medivac->getOrders().front().ability_id == sc2::ABILITY_ID::EFFECT_HEAL && medivac->getOrders().front().target_unit_tag == injured->getTag())
+					{
+						isHealing = true;
+						break;
+					}
+				}
+				if (!isHealing)
+				{
+					injuredUnits[healthMissing] = injured;
+				}
+			}
+			
 		}
 	}
 	// In case it were really only medivacs
@@ -146,14 +161,17 @@ void RangedManager::assignTargets(const CUnits & targets)
 					if (target->isAlive() && rangedUnit->canHitMe(target))
 					{
 						float dist = Util::Dist(rangedUnit->getPos(), target->getPos());
-						if (!nearestEnemy || minDistTarget > dist)
+						if (dist<target->getAttackRange() && minDistTarget > dist)
 						{
 							nearestEnemy = target;
 							minDistTarget = dist;
 						}
 					}
 				}
-				
+				if (rangedUnit->isSelected())
+				{
+					int a = 1;
+				}
 				if (injuredUnits.size()>0)
 				{
 					CUnit_ptr mostInjured = (injuredUnits.rbegin())->second;
@@ -161,7 +179,7 @@ void RangedManager::assignTargets(const CUnits & targets)
 					{
 						Micro::SmartCDAbility(rangedUnit, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS,m_bot);
 						sc2::Point2D targetPos = rangedUnit->getPos();
-						sc2::Point2D runningVector = Util::normalizeVector(rangedUnit->getPos() - nearestEnemy->getPos(), nearestEnemy->getAttackRange(rangedUnit) + 1);
+						sc2::Point2D runningVector = Util::normalizeVector(rangedUnit->getPos() - nearestEnemy->getPos(), nearestEnemy->getAttackRange(rangedUnit) + 2);
 						targetPos += runningVector;
 						Micro::SmartMove(rangedUnit, targetPos, m_bot);
 					}
@@ -170,10 +188,7 @@ void RangedManager::assignTargets(const CUnits & targets)
 						if (Util::Dist(rangedUnit->getPos(), mostInjured->getPos()) > 4.0f)
 						{
 							Micro::SmartCDAbility(rangedUnit, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
-							if (rangedUnit->getOrders().empty() || rangedUnit->getOrders().front().target_unit_tag != mostInjured->getTag())
-							{
-								Micro::SmartMove(rangedUnit, mostInjured, m_bot);
-							}
+							Micro::SmartMove(rangedUnit, mostInjured, m_bot);
 						}
 						else
 						{
@@ -185,7 +200,7 @@ void RangedManager::assignTargets(const CUnits & targets)
 				}
 				else
 				{
-					if (rangedUnit->getOrders().empty() || frontSoldier && rangedUnit->getOrders()[0].target_unit_tag && rangedUnit->getOrders()[0].target_unit_tag != frontSoldier->getTag())
+					if (frontSoldier && (rangedUnit->getOrders().empty() ||  rangedUnit->getOrders()[0].target_unit_tag && rangedUnit->getOrders()[0].target_unit_tag != frontSoldier->getTag()))
 					{
 						Micro::SmartMove(rangedUnit, frontSoldier,m_bot);
 					}
