@@ -210,7 +210,7 @@ void Squad::setSquadOrder(const SquadOrder & so)
 
 bool Squad::containsUnit(const CUnit_ptr unit) const
 {
-	return std::find_if(m_units.begin(), m_units.end(), [unit](const CUnit_ptr & newUnit) {return unit->getTag() == newUnit->getTag(); }) != m_units.end();
+	return std::find_if(m_units.begin(), m_units.end(), [& unit](const CUnit_ptr & newUnit) {return unit->getTag() == newUnit->getTag(); }) != m_units.end();
 }
 
 void Squad::clear()

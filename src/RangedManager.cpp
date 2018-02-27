@@ -165,19 +165,20 @@ void RangedManager::assignTargets(const CUnits & targets)
 						targetPos += runningVector;
 						Micro::SmartMove(rangedUnit, targetPos, m_bot);
 					}
-					else if (Util::Dist(rangedUnit->getPos(), mostInjured->getPos()) > 4.0f)
+					else if (rangedUnit->getOrders().empty() || rangedUnit->getOrders()[0].ability_id != sc2::ABILITY_ID::EFFECT_HEAL)
 					{
-						Micro::SmartCDAbility(rangedUnit, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS,m_bot);
-						if (rangedUnit->getOrders().empty() || rangedUnit->getOrders().front().target_unit_tag != mostInjured->getTag())
+						if (Util::Dist(rangedUnit->getPos(), mostInjured->getPos()) > 4.0f)
 						{
-							Micro::SmartMove(rangedUnit, mostInjured,m_bot);
+							Micro::SmartCDAbility(rangedUnit, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
+							if (rangedUnit->getOrders().empty() || rangedUnit->getOrders().front().target_unit_tag != mostInjured->getTag())
+							{
+								Micro::SmartMove(rangedUnit, mostInjured, m_bot);
+							}
 						}
-					}
-					else
-					{
-						if (rangedUnit->getOrders().empty() || rangedUnit->getOrders()[0].ability_id != sc2::ABILITY_ID::EFFECT_HEAL)
+						else
 						{
-							Micro::SmartAbility(rangedUnit, sc2::ABILITY_ID::EFFECT_HEAL, mostInjured,m_bot);
+
+							Micro::SmartAbility(rangedUnit, sc2::ABILITY_ID::EFFECT_HEAL, mostInjured, m_bot);
 							injuredUnits.erase(std::prev(injuredUnits.end())); //no idea why rbegin is not working
 						}
 					}
@@ -208,13 +209,29 @@ void RangedManager::assignTargets(const CUnits & targets)
 					if (order.getType() == SquadOrderTypes::Defend)
 					{
 						CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
-						if (Bunker.size() > 0 && Bunker.front()->getCargoSpaceTaken() != Bunker.front()->getCargoSpaceMax())
+						if (Bunker.size() > 0)
 						{
-							if (Util::Dist(rangedUnit->getPos(), Bunker.front()->getPos()) < Util::Dist(rangedUnit->getPos(), target->getPos()))
+							if (Bunker.front()->getCargoSpaceTaken() != Bunker.front()->getCargoSpaceMax())
 							{
-								Micro::SmartRightClick(rangedUnit, Bunker.front(), m_bot);
-								Micro::SmartAbility(Bunker.front(), sc2::ABILITY_ID::LOAD, rangedUnit,m_bot);
-								continue;
+								if (Util::Dist(rangedUnit->getPos(), Bunker.front()->getPos()) < Util::Dist(rangedUnit->getPos(), target->getPos()))
+								{
+									Micro::SmartRightClick(rangedUnit, Bunker.front(), m_bot);
+									Micro::SmartAbility(Bunker.front(), sc2::ABILITY_ID::LOAD, rangedUnit, m_bot);
+									continue;
+								}
+							}
+							if (m_bot.Bases().getOccupiedBaseLocations(Players::Self).size() <= 2)
+							{
+								const BaseLocation * base = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
+								if (base->getGroundDistance(Bunker.front()->getPos()) < base->getGroundDistance(target->getPos()))
+								{
+									if (Util::Dist(target->getPos(), Bunker.front()->getPos()) > 5.5f)
+									{
+										sc2::Point2D retreatPos = m_bot.Bases().getNewestExpansion(Players::Self);
+										Micro::SmartAttackMove(rangedUnit, retreatPos, m_bot);
+										continue;
+									}
+								}
 							}
 						}
 					}
@@ -236,7 +253,6 @@ void RangedManager::assignTargets(const CUnits & targets)
 					if (Util::Dist(rangedUnit->getPos(), order.getPosition()) > 4.0f)
 					{
 						// move to it
-						Drawing::drawLine(m_bot,rangedUnit->getPos(), order.getPosition(), sc2::Colors::White);
 						moveToPosition.push_back(rangedUnit);
 					}
 				}
