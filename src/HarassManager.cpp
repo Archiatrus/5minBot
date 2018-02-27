@@ -510,11 +510,24 @@ void WMHarass::harass(const sc2::Point2D pos)
 	if (m_status != WMStatus::Dead && !m_widowmine->isAlive())
 	{
 		m_status = WMStatus::Dead;
+		m_widowmine = nullptr;
 		return;
+	}
+	//The pointer is outdated whenever it changes the burrow type
+	if (m_widowmine->changedUnitType())
+	{
+		m_widowmine = m_bot.UnitInfo().getUnit(m_widowmine->getUnit_ptr());
 	}
 	switch (m_status)
 	{
-		case(WMStatus::Dead): return;
+		case(WMStatus::Dead):
+		{
+			if (m_widowmine->isAlive())
+			{
+				m_status = WMStatus::NewWM;
+			}
+			return;
+		}
 		case(WMStatus::NewWM):
 		{
 			m_shuttle=m_bot.requestShuttleService({ m_widowmine }, pos);
@@ -596,7 +609,14 @@ void WMHarass::harass(const sc2::Point2D pos)
 			//Plan our way
 			if (m_wayPoints.empty())
 			{
-				getWayPoints(pos);
+				if (Util::Dist(m_widowmine->getPos(), pos) < 1.0f)
+				{
+					m_status = WMStatus::Harass;
+				}
+				else
+				{
+					getWayPoints(pos);
+				}
 			}
 			//Replan if destination changed
 			if (m_wayPoints.back() != pos)

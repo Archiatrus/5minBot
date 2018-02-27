@@ -54,9 +54,9 @@ int main(int argc, char* argv[])
 		// Start the game.
 		coordinator.LaunchStarcraft();
 		//coordinator.StartGame("C:/Program Files (x86)/StarCraft II/Maps/AcolyteLE.SC2Map");
-		//coordinator.StartGame("Interloper LE");
+		coordinator.StartGame("Interloper LE");
 		//coordinator.StartGame("Proxima Station LE");
-		coordinator.StartGame("SequencerLE.SC2Map");
+		//coordinator.StartGame("SequencerLE.SC2Map");
 
 		// Step forward the game simulation.
 		while (coordinator.Update())
