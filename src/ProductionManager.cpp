@@ -483,6 +483,8 @@ void ProductionManager::defaultMacro()
 				else if (unit->getAddOnTag())
 				{
 					//Reactor -> double marines
+					auto test = m_bot.Observation()->GetUnit(unit->getAddOnTag());
+					auto test2 = m_bot.UnitInfo().getUnit(unit->getAddOnTag());
 					if (m_bot.UnitInfo().getUnit(unit->getAddOnTag())->getUnitType() == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR)
 					{
 						if (minerals >= 50 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
