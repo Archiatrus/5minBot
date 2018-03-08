@@ -612,6 +612,7 @@ void WMHarass::harass(const sc2::Point2D pos)
 				if (Util::Dist(m_widowmine->getPos(), pos) < 1.0f)
 				{
 					m_status = WMStatus::Harass;
+					return;
 				}
 				else
 				{
