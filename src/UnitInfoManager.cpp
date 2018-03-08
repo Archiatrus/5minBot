@@ -254,7 +254,7 @@ const std::shared_ptr<CUnit> UnitInfoManager::getUnit(sc2::Tag unitTag)
 	const sc2::Unit * unit = m_bot.Observation()->GetUnit(unitTag);
 	if (unit)
 	{
-		int player = unit->owner;
+		int player = unit->alliance;
 		sc2::UnitTypeID type = unit->unit_type;
 		if (m_unitDataBase.find(player) == m_unitDataBase.end() || m_unitDataBase.at(player).find(type) == m_unitDataBase.at(player).end())
 		{
@@ -291,7 +291,7 @@ const std::shared_ptr<CUnit> UnitInfoManager::getUnit(const sc2::Unit * unit)
 {
 	if (unit)
 	{
-		int player = unit->owner;
+		int player = unit->alliance;
 		sc2::UnitTypeID type = unit->unit_type;
 		if (m_unitDataBase.find(player) == m_unitDataBase.end() || m_unitDataBase.at(player).find(type) == m_unitDataBase.at(player).end())
 		{

@@ -436,7 +436,8 @@ void ProductionManager::defaultMacro()
 		if (unit->isCompleted())
 		{
 			//that is idle
-			if (unit->isIdle() || (unit->getOrders().size() == 1 && unit->getAddOnTag() && m_bot.UnitInfo().getUnit(unit->getAddOnTag())->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR))
+			const auto addon = m_bot.UnitInfo().getUnit(unit->getAddOnTag());
+			if (unit->isIdle() || (unit->getOrders().size() == 1 && unit->getAddOnTag() && addon && addon->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR))
 			{
 				//Building the scout has priority
 				if (m_scoutRequested)
@@ -483,9 +484,7 @@ void ProductionManager::defaultMacro()
 				else if (unit->getAddOnTag())
 				{
 					//Reactor -> double marines
-					auto test = m_bot.Observation()->GetUnit(unit->getAddOnTag());
-					auto test2 = m_bot.UnitInfo().getUnit(unit->getAddOnTag());
-					if (m_bot.UnitInfo().getUnit(unit->getAddOnTag())->getUnitType() == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR)
+					if (addon && addon->getUnitType() == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR)
 					{
 						if (minerals >= 50 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
 						{
