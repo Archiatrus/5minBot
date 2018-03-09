@@ -129,7 +129,7 @@ void GameCommander::setShuttles()
 		{
 			for (const auto & unit : m_validUnits)
 			{
-				if (unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
+				if (unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC && unit->getHealth() == unit->getHealthMax())
 				{
 					if (!isAssigned(unit))
 					{
