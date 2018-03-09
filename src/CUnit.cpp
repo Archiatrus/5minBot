@@ -229,6 +229,7 @@ void CUnit::update()
 		}
 		m_pos = m_unit->pos;
 		m_healthPoints= m_unit->health;
+		m_healthPointsMax = m_unit->health_max; //Combat shield
 		m_shield= m_unit->shield;
 		m_energy= m_unit->energy;
 		m_mineralContents= m_unit->mineral_contents;
