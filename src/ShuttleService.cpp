@@ -16,12 +16,14 @@ shuttle::shuttle(CCBot * const bot, CUnits passengers, sc2::Point2D targetPos) :
 
 void shuttle::hereItGoes()
 {
+	//What happens if shuttle dies?
 	switch (m_status)
 	{
 	case(ShuttleStatus::lookingForShuttle):break;
 	case(ShuttleStatus::Loading):loadPassangers(); break;
 	case(ShuttleStatus::OnMyWay):travelToDestination(); break;
 	case(ShuttleStatus::Unloading):unloadPassangers(); break;
+	case(ShuttleStatus::OnMyWayBack):travelBack(); break;
 	case(ShuttleStatus::Done):break;
 	}
 }
@@ -71,6 +73,37 @@ void shuttle::travelToDestination()
 	}
 }
 
+void shuttle::travelBack()
+{
+	if (m_wayPoints.empty())
+	{
+		if (Util::Dist(m_shuttle->getPos(), m_bot->Bases().getRallyPoint())>1.0f)
+		{
+			m_wayPoints = m_bot->Map().getEdgePath(m_shuttle->getPos(), m_bot->Bases().getRallyPoint());
+		}
+		else
+		{
+			m_status = ShuttleStatus::Done;
+		}
+	}
+	else if (Util::Dist(m_wayPoints.back(), m_bot->Bases().getRallyPoint())>10.0f)
+	{
+		while (!m_wayPoints.empty())
+		{
+			m_wayPoints.pop();
+		}
+	}
+	else if (Util::Dist(m_shuttle->getPos(), m_wayPoints.front()) < 0.1f)
+	{
+		m_wayPoints.pop();
+	}
+	else
+	{
+		Micro::SmartCDAbility(m_shuttle, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, *m_bot);
+		Micro::SmartMove(m_shuttle, m_wayPoints.front(), *m_bot);
+	}
+}
+
 void shuttle::unloadPassangers()
 {
 	if (m_shuttle->getCargoSpaceTaken() > 0)
@@ -79,7 +112,7 @@ void shuttle::unloadPassangers()
 	}
 	else
 	{
-		m_status = ShuttleStatus::Done;
+		m_status = ShuttleStatus::OnMyWayBack;
 	}
 }
 

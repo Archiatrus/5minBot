@@ -549,7 +549,7 @@ void WMHarass::harass(const sc2::Point2D pos)
 		}
 		case(WMStatus::ShuttleTransport):
 		{
-			if (m_shuttle->getShuttleStatus() == ShuttleStatus::Done)
+			if (m_shuttle->getShuttleStatus() == ShuttleStatus::Done || m_shuttle->getShuttleStatus() == ShuttleStatus::OnMyWayBack)
 			{
 				m_wayPoints.pop();
 				m_shuttle = nullptr;

@@ -8,7 +8,7 @@ class CCBot;
 
 namespace ShuttleStatus
 {
-	enum {lookingForShuttle,Loading, OnMyWay, Unloading, Done};
+	enum {lookingForShuttle,Loading, OnMyWay, Unloading, OnMyWayBack, Done};
 }
 
 class shuttle
@@ -22,6 +22,7 @@ class shuttle
 
 	void loadPassangers();
 	void travelToDestination();
+	void travelBack();
 	void unloadPassangers();
 
 public:
