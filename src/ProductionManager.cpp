@@ -31,7 +31,7 @@ ProductionManager::ProductionManager(CCBot & bot)
 
 void ProductionManager::onStart()
 {
-    m_buildingManager.onStart();
+	m_buildingManager.onStart();
 }
 
 void ProductionManager::onFrame()
@@ -45,23 +45,23 @@ void ProductionManager::onFrame()
 
 	
 	// check the _queue for stuff we can build
-    manageBuildOrderQueue();
+	manageBuildOrderQueue();
 
-    // TODO: if nothing is currently building, get a new goal from the strategy manager
-    // TODO: detect if there's a build order deadlock once per second
-    // TODO: triggers for game things like cloaked units etc
+	// TODO: if nothing is currently building, get a new goal from the strategy manager
+	// TODO: detect if there's a build order deadlock once per second
+	// TODO: triggers for game things like cloaked units etc
 
 
 	
 
-    m_buildingManager.onFrame();
-    drawProductionInformation();
+	m_buildingManager.onFrame();
+	drawProductionInformation();
 }
 
 // on unit destroy
 void ProductionManager::onUnitDestroy(const sc2::Unit * unit)
 {
-    // TODO: might have to re-do build order if a vital unit died
+	// TODO: might have to re-do build order if a vital unit died
 }
 
 void ProductionManager::manageBuildOrderQueue()
@@ -157,7 +157,7 @@ void ProductionManager::create(BuildOrderItem item)
 
 bool ProductionManager::detectBuildOrderDeadlock()
 {
-    // TODO: detect build order deadlocks here
+	// TODO: detect build order deadlocks here
 	return false;
 }
 
@@ -172,7 +172,7 @@ int ProductionManager::getFreeMinerals()
 
 int ProductionManager::getFreeGas()
 {
-    return m_bot.Observation()->GetVespene() - m_buildingManager.getReservedGas();
+	return m_bot.Observation()->GetVespene() - m_buildingManager.getReservedGas();
 }
 
 void ProductionManager::defaultMacro()

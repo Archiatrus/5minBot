@@ -37,41 +37,41 @@ struct buildingPlace
 
 class BuildingPlacer
 {
-    CCBot & m_bot;
+	CCBot & m_bot;
 
-    std::vector< std::vector<bool> > m_reserveMap;
+	std::vector< std::vector<bool> > m_reserveMap;
 	std::vector<buildingPlace> m_buildLocationTester;
 
 	void expandBuildingTesterOnce();
-    // queries for various BuildingPlacer data
-    bool			buildable(const Building & b, int x, int y) const;
-    bool			isReserved(int x, int y) const;
-    bool			isInResourceBox(int x, int y) const;
-    bool			tileOverlapsBaseLocation(int x, int y, sc2::UnitTypeID type) const;
+	// queries for various BuildingPlacer data
+	bool			buildable(const Building & b, int x, int y) const;
+	bool			isReserved(int x, int y) const;
+	bool			isInResourceBox(int x, int y) const;
+	bool			tileOverlapsBaseLocation(int x, int y, sc2::UnitTypeID type) const;
 
 
 public:
 
-    BuildingPlacer(CCBot & bot);
+	BuildingPlacer(CCBot & bot);
 
-    void onStart();
+	void onStart();
 
 	void onFrame();
 
-    // determines whether we can build at a given location
-    bool			canBuildHere(int bx, int by, const Building & b) const;
-    bool			canBuildHereWithSpace(int bx, int by, const Building & b, int buildDist) const;
+	// determines whether we can build at a given location
+	bool			canBuildHere(int bx, int by, const Building & b) const;
+	bool			canBuildHereWithSpace(int bx, int by, const Building & b, int buildDist) const;
 
-    // returns a build location near a building's desired location
-    sc2::Point2D	getBuildLocationNear(const Building & b, int buildDist);
+	// returns a build location near a building's desired location
+	sc2::Point2D	getBuildLocationNear(const Building & b, int buildDist);
 	sc2::Point2D	getTownHallLocationNear(const Building & b);
 
-    void			drawReservedTiles();
+	void			drawReservedTiles();
 
-    void			reserveTiles(int x, int y, int width, int height);
-    void			freeTiles(int x, int y, int width, int height);
+	void			reserveTiles(int x, int y, int width, int height);
+	void			freeTiles(int x, int y, int width, int height);
 	void			freeTiles();
-    sc2::Point2D	getRefineryPosition();
+	sc2::Point2D	getRefineryPosition();
 };
 
 extern bool useDebug;

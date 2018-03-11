@@ -42,8 +42,8 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 		// WARNING: Bot logic has not been thorougly tested on step sizes > 1
-		//          Setting this = N means the bot's onFrame gets called once every N frames
-		//          The bot may crash or do unexpected things if its logic is not called every frame
+		//		  Setting this = N means the bot's onFrame gets called once every N frames
+		//		  The bot may crash or do unexpected things if its logic is not called every frame
 		coordinator.SetStepSize(stepSize);
 		coordinator.SetRealtime(false);
 		coordinator.SetMultithreaded(true);
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 		coordinator.LeaveGame();
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
-    return 0;
+	return 0;
 }
 
 #else

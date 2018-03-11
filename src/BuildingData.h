@@ -5,16 +5,16 @@
 
 class BuildingData
 {
-    std::vector<Building>                   _buildings;
+	std::vector<Building>				   _buildings;
 
 public:
 
-    BuildingData();
+	BuildingData();
 
-    std::vector<Building> & getBuildings();
+	std::vector<Building> & getBuildings();
 
-    void        addBuilding(const Building & b);
-    void        removeBuilding(const Building & b);
-    void        removeBuildings(const std::vector<Building> & buildings);
-    bool        isBeingBuilt(sc2::UnitTypeID type);
+	void		addBuilding(const Building & b);
+	void		removeBuilding(const Building & b);
+	void		removeBuildings(const std::vector<Building> & buildings);
+	bool		isBeingBuilt(sc2::UnitTypeID type);
 };

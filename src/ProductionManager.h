@@ -9,9 +9,9 @@ class CCBot;
 
 class ProductionManager
 {
-    CCBot &       m_bot;
+	CCBot &	   m_bot;
 
-    BuildingManager m_buildingManager;
+	BuildingManager m_buildingManager;
 	std::deque<BuildOrderItem> m_newQueue;
 
 	int m_weapons;
@@ -21,30 +21,30 @@ class ProductionManager
 	bool m_vikingRequested;
 	int m_scansRequested;
 
-    //const sc2::Unit * getClosestUnitToPosition(const std::vector<const sc2::Unit *> & units, sc2::Point2D closestTo);
-    //bool    meetsReservedResources(const BuildType & type);
-    //bool    canMakeNow(const sc2::Unit * producer, const BuildType & type);
-    bool    detectBuildOrderDeadlock();
-    //void    setBuildOrder(const BuildOrder & buildOrder);
-    void    create(BuildOrderItem item);
-    void    manageBuildOrderQueue();
-    int     getFreeMinerals();
-    int     getFreeGas();
+	//const sc2::Unit * getClosestUnitToPosition(const std::vector<const sc2::Unit *> & units, sc2::Point2D closestTo);
+	//bool	meetsReservedResources(const BuildType & type);
+	//bool	canMakeNow(const sc2::Unit * producer, const BuildType & type);
+	bool	detectBuildOrderDeadlock();
+	//void	setBuildOrder(const BuildOrder & buildOrder);
+	void	create(BuildOrderItem item);
+	void	manageBuildOrderQueue();
+	int	 getFreeMinerals();
+	int	 getFreeGas();
 
 	
 
 public:
 
-    ProductionManager(CCBot & bot);
+	ProductionManager(CCBot & bot);
 
-    void    onStart();
-    void    onFrame();
-    void    onUnitDestroy(const sc2::Unit * unit);
-    void    drawProductionInformation();
+	void	onStart();
+	void	onFrame();
+	void	onUnitDestroy(const sc2::Unit * unit);
+	void	drawProductionInformation();
 
 	void defaultMacro();
 
-    //const sc2::Unit * getProducer(const BuildType & type, sc2::Point2D closestTo = sc2::Point2D(0, 0));
+	//const sc2::Unit * getProducer(const BuildType & type, sc2::Point2D closestTo = sc2::Point2D(0, 0));
 
 	void requestScout();
 	void requestVikings();

@@ -7,49 +7,49 @@ class CCBot;
 
 class BuildingManager
 {
-    CCBot &   m_bot;
+	CCBot &   m_bot;
 
-    BuildingPlacer  m_buildingPlacer;
-    std::vector<Building> m_buildings;
+	BuildingPlacer  m_buildingPlacer;
+	std::vector<Building> m_buildings;
 
-    bool            m_debugMode;
-    int             m_reservedMinerals;				// minerals reserved for planned buildings
-    int             m_reservedGas;					// gas reserved for planned buildings
+	bool			m_debugMode;
+	int			 m_reservedMinerals;				// minerals reserved for planned buildings
+	int			 m_reservedGas;					// gas reserved for planned buildings
 
-    bool            isBuildingPositionExplored(const Building & b) const;
-    void            removeBuildings(const std::vector<Building> & toRemove);
+	bool			isBuildingPositionExplored(const Building & b) const;
+	void			removeBuildings(const std::vector<Building> & toRemove);
 
 	bool isBuildingOrder(sc2::ABILITY_ID id);
 
-    void            validateWorkersAndBuildings();		    // STEP 1
-    void            assignWorkersToUnassignedBuildings();	// STEP 2
-    void            constructAssignedBuildings();			// STEP 3
+	void			validateWorkersAndBuildings();			// STEP 1
+	void			assignWorkersToUnassignedBuildings();	// STEP 2
+	void			constructAssignedBuildings();			// STEP 3
 	void			requestGuards();						// STEP 3.5
-    void            checkForStartedConstruction();			// STEP 4
-    void            checkForDeadTerranBuilders();			// STEP 5
-    void            checkForCompletedBuildings();			// STEP 6
+	void			checkForStartedConstruction();			// STEP 4
+	void			checkForDeadTerranBuilders();			// STEP 5
+	void			checkForCompletedBuildings();			// STEP 6
 
-    char            getBuildingWorkerCode(const Building & b) const;
+	char			getBuildingWorkerCode(const Building & b) const;
 
 public:
 
-    BuildingManager(CCBot & bot);
+	BuildingManager(CCBot & bot);
 
-    void                onStart();
-    void                onFrame();
+	void				onStart();
+	void				onFrame();
 	void reservedResourcesCheck();
-    void                addBuildingTask(const sc2::UnitTypeID & type, const sc2::Point2D & desiredPosition);
-    void                drawBuildingInformation();
-    sc2::Point2D        getBuildingLocation(const Building & b);
+	void				addBuildingTask(const sc2::UnitTypeID & type, const sc2::Point2D & desiredPosition);
+	void				drawBuildingInformation();
+	sc2::Point2D		getBuildingLocation(const Building & b);
 
-    int                 getReservedMinerals();
-    int                 getReservedGas();
+	int				 getReservedMinerals();
+	int				 getReservedGas();
 	void				resetFreeMinerals();
 
 	void resetFreeGas();
 
-    bool                isBeingBuilt(sc2::UnitTypeID type);
+	bool				isBeingBuilt(sc2::UnitTypeID type);
 
-    std::vector<sc2::UnitTypeID> buildingsQueued() const;
+	std::vector<sc2::UnitTypeID> buildingsQueued() const;
 	int getNumBuildingsQueued(sc2::UnitTypeID type) const;
 };

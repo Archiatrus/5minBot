@@ -11,50 +11,50 @@ timePlace::timePlace(uint32_t time, sc2::Point2D place) : m_time(time), m_place(
 }
 
 GameCommander::GameCommander(CCBot & bot)
-    : m_bot                 (bot)
-    , m_productionManager   (bot)
-    , m_scoutManager        (bot)
+	: m_bot				 (bot)
+	, m_productionManager   (bot)
+	, m_scoutManager		(bot)
 	, m_harassManager		(bot)
-    , m_combatCommander     (bot)
-    , m_initialScoutSet     (false)
+	, m_combatCommander	 (bot)
+	, m_initialScoutSet	 (false)
 {
 
 }
 
 void GameCommander::onStart()
 {
-    m_productionManager.onStart();
-    m_scoutManager.onStart();
+	m_productionManager.onStart();
+	m_scoutManager.onStart();
 	m_harassManager.onStart();
 	m_combatCommander.onStart();
 }
 
 void GameCommander::onFrame()
 {
-    m_timer.start();
+	m_timer.start();
 
 	handleDTdetections();
-    handleUnitAssignments();
-    m_productionManager.onFrame();
-    m_scoutManager.onFrame();
+	handleUnitAssignments();
+	m_productionManager.onFrame();
+	m_scoutManager.onFrame();
 	m_harassManager.onFrame();
-    m_combatCommander.onFrame(m_combatUnits);
+	m_combatCommander.onFrame(m_combatUnits);
 
-    drawDebugInterface();
+	drawDebugInterface();
 }
 
 void GameCommander::drawDebugInterface()
 {
-    drawGameInformation(4, 1);
+	drawGameInformation(4, 1);
 }
 
 void GameCommander::drawGameInformation(int x, int y)
 {
-    std::stringstream ss;
-    ss << "Players: " << "\n";
-    ss << "Strategy: " << m_bot.Config().StrategyName << "\n";
-    ss << "Map Name: " << "\n";
-    ss << "Time: " << "\n";
+	std::stringstream ss;
+	ss << "Players: " << "\n";
+	ss << "Strategy: " << m_bot.Config().StrategyName << "\n";
+	ss << "Map Name: " << "\n";
+	ss << "Time: " << "\n";
 }
 
 // assigns units to various managers
@@ -74,7 +74,7 @@ void GameCommander::handleUnitAssignments()
 
 bool GameCommander::isAssigned(const sc2::Unit * unit) const
 {
-	return     (std::find(m_combatUnits.begin(), m_combatUnits.end(), unit) != m_combatUnits.end())
+	return	 (std::find(m_combatUnits.begin(), m_combatUnits.end(), unit) != m_combatUnits.end())
 		|| (std::find(m_scoutUnits.begin(), m_scoutUnits.end(), unit) != m_scoutUnits.end())
 		|| (std::find(m_harassUnits.begin(), m_harassUnits.end(), unit) != m_harassUnits.end());
 }
@@ -148,7 +148,7 @@ bool GameCommander::shouldSendInitialScout()
 	{
 	case sc2::Race::Terran:  return false;
 	case sc2::Race::Protoss: return m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKS, true) == 1;
-	case sc2::Race::Zerg:    return false;
+	case sc2::Race::Zerg:	return false;
 	default: return false;
 	}
 }
@@ -238,14 +238,14 @@ void GameCommander::setHarassUnits()
 // sets combat units to be passed to CombatCommander
 void GameCommander::setCombatUnits()
 {
-    for (const auto & unit : m_validUnits)
-    {
-        BOT_ASSERT(unit, "Have a null unit in our valid units\n");
-        if (!isAssigned(unit) && Util::IsCombatUnitType(unit->unit_type, m_bot))
-        {
-            assignUnit(unit, m_combatUnits);
-        }
-    }
+	for (const auto & unit : m_validUnits)
+	{
+		BOT_ASSERT(unit, "Have a null unit in our valid units\n");
+		if (!isAssigned(unit) && Util::IsCombatUnitType(unit->unit_type, m_bot))
+		{
+			assignUnit(unit, m_combatUnits);
+		}
+	}
 }
 
 void GameCommander::onUnitCreate(const sc2::Unit * unit)
@@ -300,7 +300,7 @@ void GameCommander::OnBuildingConstructionComplete(const sc2::Unit * unit)
 
 void GameCommander::onUnitDestroy(const sc2::Unit * unit)
 {
-    //_productionManager.onUnitDestroy(unit);
+	//_productionManager.onUnitDestroy(unit);
 }
 
 void GameCommander::OnUnitEnterVision(const sc2::Unit * unit)
@@ -319,20 +319,20 @@ void GameCommander::OnDTdetected(const sc2::Point2D pos)
 
 void GameCommander::assignUnit(const sc2::Unit * unit, std::vector<const sc2::Unit *> & units)
 {
-    if (std::find(m_scoutUnits.begin(), m_scoutUnits.end(), unit) != m_scoutUnits.end())
-    {
-        m_scoutUnits.erase(std::remove(m_scoutUnits.begin(), m_scoutUnits.end(), unit), m_scoutUnits.end());
-    }
-    else if (std::find(m_combatUnits.begin(), m_combatUnits.end(), unit) != m_combatUnits.end())
-    {
-        m_combatUnits.erase(std::remove(m_combatUnits.begin(), m_combatUnits.end(), unit), m_combatUnits.end());
-    }
+	if (std::find(m_scoutUnits.begin(), m_scoutUnits.end(), unit) != m_scoutUnits.end())
+	{
+		m_scoutUnits.erase(std::remove(m_scoutUnits.begin(), m_scoutUnits.end(), unit), m_scoutUnits.end());
+	}
+	else if (std::find(m_combatUnits.begin(), m_combatUnits.end(), unit) != m_combatUnits.end())
+	{
+		m_combatUnits.erase(std::remove(m_combatUnits.begin(), m_combatUnits.end(), unit), m_combatUnits.end());
+	}
 	else if (std::find(m_harassUnits.begin(), m_harassUnits.end(), unit) != m_harassUnits.end())
 	{
 		m_harassUnits.erase(std::remove(m_harassUnits.begin(), m_harassUnits.end(), unit), m_harassUnits.end());
 	}
 
-    units.push_back(unit);
+	units.push_back(unit);
 }
 
 const ProductionManager & GameCommander::Production() const

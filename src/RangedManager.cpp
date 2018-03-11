@@ -3,30 +3,30 @@
 #include "CCBot.h"
 
 RangedManager::RangedManager(CCBot & bot)
-    : MicroManager(bot)
+	: MicroManager(bot)
 {
 
 }
 
 void RangedManager::executeMicro(const std::vector<const sc2::Unit *> & targets)
 {
-    assignTargets(targets);
+	assignTargets(targets);
 }
 
 void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets)
 {
-    const std::vector<const sc2::Unit *> & rangedUnits = getUnits();
+	const std::vector<const sc2::Unit *> & rangedUnits = getUnits();
 
-    // figure out targets
-    std::vector<const sc2::Unit *> rangedUnitTargets;
-    for (const auto & target : targets)
-    {
-        if (!target) { continue; }
-        if (target->unit_type == sc2::UNIT_TYPEID::ZERG_EGG) { continue; }
-        if (target->unit_type == sc2::UNIT_TYPEID::ZERG_LARVA) { continue; }
+	// figure out targets
+	std::vector<const sc2::Unit *> rangedUnitTargets;
+	for (const auto & target : targets)
+	{
+		if (!target) { continue; }
+		if (target->unit_type == sc2::UNIT_TYPEID::ZERG_EGG) { continue; }
+		if (target->unit_type == sc2::UNIT_TYPEID::ZERG_LARVA) { continue; }
 
-        rangedUnitTargets.push_back(target);
-    }
+		rangedUnitTargets.push_back(target);
+	}
 	//The idea is now to group the targets/targetPos
 	std::unordered_map<const sc2::Unit *, sc2::Units > targetsAttackedBy;
 	sc2::Units moveToPosition;
@@ -81,10 +81,10 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 	//Get effects like storm
 	const std::vector<sc2::Effect> effects = m_bot.Observation()->GetEffects();
 
-    // for each Unit
+	// for each Unit
 	auto test = m_bot.Observation()->GetEffectData()[12].radius;
-    for (const auto & rangedUnit : rangedUnits)
-    {
+	for (const auto & rangedUnit : rangedUnits)
+	{
 		//Don't stand in a storm etc
 		bool fleeYouFools = false;
 		for (const auto & effect : effects)
@@ -124,8 +124,8 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 		{
 			continue;
 		}
-        BOT_ASSERT(rangedUnit, "ranged unit is null");
-        // if the order is to attack or defend
+		BOT_ASSERT(rangedUnit, "ranged unit is null");
+		// if the order is to attack or defend
 		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend || order.getType() == SquadOrderTypes::GuardDuty)
 		{
 			// find the best target for this rangedUnit
@@ -237,7 +237,7 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 				}
 			}
 		}
-    }
+	}
 	//Grouped by target attack command
 	for (const auto & t : targetsAttackedBy)
 	{
@@ -253,15 +253,15 @@ void RangedManager::assignTargets(const std::vector<const sc2::Unit *> & targets
 // get a target for the ranged unit to attack
 const sc2::Unit * RangedManager::getTarget(const sc2::Unit * rangedUnit, const std::vector<const sc2::Unit *> & targets)
 {
-    BOT_ASSERT(rangedUnit, "null melee unit in getTarget");
-    int highPriorityFar = 0;
+	BOT_ASSERT(rangedUnit, "null melee unit in getTarget");
+	int highPriorityFar = 0;
 	int highPriorityNear = 0;
-    double closestDist = std::numeric_limits<double>::max();
+	double closestDist = std::numeric_limits<double>::max();
 	double lowestHealth = std::numeric_limits<double>::max();
-    const sc2::Unit * closestTargetOutsideRange = nullptr;
+	const sc2::Unit * closestTargetOutsideRange = nullptr;
 	const sc2::Unit * weakestTargetInsideRange = nullptr;
 	const float range = Util::GetAttackRange(rangedUnit->unit_type,m_bot);
-    // for each target possiblity
+	// for each target possiblity
 	// We have three levels: in range, in sight, somewhere.
 	// We want to attack the weakest/highest prio target in range
 	// If there is no in range, we want to attack one in sight,
@@ -302,30 +302,30 @@ const sc2::Unit * RangedManager::getTarget(const sc2::Unit * rangedUnit, const s
 		}
 
 	}
-    return weakestTargetInsideRange&&highPriorityNear>1 ? weakestTargetInsideRange: closestTargetOutsideRange;
+	return weakestTargetInsideRange&&highPriorityNear>1 ? weakestTargetInsideRange: closestTargetOutsideRange;
 }
 
 // get the attack priority of a type in relation to a zergling
 int RangedManager::getAttackPriority(const sc2::Unit * attacker, const sc2::Unit * unit)
 {
-    BOT_ASSERT(unit, "null unit in getAttackPriority");
+	BOT_ASSERT(unit, "null unit in getAttackPriority");
 
-    if (Util::IsCombatUnit(unit, m_bot))
-    {
+	if (Util::IsCombatUnit(unit, m_bot))
+	{
 		if (unit->unit_type == sc2::UNIT_TYPEID::ZERG_BANELING)
 		{
 			return 11;
 		}
-        return 10;
-    }
+		return 10;
+	}
 	if (unit->unit_type == sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON || unit->unit_type == sc2::UNIT_TYPEID::ZERG_SPINECRAWLER)
 	{
 		return 10;
 	}
-    if (Util::IsWorker(unit))
-    {
-        return 10;
-    }
+	if (Util::IsWorker(unit))
+	{
+		return 10;
+	}
 	if (unit->unit_type == sc2::UNIT_TYPEID::PROTOSS_PYLON || unit->unit_type == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || unit->unit_type == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
 	{
 		return 5;
@@ -334,6 +334,6 @@ int RangedManager::getAttackPriority(const sc2::Unit * attacker, const sc2::Unit
 	{
 		return 4;
 	}
-    return 1;
+	return 1;
 }
 
