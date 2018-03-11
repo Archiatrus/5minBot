@@ -2,7 +2,7 @@
 
 #include "CCBot.h"
 #include "Util.h"
-#include "AutoObserver\CameraModule.h"
+#include "AutoObserver/CameraModule.h"
 
 int lvl85 = 0;
 int lvl1000 = 0;

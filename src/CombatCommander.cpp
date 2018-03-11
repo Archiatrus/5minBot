@@ -529,7 +529,7 @@ sc2::Point2D CombatCommander::getMainAttackLocation()
     return m_bot.Map().getLeastRecentlySeenPosition();
 }
 
-const sc2::Unit * CombatCommander::findClosestWorkerTo(std::vector<const sc2::Unit *> & unitsToAssign, const sc2::Point2D & target)
+const sc2::Unit * CombatCommander::findClosestWorkerTo(std::vector<const sc2::Unit *> unitsToAssign, const sc2::Point2D & target)
 {
     const sc2::Unit * closestMineralWorker = nullptr;
     float closestDist = std::numeric_limits<float>::max();

@@ -1,4 +1,3 @@
-#pragma once
 #include "HarassManager.h"
 #include "Util.h"
 #include "CCBot.h"

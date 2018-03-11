@@ -61,7 +61,7 @@ public:
 
     void	updateUnit(const sc2::Unit * unit);
     void	killUnit(const sc2::Unit * unit);
-	void	UnitData::lostPosition(const sc2::Unit * unit);
+	void	lostPosition(const sc2::Unit * unit);
     void	removeBadUnits();
 
     int		getGasLost()                                const;

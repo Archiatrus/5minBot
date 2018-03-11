@@ -41,7 +41,7 @@ public:
 
     //bool                  enemyHasCloakedUnits() const;
     void                    drawUnitInformation(float x, float y) const;
-	const int UnitInfoManager::getNumCombatUnits(int player) const;
+	const int getNumCombatUnits(int player) const;
 
 };
 

@@ -72,7 +72,7 @@ public:
     // returns a list of all tiles on the map, sorted by 4-direcitonal walk distance from the given position
     const std::vector<sc2::Point2D> & getClosestTilesTo(const sc2::Point2D & pos) const;
 	const sc2::Point2D getClosestWalkableTo(const sc2::Point2D & pos) const;
-	const sc2::Point2D MapTools::getClosestBorderPoint(sc2::Point2D pos,int margin) const;
+	const sc2::Point2D getClosestBorderPoint(sc2::Point2D pos,int margin) const;
 	const bool hasPocketBase() const;
 	const float getHeight(const sc2::Point2D pos) const;
 	const float getHeight(const float x,const float y) const;

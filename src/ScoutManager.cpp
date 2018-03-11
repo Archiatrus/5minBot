@@ -583,7 +583,7 @@ void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos,int player)
 	}
 	if (Util::IsWorkerType(m_scoutUnit->unit_type))
 	{
-		auto & baseIt = allTargetBases.begin();
+		auto baseIt = allTargetBases.begin();
 		baseIt++;
 		m_targetBasesPositions.push(baseIt->second->getBasePosition());
 	}

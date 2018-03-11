@@ -34,5 +34,5 @@ public:
     sc2::Point2D getNextExpansion(int player) const;
 	sc2::Point2D getNewestExpansion(int player) const;
 	const sc2::Point2D getRallyPoint() const;
-	void BaseLocationManager::assignTownhallToBase(const sc2::Unit * townHall) const;
+	void assignTownhallToBase(const sc2::Unit * townHall) const;
 };

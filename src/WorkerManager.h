@@ -54,6 +54,6 @@ public:
 
 	const sc2::Unit * getClosestCombatWorkerTo(const sc2::Point2D & pos) const;
 
-	const size_t WorkerManager::isBeingRepairedNum(const sc2::Unit * unit) const;
+	const size_t isBeingRepairedNum(const sc2::Unit * unit) const;
 };
 

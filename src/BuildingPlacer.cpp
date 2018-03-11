@@ -35,7 +35,7 @@ void BuildingPlacer::expandBuildingTesterOnce()
 		if (useDebug && buildLocationTester.m_canBuildHere && buildLocationTester.m_footPrintArea != 25)
 		{
 			auto newPos = buildLocationTester.m_closestTiles[buildLocationTester.m_idx];
-			Drawing::drawSphere(m_bot,newPos, std::sqrtf(static_cast<float>(buildLocationTester.m_footPrintArea))/2.0f,sc2::Colors::Yellow);
+			Drawing::drawSphere(m_bot,newPos, sqrtf(static_cast<float>(buildLocationTester.m_footPrintArea))/2.0f,sc2::Colors::Yellow);
 		}
 		//We don't need to find another base right next to the old one
 		if (buildLocationTester.m_canBuildHere || buildLocationTester.m_footPrintArea==25)

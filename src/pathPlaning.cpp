@@ -1,6 +1,6 @@
+#include "pathPlaning.h"
 #include "Util.h"
 #include "CCBot.h"
-#include "pathPlaning.h"
 
 node::node() :m_pos(sc2::Point2D()), m_status(-1), m_travelCost(-1.0f), m_heuristicToGoal(-1.0f), m_threatLvl(-1.0f), m_totalCost(-1.0), m_parent(nullptr)
 {
