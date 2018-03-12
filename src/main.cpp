@@ -10,6 +10,8 @@
 #include <string>
 #include <random>
 #include <cmath>
+#include <chrono>
+#include <thread>
 
 #include "CCBot.h"
 #include "LadderInterface.h"
@@ -40,8 +42,8 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 		// WARNING: Bot logic has not been thorougly tested on step sizes > 1
-		//          Setting this = N means the bot's onFrame gets called once every N frames
-		//          The bot may crash or do unexpected things if its logic is not called every frame
+		//		  Setting this = N means the bot's onFrame gets called once every N frames
+		//		  The bot may crash or do unexpected things if its logic is not called every frame
 		coordinator.SetStepSize(stepSize);
 		coordinator.SetRealtime(false);
 		coordinator.SetMultithreaded(true);
@@ -53,8 +55,8 @@ int main(int argc, char* argv[])
 		// Start the game.
 		coordinator.LaunchStarcraft();
 		//coordinator.StartGame("C:/Program Files (x86)/StarCraft II/Maps/AcolyteLE.SC2Map");
-		//coordinator.StartGame("Interloper LE");
-		coordinator.StartGame("Proxima Station LE");
+		coordinator.StartGame("InterloperLE.SC2Map");
+		//coordinator.StartGame("Proxima Station LE");
 
 
 		// Step forward the game simulation.
@@ -70,9 +72,9 @@ int main(int argc, char* argv[])
 			std::cout << "REPLAY FAIL" << "replay/asdf.Sc2Replay" << std::endl;
 		}
 		coordinator.LeaveGame();
-		Sleep(1000);
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
-    return 0;
+	return 0;
 }
 
 #else
