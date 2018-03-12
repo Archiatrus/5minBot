@@ -6,39 +6,39 @@
 
 struct AirThreat
 {
-    UnitTag	unit;
-    double weight;
+	UnitTag	unit;
+	double weight;
 };
 
 struct GroundThreat
 {
-    UnitTag	unit;
-    double weight;
+	UnitTag	unit;
+	double weight;
 };
 
 class CCBot;
 
 class MicroManager
 {
-    CUnits m_units;
+	CUnits m_units;
 
 protected:
 
-    CCBot & m_bot;
-    SquadOrder order;
+	CCBot & m_bot;
+	SquadOrder order;
 
-    virtual void executeMicro(const CUnits & targets) = 0;
-    void trainSubUnits(CUnit_ptr unit) const;
+	virtual void executeMicro(const CUnits & targets) = 0;
+	void trainSubUnits(CUnit_ptr unit) const;
 
 
 public:
 
-    MicroManager(CCBot & bot);
+	MicroManager(CCBot & bot);
 
-    const CUnits & getUnits() const;
+	const CUnits & getUnits() const;
 
-    void setUnits(CUnits & u);
-    void execute(const SquadOrder & order);
-    void regroup(const sc2::Point2D & regroupPosition) const;
+	void setUnits(CUnits & u);
+	void execute(const SquadOrder & order);
+	void regroup(const sc2::Point2D & regroupPosition) const;
 
 };

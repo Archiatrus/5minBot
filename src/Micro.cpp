@@ -17,8 +17,8 @@ const sc2::Units CUnits2Units(CUnits units)
 
 void Micro::SmartStop(CUnit_ptr attacker, CCBot & bot)
 {
-    BOT_ASSERT(attacker != nullptr, "Attacker is null");
-    bot.Actions()->UnitCommand(attacker->getUnit_ptr(), sc2::ABILITY_ID::STOP);
+	BOT_ASSERT(attacker != nullptr, "Attacker is null");
+	bot.Actions()->UnitCommand(attacker->getUnit_ptr(), sc2::ABILITY_ID::STOP);
 }
 
 void Micro::SmartAttackUnit(CUnit_ptr attacker,CUnit_ptr target, CCBot & bot, bool queue)
@@ -72,7 +72,7 @@ void Micro::SmartAttackUnit(const CUnits & attacker, const CUnit_ptr target, CCB
 
 void Micro::SmartAttackMove(CUnit_ptr attacker, const sc2::Point2D & targetPosition, CCBot & bot)
 {
-    BOT_ASSERT(attacker != nullptr, "Attacker is null");
+	BOT_ASSERT(attacker != nullptr, "Attacker is null");
 	if (attacker->getOrders().empty() || attacker->getOrders().back().ability_id != sc2::ABILITY_ID::ATTACK || Util::Dist(attacker->getOrders().back().target_pos,targetPosition) > 1.0f)
 	{
 		bot.Actions()->UnitCommand(attacker->getUnit_ptr(), sc2::ABILITY_ID::ATTACK_ATTACK, targetPosition);
@@ -107,7 +107,7 @@ void Micro::SmartMove(CUnit_ptr attacker, CUnit_ptr target, CCBot & bot, bool qu
 
 void Micro::SmartMove(CUnit_ptr attacker, const sc2::Point2D & targetPosition, CCBot & bot,bool queue)
 {
-    BOT_ASSERT(attacker != nullptr, "Attacker is null");
+	BOT_ASSERT(attacker != nullptr, "Attacker is null");
 	//If we are already going there we do not have to spam it
 	if (!attacker->getOrders().empty() && attacker->getOrders().back().ability_id == sc2::ABILITY_ID::MOVE && Util::Dist(attacker->getOrders().back().target_pos,targetPosition) < 0.1f || Util::Dist(attacker->getPos(),targetPosition) < 0.1f)
 	{
@@ -221,9 +221,9 @@ void Micro::SmartMove(CUnits attackers, const sc2::Point2D & targetPosition, CCB
 
 void Micro::SmartRightClick(CUnit_ptr unit, CUnit_ptr target, CCBot & bot, bool queue)
 {
-    BOT_ASSERT(unit != nullptr, "Unit is null");
+	BOT_ASSERT(unit != nullptr, "Unit is null");
 	BOT_ASSERT(target != nullptr, "Unit is null");
-    bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::SMART, target->getUnit_ptr(),queue);
+	bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::SMART, target->getUnit_ptr(),queue);
 }
 
 void Micro::SmartRightClick(CUnits units, CUnit_ptr target, CCBot & bot, bool queue)
@@ -266,14 +266,14 @@ void Micro::SmartRightClick(CUnit_ptr unit, CUnits targets, CCBot & bot)
 
 void Micro::SmartRepair(CUnit_ptr unit, CUnit_ptr target, CCBot & bot)
 {
-    BOT_ASSERT(unit != nullptr, "Unit is null");
-    bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::EFFECT_REPAIR, target->getUnit_ptr());
+	BOT_ASSERT(unit != nullptr, "Unit is null");
+	bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::EFFECT_REPAIR, target->getUnit_ptr());
 }
 
 void Micro::SmartKiteTarget(CUnit_ptr rangedUnit, CUnit_ptr target, CCBot & bot,bool queue)
 {
-    BOT_ASSERT(rangedUnit != nullptr, "RangedUnit is null");
-    BOT_ASSERT(target != nullptr, "Target is null");
+	BOT_ASSERT(rangedUnit != nullptr, "RangedUnit is null");
+	BOT_ASSERT(target != nullptr, "Target is null");
 	//Distance to target
 	float dist = Util::Dist(rangedUnit->getPos(), target->getPos());
 	//Our range
@@ -322,26 +322,26 @@ void Micro::SmartKiteTarget(CUnit_ptr rangedUnit, CUnit_ptr target, CCBot & bot,
 
 void Micro::SmartBuild(CUnit_ptr builder, const sc2::UnitTypeID & buildingType, sc2::Point2D pos, CCBot & bot)
 {
-    BOT_ASSERT(builder != nullptr, "Builder is null");
-    bot.Actions()->UnitCommand(builder->getUnit_ptr(), bot.Data(buildingType).buildAbility, pos);
+	BOT_ASSERT(builder != nullptr, "Builder is null");
+	bot.Actions()->UnitCommand(builder->getUnit_ptr(), bot.Data(buildingType).buildAbility, pos);
 }
 
 void Micro::SmartBuildTarget(CUnit_ptr builder, const sc2::UnitTypeID & buildingType, CUnit_ptr target, CCBot & bot)
 {
-    BOT_ASSERT(builder != nullptr, "Builder is null");
-    BOT_ASSERT(target != nullptr, "Target is null");
-    bot.Actions()->UnitCommand(builder->getUnit_ptr(), bot.Data(buildingType).buildAbility, target->getUnit_ptr());
+	BOT_ASSERT(builder != nullptr, "Builder is null");
+	BOT_ASSERT(target != nullptr, "Target is null");
+	bot.Actions()->UnitCommand(builder->getUnit_ptr(), bot.Data(buildingType).buildAbility, target->getUnit_ptr());
 }
 
 void Micro::SmartTrain(CUnit_ptr builder, const sc2::UnitTypeID & buildingType, CCBot & bot)
 {
-    BOT_ASSERT(builder != nullptr, "Builder is null");
-    bot.Actions()->UnitCommand(builder->getUnit_ptr(), bot.Data(buildingType).buildAbility);
+	BOT_ASSERT(builder != nullptr, "Builder is null");
+	bot.Actions()->UnitCommand(builder->getUnit_ptr(), bot.Data(buildingType).buildAbility);
 }
 
 void Micro::SmartAbility(CUnit_ptr unit, const sc2::AbilityID & abilityID, CCBot & bot)
 {
-    BOT_ASSERT(unit != nullptr, "Builder is null");
+	BOT_ASSERT(unit != nullptr, "Builder is null");
 	if (unit->getOrders().empty() || unit->getOrders().back().ability_id != abilityID)
 	{
 		bot.Actions()->UnitCommand(unit->getUnit_ptr(), abilityID);

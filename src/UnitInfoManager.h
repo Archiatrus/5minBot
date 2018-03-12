@@ -8,26 +8,25 @@
 class CCBot;
 class UnitInfoManager 
 {
-    CCBot &           m_bot;
+	CCBot &		   m_bot;
 
 	std::map<int, std::map<sc2::UnitTypeID, CUnitsData>> m_unitDataBase;
 
-    std::map<int, std::vector<const sc2::Unit *>> m_units;
+	std::map<int, std::vector<const sc2::Unit *>> m_units;
 
     void                    updateUnitInfo();
     bool                    isValidUnit(const sc2::Unit * unit);
 
 
 
-
-    void drawSelectedUnitDebugInfo();
+	void drawSelectedUnitDebugInfo();
 
 public:
 
-    UnitInfoManager(CCBot & bot);
+	UnitInfoManager(CCBot & bot);
 
-    void                    onFrame();
-    void                    onStart();
+	void					onFrame();
+	void					onStart();
 
 
     const size_t                  getUnitTypeCount(int player, sc2::UnitTypeID type, bool completed = true) const;

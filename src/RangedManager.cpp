@@ -3,30 +3,30 @@
 #include "CCBot.h"
 
 RangedManager::RangedManager(CCBot & bot)
-    : MicroManager(bot)
+	: MicroManager(bot)
 {
 
 }
 
 void RangedManager::executeMicro(const CUnits & targets)
 {
-    assignTargets(targets);
+	assignTargets(targets);
 }
 
 void RangedManager::assignTargets(const CUnits & targets)
 {
-    const CUnits & rangedUnits = getUnits();
+	const CUnits & rangedUnits = getUnits();
 
-    // figure out targets
-    CUnits rangedUnitTargets;
-    for (const auto & target : targets)
-    {
-        if (!target) { continue; }
-        if (target->getUnitType() == sc2::UNIT_TYPEID::ZERG_EGG) { continue; }
-        if (target->getUnitType() == sc2::UNIT_TYPEID::ZERG_LARVA) { continue; }
+	// figure out targets
+	CUnits rangedUnitTargets;
+	for (const auto & target : targets)
+	{
+		if (!target) { continue; }
+		if (target->getUnitType() == sc2::UNIT_TYPEID::ZERG_EGG) { continue; }
+		if (target->getUnitType() == sc2::UNIT_TYPEID::ZERG_LARVA) { continue; }
 
-        rangedUnitTargets.push_back(target);
-    }
+		rangedUnitTargets.push_back(target);
+	}
 	//The idea is now to group the targets/targetPos
 	std::unordered_map<CUnit_ptr, CUnits> targetsAttackedBy;
 	CUnits moveToPosition;
@@ -95,9 +95,9 @@ void RangedManager::assignTargets(const CUnits & targets)
 	//Get effects like storm
 	const std::vector<sc2::Effect> effects = m_bot.Observation()->GetEffects();
 
-    // for each Unit
-    for (auto & rangedUnit : rangedUnits)
-    {
+	// for each Unit
+	for (auto & rangedUnit : rangedUnits)
+	{
 		//Don't stand in a storm etc
 		bool fleeYouFools = false;
 		for (const auto & effect : effects)
@@ -145,8 +145,8 @@ void RangedManager::assignTargets(const CUnits & targets)
 		{
 			continue;
 		}
-        BOT_ASSERT(rangedUnit, "ranged unit is null");
-        // if the order is to attack or defend
+		BOT_ASSERT(rangedUnit, "ranged unit is null");
+		// if the order is to attack or defend
 		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend || order.getType() == SquadOrderTypes::GuardDuty)
 		{
 			// find the best target for this rangedUnit
@@ -273,7 +273,7 @@ void RangedManager::assignTargets(const CUnits & targets)
 				}
 			}
 		}
-    }
+	}
 	//Grouped by target attack command
 	for (auto & t : targetsAttackedBy)
 	{
@@ -289,14 +289,14 @@ void RangedManager::assignTargets(const CUnits & targets)
 // get a target for the ranged unit to attack
 const CUnit_ptr RangedManager::getTarget(const CUnit_ptr rangedUnit, const CUnits & targets)
 {
-    BOT_ASSERT(rangedUnit, "null melee unit in getTarget");
-    int highPriorityFar = 0;
+	BOT_ASSERT(rangedUnit, "null melee unit in getTarget");
+	int highPriorityFar = 0;
 	int highPriorityNear = 0;
-    double closestDist = std::numeric_limits<double>::max();
+	double closestDist = std::numeric_limits<double>::max();
 	double lowestHealth = std::numeric_limits<double>::max();
-    CUnit_ptr closestTargetOutsideRange = nullptr;
+	CUnit_ptr closestTargetOutsideRange = nullptr;
 	CUnit_ptr weakestTargetInsideRange = nullptr;
-    // for each target possiblity
+	// for each target possiblity
 	// We have three levels: in range, in sight, somewhere.
 	// We want to attack the weakest/highest prio target in range
 	// If there is no in range, we want to attack one in sight,
@@ -338,30 +338,30 @@ const CUnit_ptr RangedManager::getTarget(const CUnit_ptr rangedUnit, const CUnit
 		}
 
 	}
-    return weakestTargetInsideRange&&highPriorityNear>1 ? weakestTargetInsideRange: closestTargetOutsideRange;
+	return weakestTargetInsideRange&&highPriorityNear>1 ? weakestTargetInsideRange: closestTargetOutsideRange;
 }
 
 // get the attack priority of a type in relation to a zergling
 int RangedManager::getAttackPriority(const CUnit_ptr & unit)
 {
-    BOT_ASSERT(unit, "null unit in getAttackPriority");
+	BOT_ASSERT(unit, "null unit in getAttackPriority");
 
-    if (unit->isCombatUnit())
-    {
+	if (unit->isCombatUnit())
+	{
 		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_BANELING)
 		{
 			return 11;
 		}
-        return 10;
-    }
+		return 10;
+	}
 	if (unit->getUnitType() == sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON || unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPINECRAWLER)
 	{
 		return 10;
 	}
-    if (unit->isWorker())
-    {
-        return 10;
-    }
+	if (unit->isWorker())
+	{
+		return 10;
+	}
 	if (unit->getUnitType() == sc2::UNIT_TYPEID::PROTOSS_PYLON || unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
 	{
 		return 5;
@@ -370,6 +370,6 @@ int RangedManager::getAttackPriority(const CUnit_ptr & unit)
 	{
 		return 4;
 	}
-    return 1;
+	return 1;
 }
 

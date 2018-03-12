@@ -8,39 +8,40 @@ class CCBot;
 
 class CombatCommander
 {
-    CCBot &         m_bot;
+	CCBot &		 m_bot;
 
-    SquadData       m_squadData;
-    CUnits			m_combatUnits;
-    bool            m_initialized;
-    bool            m_attackStarted;
+	SquadData       m_squadData;
+	CUnits			m_combatUnits;
+	bool            m_initialized;
+	bool            m_attackStarted;
+
 	bool			m_needGuards;
 
-    void            updateScoutDefenseSquad();
-    void            updateDefenseSquads();
-    void            updateAttackSquads();
+	void			updateScoutDefenseSquad();
+	void			updateDefenseSquads();
+	void			updateAttackSquads();
 	void			updateGuardSquads();
-    void            updateIdleSquad();
-    bool            isSquadUpdateFrame();
+	void			updateIdleSquad();
+	bool			isSquadUpdateFrame();
 
-    const CUnit_ptr findClosestDefender(const Squad & defenseSquad, const sc2::Point2D & pos);
+	const CUnit_ptr findClosestDefender(const Squad & defenseSquad, const sc2::Point2D & pos);
 	const CUnit_ptr findClosestWorkerTo(const CUnits & unitsToAssign, const sc2::Point2D & target);
 
 
-    sc2::Point2D    getMainAttackLocation();
+	sc2::Point2D	getMainAttackLocation();
 
-    void            updateDefenseSquadUnits(Squad & defenseSquad, const size_t & flyingDefendersNeeded, const size_t & groundDefendersNeeded);
-    bool            shouldWeStartAttacking();
+	void			updateDefenseSquadUnits(Squad & defenseSquad, const size_t & flyingDefendersNeeded, const size_t & groundDefendersNeeded);
+	bool			shouldWeStartAttacking();
 
 public:
 
-    CombatCommander(CCBot & bot);
+	CombatCommander(CCBot & bot);
 
 
-    void onStart();
-    void onFrame(const CUnits & combatUnits);
+	void onStart();
+	void onFrame(const CUnits & combatUnits);
 
-    void drawSquadInformation();
+	void drawSquadInformation();
 	const bool underAttack() const;
 	void requestGuards(const bool req);
 };

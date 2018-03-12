@@ -11,12 +11,12 @@ bool firstCheckOurBases = true;
 bool gotAttackedInEnemyRegion = false;
 
 ScoutManager::ScoutManager(CCBot & bot)
-    : m_bot             (bot)
-    , m_scoutUnit       (nullptr)
-    , m_numScouts       (-1)
-    , m_scoutUnderAttack(false)
-    , m_scoutStatus     ("None")
-    , m_previousScoutHP (0.0f)
+	: m_bot			 (bot)
+	, m_scoutUnit	   (nullptr)
+	, m_numScouts	   (-1)
+	, m_scoutUnderAttack(false)
+	, m_scoutStatus	 ("None")
+	, m_previousScoutHP (0.0f)
 	, m_targetBasesPositions(std::queue<sc2::Point2D>())
 	, m_foundProxy(false)
 {
@@ -44,7 +44,7 @@ void ScoutManager::onFrame()
 		}
 		moveScouts();
 	}
-    drawScoutInformation();
+	drawScoutInformation();
 }
 
 void ScoutManager::checkOurBases()
@@ -130,14 +130,14 @@ void ScoutManager::checkOurBases()
 
 void ScoutManager::setWorkerScout(CUnit_ptr tag)
 {
-    // if we have a previous worker scout, release it back to the worker manager
-    if (m_scoutUnit && m_scoutUnit->isWorker())
-    {
-        m_bot.Workers().finishedWithWorker(m_scoutUnit);
-    }
+	// if we have a previous worker scout, release it back to the worker manager
+	if (m_scoutUnit && m_scoutUnit->isWorker())
+	{
+		m_bot.Workers().finishedWithWorker(m_scoutUnit);
+	}
 
-    m_scoutUnit = tag;
-    m_bot.Workers().setScoutWorker(m_scoutUnit);
+	m_scoutUnit = tag;
+	m_bot.Workers().setScoutWorker(m_scoutUnit);
 }
 
 void ScoutManager::setScout(CUnit_ptr tag)
@@ -152,12 +152,12 @@ void ScoutManager::setScout(CUnit_ptr tag)
 
 void ScoutManager::drawScoutInformation()
 {
-    if (!m_bot.Config().DrawScoutInfo)
-    {
-        return;
-    }
+	if (!m_bot.Config().DrawScoutInfo)
+	{
+		return;
+	}
 
-    std::stringstream ss;
+	std::stringstream ss;
 	if (m_scoutUnit)
 	{
 		ss << "Scout Info: " << m_scoutStatus << " Health: " << m_scoutUnit->getHealth();
@@ -167,16 +167,16 @@ void ScoutManager::drawScoutInformation()
 		ss << "Scout Info: " << m_scoutStatus;
 	}
 
-    Drawing::drawTextScreen(m_bot,sc2::Point2D(0.1f, 0.6f), ss.str());
+	Drawing::drawTextScreen(m_bot,sc2::Point2D(0.1f, 0.6f), ss.str());
 }
 
 void ScoutManager::moveScouts()
 {
 	//for now we assume it is not a worker
-    auto scout = m_scoutUnit;
+	auto scout = m_scoutUnit;
 
 	//No scout or scout dead
-    if (!scout|| !scout->isAlive())
+	if (!scout|| !scout->isAlive())
 	{
 		if (m_numScouts==1)
 		{
@@ -199,20 +199,20 @@ void ScoutManager::moveScouts()
 		return;
 	}
 
-    float scoutHP = scout->getHealth();
+	float scoutHP = scout->getHealth();
 	
 	if (scoutHP < scout->getHealthMax())
 	{
 		scoutDamaged();
 		return;
 	}
-    
+	
 	// get the enemy base location, if we have one
-    const BaseLocation * enemyBaseLocation = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
+	const BaseLocation * enemyBaseLocation = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
 
-    // if we know where the enemy region is and where our scout is
-    if (enemyBaseLocation)
-    {
+	// if we know where the enemy region is and where our scout is
+	if (enemyBaseLocation)
+	{
 		if (gotAttackedInEnemyRegion && m_targetBasesPositions.empty())
 		{
 			updateNearestUnoccupiedBases(enemyBaseLocation->getPosition(), Players::Enemy); 
@@ -223,11 +223,11 @@ void ScoutManager::moveScouts()
 		}
 		
 		
-        bool scoutInRangeOfenemy = enemyBaseLocation->containsPosition(scout->getPos());
+		bool scoutInRangeOfenemy = enemyBaseLocation->containsPosition(scout->getPos());
 
-        // if the scout is in the enemy region
-        if (true)
-        {
+		// if the scout is in the enemy region
+		if (true)
+		{
 			//Whos there in sight?
 			CUnits enemyUnitsInSight = m_scoutUnit->getEnemyUnitsInSight();
 			// without words
@@ -277,15 +277,15 @@ void ScoutManager::moveScouts()
 				}
 			}
 		}
-        // if the scout is not in the enemy region
-        else
-        {
+		// if the scout is not in the enemy region
+		else
+		{
 			if (m_targetBasesPositions.empty())
 			{
 				m_scoutStatus = "I am confused. No empty base left?!";
 				return;
 			}
-            // move to the enemy region
+			// move to the enemy region
 			int scoutDistanceToEnemy = m_bot.Map().getGroundDistance(scout->getPos(), m_targetBasesPositions.front());
 			if (scoutDistanceToEnemy <= 3 && scoutDistanceToEnemy >= 0)
 			{
@@ -297,36 +297,36 @@ void ScoutManager::moveScouts()
 				m_scoutStatus = "Enemy region known, going there";
 				Micro::SmartMove(m_scoutUnit, m_targetBasesPositions.front(), m_bot);
 			}
-        }
+		}
 
-    }
-    // for each start location in the level
+	}
+	// for each start location in the level
 	else
-    {
-        m_scoutStatus = "Enemy base unknown, exploring";
+	{
+		m_scoutStatus = "Enemy base unknown, exploring";
 
-        for (const BaseLocation * startLocation : m_bot.Bases().getStartingBaseLocations())
-        {
-            // if we haven't explored it yet then scout it out
-            // TODO: this is where we could change the order of the base scouting, since right now it's iterator order
-            if (!m_bot.Map().isExplored(startLocation->getPosition()))
-            {
+		for (const BaseLocation * startLocation : m_bot.Bases().getStartingBaseLocations())
+		{
+			// if we haven't explored it yet then scout it out
+			// TODO: this is where we could change the order of the base scouting, since right now it's iterator order
+			if (!m_bot.Map().isExplored(startLocation->getPosition()))
+			{
 
-                Micro::SmartMove(m_scoutUnit, startLocation->getPosition(), m_bot);
-                return;
-            }
-        }
-    }
+				Micro::SmartMove(m_scoutUnit, startLocation->getPosition(), m_bot);
+				return;
+			}
+		}
+	}
 }
 
 CUnit_ptr ScoutManager::closestEnemyWorkerTo(const sc2::Point2D & pos) const
 {
-    if (!m_scoutUnit) { return nullptr; }
+	if (!m_scoutUnit) { return nullptr; }
 
 	CUnit_ptr enemyWorker = nullptr;
-    float minDist = std::numeric_limits<float>::max();
+	float minDist = std::numeric_limits<float>::max();
 
-    // for each enemy worker
+	// for each enemy worker
 	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Enemy, Util::getWorkerTypes()))
 	{
 		float dist = Util::Dist(unit->getPos(), m_scoutUnit->getPos());
@@ -338,7 +338,7 @@ CUnit_ptr ScoutManager::closestEnemyWorkerTo(const sc2::Point2D & pos) const
 		}
 	}
 
-    return enemyWorker;
+	return enemyWorker;
 }
 
 CUnit_ptr ScoutManager::closestEnemyCombatTo(const sc2::Point2D & pos) const
@@ -512,15 +512,15 @@ bool ScoutManager::attackEnemyWorker(CUnits enemyUnitsInSight)
 
 bool ScoutManager::enemyWorkerInRadiusOf(const sc2::Point2D & pos) const
 {
-    for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Enemy,Util::getWorkerTypes()))
-    {
-        if (Util::Dist(unit->getPos(), pos) <= m_scoutUnit->getSightRange())
-        {
-            return true;
-        }
-    }
+	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Enemy,Util::getWorkerTypes()))
+	{
+		if (Util::Dist(unit->getPos(), pos) <= m_scoutUnit->getSightRange())
+		{
+			return true;
+		}
+	}
 
-    return false;
+	return false;
 }
 
 void ScoutManager::scoutDamaged()
@@ -553,10 +553,10 @@ void ScoutManager::scoutDamaged()
 
 sc2::Point2D ScoutManager::getFleePosition() const
 {
-    // TODO: make this follow the perimeter of the enemy base again, but for now just use home base as flee direction
+	// TODO: make this follow the perimeter of the enemy base again, but for now just use home base as flee direction
 
 
-    return m_bot.GetStartLocation();
+	return m_bot.GetStartLocation();
 }
 
 int ScoutManager::getNumScouts()
@@ -583,7 +583,7 @@ void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos,int player)
 	}
 	if (m_scoutUnit->isWorker())
 	{
-		auto & baseIt = allTargetBases.begin();
+		auto baseIt = allTargetBases.begin();
 		baseIt++;
 		m_targetBasesPositions.push(baseIt->second->getBasePosition());
 	}

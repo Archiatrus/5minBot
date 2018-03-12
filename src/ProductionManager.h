@@ -9,34 +9,33 @@ class CCBot;
 
 class ProductionManager
 {
-    CCBot &       m_bot;
+	CCBot &	   m_bot;
 
-    BuildingManager m_buildingManager;
+	BuildingManager m_buildingManager;
 	std::deque<BuildOrderItem> m_newQueue;
 
 	bool m_scoutRequested;
 	bool m_vikingRequested;
 	int m_scansRequested;
 
-    bool    detectBuildOrderDeadlock();
-    void    create(BuildOrderItem item);
-    void    manageBuildOrderQueue();
-    int     getFreeMinerals();
-    int     getFreeGas();
+	bool    detectBuildOrderDeadlock();
+	void    create(BuildOrderItem item);
+	void    manageBuildOrderQueue();
+	int     getFreeMinerals();
+	int     getFreeGas();
 
 	
 
 public:
 
-    ProductionManager(CCBot & bot);
+	ProductionManager(CCBot & bot);
 
-    void    onStart();
-    void    onFrame();
-    void    onUnitDestroy(CUnit_ptr unit);
-    void    drawProductionInformation();
+	void    onStart();
+	void    onFrame();
+	void    onUnitDestroy(CUnit_ptr unit);
+	void    drawProductionInformation();
 
 	void defaultMacro();
-
 
 	void requestScout();
 	void requestVikings();

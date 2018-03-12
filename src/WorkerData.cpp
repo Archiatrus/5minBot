@@ -6,12 +6,12 @@
 #include <sstream>
 
 WorkerData::WorkerData(CCBot & bot)
-    : m_bot(bot)
+	: m_bot(bot)
 {
-    for (int i=0; i < WorkerJobs::Num; ++i)
-    {
-        m_workerJobCount[i] = 0;
-    }
+	for (int i=0; i < WorkerJobs::Num; ++i)
+	{
+		m_workerJobCount[i] = 0;
+	}
 }
 
 void WorkerData::updateAllWorkerData()
@@ -126,65 +126,65 @@ void WorkerData::setWorkerJob(const CUnit_ptr unit, int job, const CUnit_ptr job
     else if (job == WorkerJobs::Scout)
     {
 
-    }
-    else if (job == WorkerJobs::Build)
-    {
+	}
+	else if (job == WorkerJobs::Build)
+	{
 
-    }
+	}
 }
 
 void WorkerData::clearPreviousJob(const CUnit_ptr unit)
 {
-    const int previousJob = getWorkerJob(unit);
-    m_workerJobCount[previousJob]--;
+	const int previousJob = getWorkerJob(unit);
+	m_workerJobCount[previousJob]--;
 
-    if (previousJob == WorkerJobs::Minerals)
-    {
-        // remove one worker from the count of the depot this worker was assigned to
-        m_depotWorkerCount[m_workerDepotMap[unit]]--;
-        m_workerDepotMap.erase(unit);
-    }
-    else if (previousJob == WorkerJobs::Gas)
-    {
-        m_refineryWorkerCount[m_workerRefineryMap[unit]]--;
-        m_workerRefineryMap.erase(unit);
-    }
-    else if (previousJob == WorkerJobs::Build)
-    {
+	if (previousJob == WorkerJobs::Minerals)
+	{
+		// remove one worker from the count of the depot this worker was assigned to
+		m_depotWorkerCount[m_workerDepotMap[unit]]--;
+		m_workerDepotMap.erase(unit);
+	}
+	else if (previousJob == WorkerJobs::Gas)
+	{
+		m_refineryWorkerCount[m_workerRefineryMap[unit]]--;
+		m_workerRefineryMap.erase(unit);
+	}
+	else if (previousJob == WorkerJobs::Build)
+	{
 
-    }
-    else if (previousJob == WorkerJobs::Repair)
-    {
+	}
+	else if (previousJob == WorkerJobs::Repair)
+	{
 		
-    }
-    else if (previousJob == WorkerJobs::Move)
-    {
+	}
+	else if (previousJob == WorkerJobs::Move)
+	{
 
-    }
+	}
 
-    m_workerJobMap.erase(unit);
+	m_workerJobMap.erase(unit);
 }
 
 size_t WorkerData::getNumWorkers() const
 {
-    return m_workers.size();
+	return m_workers.size();
 }
 
 int WorkerData::getWorkerJobCount(int job) const
 {
-    return m_workerJobCount.at(job);
+	return m_workerJobCount.at(job);
 }
 
 int WorkerData::getWorkerJob(const CUnit_ptr unit) const
 {
-    auto it = m_workerJobMap.find(unit);
+	auto it = m_workerJobMap.find(unit);
 
-    if (it != m_workerJobMap.end())
-    {
-        return it->second;
-    }
+	if (it != m_workerJobMap.end())
+	{
+		return it->second;
+	}
 
-    return WorkerJobs::None;
+	return WorkerJobs::None;
 }
 
 const CUnit_ptr WorkerData::getMineralToMine(const CUnit_ptr unit) const
@@ -198,26 +198,26 @@ const CUnit_ptr WorkerData::getMineralToMine(const CUnit_ptr unit) const
 
         double dist = Util::Dist(mineral->getPos(), unit->getPos());
 
-        if (dist < bestDist)
-        {
-            bestMineral = mineral;
-            bestDist = dist;
-        }
-    }
+		if (dist < bestDist)
+		{
+			bestMineral = mineral;
+			bestDist = dist;
+		}
+	}
 
-    return bestMineral;
+	return bestMineral;
 }
 
 const CUnit_ptr WorkerData::getWorkerDepot(const CUnit_ptr unit) const
 {
-    auto it = m_workerDepotMap.find(unit);
+	auto it = m_workerDepotMap.find(unit);
 
-    if (it != m_workerDepotMap.end())
-    {
-        return it->second;
-    }
+	if (it != m_workerDepotMap.end())
+	{
+		return it->second;
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 int WorkerData::getNumAssignedWorkers(const CUnit_ptr unit)
@@ -254,27 +254,27 @@ int WorkerData::getNumAssignedWorkers(const CUnit_ptr unit)
 
 const char * WorkerData::getJobCode(const CUnit_ptr unit)
 {
-    const int j = getWorkerJob(unit);
+	const int j = getWorkerJob(unit);
 
-    if (j == WorkerJobs::Build)     return "B";
-    if (j == WorkerJobs::Combat)    return "C";
-    if (j == WorkerJobs::None)      return "N";
-    if (j == WorkerJobs::Gas)       return "G";
-    if (j == WorkerJobs::Idle)      return "I";
-    if (j == WorkerJobs::Minerals)  return "M";
-    if (j == WorkerJobs::Repair)    return "R";
-    if (j == WorkerJobs::Move)      return "O";
-    if (j == WorkerJobs::Scout)     return "S";
-    return "X";
+	if (j == WorkerJobs::Build)	 return "B";
+	if (j == WorkerJobs::Combat)	return "C";
+	if (j == WorkerJobs::None)	  return "N";
+	if (j == WorkerJobs::Gas)	   return "G";
+	if (j == WorkerJobs::Idle)	  return "I";
+	if (j == WorkerJobs::Minerals)  return "M";
+	if (j == WorkerJobs::Repair)	return "R";
+	if (j == WorkerJobs::Move)	  return "O";
+	if (j == WorkerJobs::Scout)	 return "S";
+	return "X";
 }
 
 void WorkerData::drawDepotDebugInfo()
 {
 	return;
-    for (const auto & depot: m_depots)
-    {
-        std::stringstream ss;
-        ss << "Workers: " << getNumAssignedWorkers(depot);
+	for (const auto & depot: m_depots)
+	{
+		std::stringstream ss;
+		ss << "Workers: " << getNumAssignedWorkers(depot);
 
         Drawing::drawText(m_bot,depot->getPos(), ss.str());
     }
@@ -282,7 +282,7 @@ void WorkerData::drawDepotDebugInfo()
 
 const CUnits & WorkerData::getWorkers() const
 {
-    return m_workers;
+	return m_workers;
 }
 
 const CUnits WorkerData::getMineralWorkers() const

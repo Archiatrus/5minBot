@@ -1,4 +1,5 @@
 #pragma once
+#include <list>
 #include "Util.h"
 #include "CCBot.h"
 
@@ -22,7 +23,7 @@ public:
 
 class pathPlaning
 {
-	CCBot &   m_bot;
+	CCBot &	m_bot;
 	sc2::Point2D m_endPos;
 	float m_stepSize;
 
@@ -33,7 +34,7 @@ class pathPlaning
 	void setMap(sc2::Point2D pos, std::shared_ptr<node> node);
 	void activateNode(sc2::Point2D pos, std::shared_ptr<node> parent);
 	void updateNode(std::shared_ptr<node> updateNode, std::shared_ptr<node> parent);
-	const float pathPlaning::calcHeuristic(sc2::Point2D pos) const;
+	const float calcHeuristic(sc2::Point2D pos) const;
 
 
 	std::shared_ptr<node> getBestNextNodeAndPop();

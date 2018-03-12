@@ -12,7 +12,7 @@
 #include "StrategyManager.h"
 #include "TechTree.h"
 #include "BuildType.h"
-#include "AutoObserver\CameraModule.h"
+#include "AutoObserver/CameraModule.h"
 #include "Drawing.h"
 
 class CCBot : public sc2::Agent
@@ -58,6 +58,7 @@ public:
 	const BaseLocationManager & Bases() const;
 	const MapTools & Map() const;
 	UnitInfoManager & UnitInfo();
+
 	const StrategyManager & Strategy() const;
 	const TypeData & Data(const sc2::UnitTypeID & type) const;
 	const TypeData & Data(const sc2::UpgradeID & type) const;
@@ -76,8 +77,9 @@ public:
 extern bool useDebug;
 extern bool useAutoObserver;
 
-__declspec(dllexport) void *CreateNewAgent(); // Returns a pointer to a class deriving from sc2::Agent
+// We used to make a DLL for CommandCenter
+// __declspec(dllexport) void *CreateNewAgent(); // Returns a pointer to a class deriving from sc2::Agent
 
-__declspec(dllexport) const char *GetAgentName(); // Returns a string identifier for the agent name
+// __declspec(dllexport) const char *GetAgentName(); // Returns a string identifier for the agent name
 
-__declspec(dllexport) int GetAgentRace(); // Returns the agents prefered race. should be sc2::Race cast to int.
+// __declspec(dllexport) int GetAgentRace(); // Returns the agents prefered race. should be sc2::Race cast to int.

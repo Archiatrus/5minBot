@@ -15,7 +15,7 @@ typedef uint64_t UnitTag;
 
 namespace Players
 {
-    enum {Self = sc2::Unit::Alliance::Self, Enemy = sc2::Unit::Alliance::Enemy, Neutral = sc2::Unit::Alliance::Neutral};
+	enum {Self = sc2::Unit::Alliance::Self, Enemy = sc2::Unit::Alliance::Enemy, Neutral = sc2::Unit::Alliance::Neutral};
 }
 
 namespace sc2
