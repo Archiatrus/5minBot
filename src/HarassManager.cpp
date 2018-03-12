@@ -242,6 +242,7 @@ void Hitsquad::harass(const BaseLocation * target)
 				}
 				escapePathPlaning();
 				m_pathPlanCounter = 0;
+				return;
 			}
 		}
 		m_pathPlanCounter++;
