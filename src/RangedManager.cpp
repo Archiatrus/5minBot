@@ -242,9 +242,17 @@ void RangedManager::assignTargets(const CUnits & targets)
 								{
 									if (Util::Dist(target->getPos(), Bunker.front()->getPos()) > 5.5f)
 									{
-										sc2::Point2D retreatPos = m_bot.Bases().getNewestExpansion(Players::Self);
-										Micro::SmartAttackMove(rangedUnit, retreatPos, m_bot);
-										continue;
+										if (Util::Dist(target->getPos(),rangedUnit->getPos())<target->getAttackRange(rangedUnit))
+										{
+											sc2::Point2D retreatPos = m_bot.Bases().getNewestExpansion(Players::Self);
+											Micro::SmartAttackMove(rangedUnit, retreatPos, m_bot);
+											continue;
+										}
+										else
+										{
+											Micro::SmartAbility(rangedUnit, sc2::ABILITY_ID::HOLDPOSITION, m_bot);
+											continue;
+										}
 									}
 								}
 							}
