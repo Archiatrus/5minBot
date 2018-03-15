@@ -238,7 +238,7 @@ void ScoutManager::moveScouts()
 			//if there is a unit and we are getting too close, throw granade and run
 			else if (enemyTooClose(enemyUnitsInSight))
 			{
-				if (Util::Dist(scout->getPos(),m_targetBasesPositions.front())<20)
+				if (m_targetBasesPositions.size()>0 && Util::Dist(scout->getPos(),m_targetBasesPositions.front())<20)
 				{
 					gotAttackedInEnemyRegion = true;
 					m_targetBasesPositions.pop();

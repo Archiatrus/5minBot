@@ -350,7 +350,7 @@ void Micro::SmartAbility(CUnit_ptr unit, const sc2::AbilityID & abilityID, CCBot
 
 void Micro::SmartAbility(CUnits units, const sc2::AbilityID & abilityID, CCBot & bot,bool queue)
 {
-		bot.Actions()->UnitCommand(CUnits2Units(units), abilityID);
+		bot.Actions()->UnitCommand(CUnits2Units(units), abilityID,queue);
 }
 
 void Micro::SmartAbility(CUnit_ptr unit, const sc2::AbilityID & abilityID,const sc2::Point2D pos,CCBot & bot,bool queue)

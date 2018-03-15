@@ -11,9 +11,6 @@ const int BUILDING = 3;
 //it seems to many commands confuse the engine
 int defaultMacroSleep = 0;
 const int defaultMacroSleepMax = 5;
-bool canBuildAddon = true;
-int addonCounter = 0;
-const int maxAddonCounter = 5;
 
 bool startedResearch = false;
 
@@ -183,13 +180,6 @@ void ProductionManager::defaultMacro()
 		return;
 	}
 	defaultMacroSleep = 0;
-
-	//It seems that for now player 2 can not build addons. Since we do not know which one we are, we first try a few times
-	if (canBuildAddon && addonCounter > maxAddonCounter)
-	{
-		m_bot.Actions()->SendChat("Seems I am player 2. Unable to build addons.");
-		canBuildAddon = false;
-	}
 
 	//Even without money we can drop mules
 	const CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, Util::getTownHallTypes());
@@ -454,7 +444,7 @@ void ProductionManager::defaultMacro()
 					}
 				}
 				//if it is only a rax build addon
-				if (canBuildAddon && !unit->getAddOnTag())
+				if (!unit->getAddOnTag())
 				{
 					//The second barracks gets a lab
 					if (bTechLab.size() == 1 || bReactor.size() == 0)
@@ -462,10 +452,6 @@ void ProductionManager::defaultMacro()
 						if (minerals >= 50 && gas >= 50)
 						{
 							Micro::SmartAbility(unit, sc2::ABILITY_ID::BUILD_REACTOR_BARRACKS,m_bot);
-							if (bReactor.size() == 0)
-							{
-								++addonCounter;
-							}
 							std::cout << "ReactorBarracks" << std::endl;
 							return;
 						}
@@ -527,7 +513,7 @@ void ProductionManager::defaultMacro()
 		if (unit->isCompleted() && !unit->isFlying())
 		{
 			//that is idle
-			if (canBuildAddon && unit->isIdle())
+			if (unit->isIdle())
 			{
 				//if it is only a factory build addon
 				if (!unit->getAddOnTag())
@@ -580,7 +566,7 @@ void ProductionManager::defaultMacro()
 			if (unit->isIdle() || unit->getOrders().size() == 1 && unit->getAddOnTag() && m_bot.UnitInfo().getUnit(unit->getAddOnTag())->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_STARPORTREACTOR)
 			{
 				//if it is only a Starport build addon
-				if (canBuildAddon && !unit->getAddOnTag())
+				if (!unit->getAddOnTag())
 				{
 					//The reactor for the first starport should be with the factory
 					for (const auto & factory : Factories)
@@ -608,8 +594,8 @@ void ProductionManager::defaultMacro()
 				}
 				else
 				{
-					int numVikings;
-					int numMedivacs;
+					int numVikings=0;
+					int numMedivacs=0;
 					if (m_vikingRequested)
 					{
 						numMedivacs = static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, sc2::UNIT_TYPEID::TERRAN_MEDIVAC));
@@ -698,7 +684,7 @@ void ProductionManager::defaultMacro()
 	}
 
 	//Factories. For now just one.
-	if (numBases> 1 && minerals >= 150 && gas >= 100 && numFactory + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_FACTORY) == 0 && (bReactor.size()>0 || !canBuildAddon))
+	if (numBases> 1 && minerals >= 150 && gas >= 100 && numFactory + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_FACTORY) == 0 && bReactor.size()>0)
 	{
 		m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_FACTORY), BUILDING, false));
 		std::cout << "Factory" << std::endl;
