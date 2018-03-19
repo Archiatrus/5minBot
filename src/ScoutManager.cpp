@@ -64,6 +64,18 @@ void ScoutManager::checkOurBases()
 		}
 		if (scout && m_bot.Observation()->GetGameLoop() - scout->getLastSeenGameLoop() > 1224)
 		{
+			const CUnits rax = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKS);
+			for (const auto & unit : rax)
+			{
+				const auto orders = unit->getOrders();
+				for (const auto & order : orders)
+				{
+					if (order.ability_id == sc2::ABILITY_ID::TRAIN_REAPER)
+					{
+						return;
+					}
+				}
+			}
 			m_numScouts = -1;
 		}
 
@@ -79,46 +91,50 @@ void ScoutManager::checkOurBases()
 	{
 		updateNearestUnoccupiedBases(m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getPosition(), Players::Self);
 	}
-	if (Util::DistSq(scout->getPos(), m_targetBasesPositions.front()) < 12.0f)
+	//Sometimes all bases are taken
+	if (!m_targetBasesPositions.empty())
 	{
-		m_targetBasesPositions.pop();
-	}
-	else
-	{
-		//Whos there in sight?
-		CUnits enemyUnitsInSight = scout->getEnemyUnitsInSight();
-
-		//Do the actual scouting
-		raiseAlarm(enemyUnitsInSight);
-
-		//we do not want to flee if we find something in our territory
-		//if (enemyTooClose(enemyUnitsInSight))
-		//{
-
-		//}
-		//if there are combat units that can not attack us, but we can attack them, attack the weakest one.
-		//else 
-		if (!m_scoutUnit->isWorker())
+		if (Util::DistSq(scout->getPos(), m_targetBasesPositions.front()) < 12.0f)
 		{
-			if (attackEnemyCombat(enemyUnitsInSight))
-			{
+			m_targetBasesPositions.pop();
+		}
+		else
+		{
+			//Whos there in sight?
+			CUnits enemyUnitsInSight = scout->getEnemyUnitsInSight();
 
-			}
-			//if there are workers attack the weakest one
-			else if (attackEnemyWorker(enemyUnitsInSight))
-			{
+			//Do the actual scouting
+			raiseAlarm(enemyUnitsInSight);
 
+			//we do not want to flee if we find something in our territory
+			//if (enemyTooClose(enemyUnitsInSight))
+			//{
+
+			//}
+			//if there are combat units that can not attack us, but we can attack them, attack the weakest one.
+			//else 
+			if (!m_scoutUnit->isWorker())
+			{
+				if (attackEnemyCombat(enemyUnitsInSight))
+				{
+
+				}
+				//if there are workers attack the weakest one
+				else if (attackEnemyWorker(enemyUnitsInSight))
+				{
+
+				}
+				// otherwise keep moving to the enemy base location
+				else
+				{
+					Micro::SmartMove(m_scoutUnit, m_targetBasesPositions.front(), m_bot);
+				}
 			}
 			// otherwise keep moving to the enemy base location
 			else
 			{
 				Micro::SmartMove(m_scoutUnit, m_targetBasesPositions.front(), m_bot);
 			}
-		}
-		// otherwise keep moving to the enemy base location
-		else
-		{
-			Micro::SmartMove(m_scoutUnit, m_targetBasesPositions.front(), m_bot);
 		}
 	}
 	if (m_targetBasesPositions.empty())

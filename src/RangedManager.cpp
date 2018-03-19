@@ -215,7 +215,7 @@ void RangedManager::assignTargets(const CUnits & targets)
 					if (!target)
 					{
 						//This can happen with vikings
-						if (rangedUnit->getOrders().empty() || frontSoldier && rangedUnit->getOrders().front().target_unit_tag && rangedUnit->getOrders().front().target_unit_tag != frontSoldier->getTag())
+						if (frontSoldier && (rangedUnit->getOrders().empty() || rangedUnit->getOrders().front().target_unit_tag && rangedUnit->getOrders().front().target_unit_tag != frontSoldier->getTag()))
 						{
 							Micro::SmartMove(rangedUnit, frontSoldier,m_bot);
 						}

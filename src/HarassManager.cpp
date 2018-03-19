@@ -351,7 +351,7 @@ const BaseLocation * Hitsquad::getSavePosition() const
 			}
 		}
 	}
-	return allTargetBases.begin()->second;
+	return allTargetBases.empty() ? m_bot.Bases().getPlayerStartingBaseLocation(Players::Self) : allTargetBases.begin()->second;
 }
 
 const bool Hitsquad::shouldWeFlee(CUnits targets) const

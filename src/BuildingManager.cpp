@@ -530,7 +530,7 @@ int BuildingManager::getNumBuildingsQueued(sc2::UnitTypeID type) const
 
 	for (const auto & b : m_buildings)
 	{
-		if (b.type == type && b.status == BuildingStatus::Unassigned || b.status == BuildingStatus::Assigned)
+		if (b.type == type && (b.status == BuildingStatus::Unassigned || b.status == BuildingStatus::Assigned))
 		{
 			numBuildingsQueued++;
 		}

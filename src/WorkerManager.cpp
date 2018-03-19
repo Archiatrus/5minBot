@@ -379,7 +379,7 @@ void WorkerManager::drawWorkerInformation()
 
 bool WorkerManager::isFree(const CUnit_ptr worker) const
 {
-	return m_workerData.getWorkerJob(worker) == WorkerJobs::Minerals || m_workerData.getWorkerJob(worker) == WorkerJobs::Idle;
+	return worker->getUnitType()!=sc2::UNIT_TYPEID::TERRAN_MULE && (m_workerData.getWorkerJob(worker) == WorkerJobs::Minerals || m_workerData.getWorkerJob(worker) == WorkerJobs::Idle);
 }
 
 bool WorkerManager::isWorkerScout(const CUnit_ptr worker) const

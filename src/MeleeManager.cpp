@@ -45,7 +45,7 @@ void MeleeManager::assignTargets(const CUnits & targets)
 				Micro::SmartMove(meleeUnit, fleeTo, m_bot);
 			}
 			// if there are targets
-			else if (!meleeUnitTargets.empty() || (order.getType() == SquadOrderTypes::Defend && Util::Dist(meleeUnit->getPos(), order.getPosition()) > 7))
+			else if (!meleeUnitTargets.empty())
 			{
 				// find the best target for this meleeUnit
 				CUnit_ptr target = getTarget(meleeUnit, meleeUnitTargets);

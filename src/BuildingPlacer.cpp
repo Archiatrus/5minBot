@@ -16,7 +16,7 @@ void BuildingPlacer::onStart()
 	m_reserveMap = std::vector< std::vector<bool> >(m_bot.Map().width(), std::vector<bool>(m_bot.Map().height(), false));
 	
 	sc2::Point2D buildingSeedPosition = m_bot.Bases().getBuildingLocation();
-	const std::vector<sc2::Point2D> closestToBuilding = m_bot.Map().getClosestTilesTo(buildingSeedPosition);
+	const std::vector<sc2::Point2D> & closestToBuilding = m_bot.Map().getClosestTilesTo(buildingSeedPosition);
 	buildingPlace depots(buildingSeedPosition,4,Building(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT,sc2::Point2D()), closestToBuilding);
 	buildingPlace production(buildingSeedPosition, 9, Building(sc2::UNIT_TYPEID::TERRAN_BARRACKS, sc2::Point2D()), closestToBuilding);
 	m_buildLocationTester.push_back(depots);

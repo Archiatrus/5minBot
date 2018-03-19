@@ -158,9 +158,11 @@ bool ProductionManager::detectBuildOrderDeadlock()
 
 int ProductionManager::getFreeMinerals()
 {
-	if (m_buildingManager.getReservedMinerals() > 1000)
+	int reserved = m_buildingManager.getReservedMinerals();
+	if (reserved > 1000 || reserved < 0)
 	{
 		m_buildingManager.resetFreeMinerals();
+		reserved = 0;
 	}
 	return m_bot.Observation()->GetMinerals() - m_buildingManager.getReservedMinerals();
 }
@@ -427,7 +429,7 @@ void ProductionManager::defaultMacro()
 		{
 			//that is idle
 			const auto addon = m_bot.UnitInfo().getUnit(unit->getAddOnTag());
-			if (unit->isIdle() || (unit->getOrders().size() == 1 && unit->getAddOnTag() && addon && addon->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR))
+			if (unit->isIdle() || (addon && addon->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR && unit->getOrders().size() == 1))
 			{
 				//Building the scout has priority
 				if (m_scoutRequested)
