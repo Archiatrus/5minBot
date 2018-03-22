@@ -83,4 +83,5 @@ public:
 	void draw() const;
 	void printMap() const;
 	std::queue<sc2::Point2D> getEdgePath(const sc2::Point2D posStart, const sc2::Point2D posEnd) const;
+	sc2::Point2D findLandingZone(sc2::Point2D pos) const;
 };

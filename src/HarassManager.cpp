@@ -440,6 +440,7 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 		return false;
 	}
 	sc2::Point2D posEnd = target->getPosition() + 1.2f*(target->getPosition() - target->getBasePosition());
+	posEnd = m_bot.Map().findLandingZone(posEnd);
 	float dist;
 	if (m_wayPoints.empty())
 	{

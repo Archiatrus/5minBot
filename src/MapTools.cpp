@@ -592,7 +592,35 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 	return wayPoints;
 }
 
+sc2::Point2D MapTools::findLandingZone(sc2::Point2D pos) const
+{
+	CUnits staticDs=m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON,sc2::UNIT_TYPEID::ZERG_SPORECRAWLER,sc2::UNIT_TYPEID::TERRAN_MISSILETURRET }));
+	staticDs.erase(std::remove_if(staticDs.begin(), staticDs.end(), [pos](const auto & staticD) {
+		return Util::Dist(staticD->getPos(), pos) > 20.0f;
+	}), staticDs.end());
 
+	const std::vector<sc2::Point2D> & tiles = getClosestTilesTo(pos);
+
+	for (const auto & tile : tiles)
+	{
+		float threatLvl = 0.0f;
+		for (const auto & staticD : staticDs)
+		{
+			const float range = staticD->getAttackRange();
+			const float dist = Util::Dist(staticD->getPos(), tile);
+			threatLvl +=std::max(2.0f + range - dist,0.0f);
+		}
+		if (threatLvl == 0.0f)
+		{
+			return tile;
+		}
+		if (Util::Dist(pos, tile) > 25.0f)
+		{
+			break;
+		}
+	}
+	return pos;
+}
 
 const sc2::Point2D MapTools::getForbiddenCorner(int margin) const
 {
