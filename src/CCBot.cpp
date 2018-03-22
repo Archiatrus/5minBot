@@ -9,6 +9,12 @@ int lvl1000 = 0;
 int lvl10000 = 0;
 double maxStepTime = -1.0;
 
+#ifdef VSHUMAN
+Timer timer;
+double oldTime=0.0;
+#endif // VSHUMAN
+
+
 CCBot::CCBot()
 	: m_map(*this)
 	, m_bases(*this)
@@ -26,6 +32,9 @@ CCBot::CCBot()
 
 void CCBot::OnGameStart() 
 {
+	#ifdef VSHUMAN
+	timer.start();
+	#endif // VSHUMAN
 	m_config.readConfigFile();
 	
 	// get my race
@@ -110,12 +119,14 @@ void CCBot::OnStep()
 	//{
 	//	Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_DARKTEMPLAR, Bases().getNextExpansion(Players::Self), 2, 1);
 	//}
-
-	if (!useDebug)
+	if (useDebug)
 	{
-		return;
+		Debug()->SendDebug();
 	}
-	Debug()->SendDebug();
+	#ifdef VSHUMAN
+	while (timer.getElapsedTimeInMilliSec() - oldTime < 0.9*1000.0 / 20.4) {};
+	oldTime = timer.getElapsedTimeInMilliSec();
+	#endif // VSHUMAN
 }
 
 void CCBot::OnUnitCreated(const sc2::Unit * unit)

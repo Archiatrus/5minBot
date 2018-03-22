@@ -157,7 +157,10 @@ static void RunBot(int argc, char *argv[], sc2::Agent *Agent,sc2::Race race)
 	coordinator.Connect(Options.GamePort);
 	coordinator.SetupPorts(num_agents, Options.StartPort, false);
 	// Step forward the game simulation.
-	coordinator.JoinGame();
+	if (!coordinator.JoinGame())
+	{
+		std::cout << "Join Game failed!(5minBot)" << std::endl;
+	}
 	coordinator.SetTimeoutMS(10000);
 	std::cout << " Successfully joined game" << std::endl;
 	while (coordinator.Update()) {

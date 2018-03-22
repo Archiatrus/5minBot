@@ -13,6 +13,7 @@ Global
 		ReleaseExe|x64 = ReleaseExe|x64
 		ReleaseTest|x64 = ReleaseTest|x64
 		RelWithDebInfo|x64 = RelWithDebInfo|x64
+		VsHuman|x64 = VsHuman|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{D4AC5062-8BEA-46D8-9231-57241C214F1C}.Debug|x64.ActiveCfg = Debug|x64
@@ -27,6 +28,8 @@ Global
 		{D4AC5062-8BEA-46D8-9231-57241C214F1C}.ReleaseTest|x64.Build.0 = ReleaseTest|x64
 		{D4AC5062-8BEA-46D8-9231-57241C214F1C}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
 		{D4AC5062-8BEA-46D8-9231-57241C214F1C}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
+		{D4AC5062-8BEA-46D8-9231-57241C214F1C}.VsHuman|x64.ActiveCfg = VsHuman|x64
+		{D4AC5062-8BEA-46D8-9231-57241C214F1C}.VsHuman|x64.Build.0 = VsHuman|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
