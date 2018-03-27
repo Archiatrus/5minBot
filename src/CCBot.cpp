@@ -61,11 +61,8 @@ void CCBot::OnGameStart()
 	if (useAutoObserver)
 	{
 		m_cameraModule.onStart();
-		//Whatever...
-		m_time.push_back({ 0.0,0.0,0.0,0.0 });
 	}
 	Actions()->SendChat("5minBot");
-	m_time.push_back({ 0.0,0.0,0.0,0.0 });
 }
 
 void CCBot::OnStep()
@@ -87,14 +84,13 @@ void CCBot::OnStep()
 	}
 
 	//OnStep,OnUnitCreated,OnBuildingConstructionComplete,OnUnitEnterVision
-	m_time.push_back({ 0.0,0.0,0.0,0.0 });
 	m_time[Observation()->GetGameLoop()][0] = t.getElapsedTimeInMilliSec();
 	double ms=0.0;
 	if (Observation()->GetGameLoop() > 1)
 	{
 		for (const auto k : m_time[Observation()->GetGameLoop() - 1])
 		{
-			ms += k;
+			ms += k.second;
 		}
 	}
 	if (maxStepTime < ms)
@@ -264,10 +260,6 @@ sc2::Point2D CCBot::GetStartLocation() const
 	return Observation()->GetStartLocation();
 }
 
-void CCBot::OnError(const std::vector<sc2::ClientError> & client_errors, const std::vector<std::string> & protocol_errors)
-{
-	
-}
 
 const ProductionManager & CCBot::Production()
 {
@@ -307,4 +299,10 @@ const char *GetAgentName()
 int GetAgentRace()
 {
 	return sc2::Race::Terran;
+}
+
+
+void CCBot::OnError(const std::vector<sc2::ClientError> & client_errors, const std::vector<std::string> & protocol_errors)
+{
+	
 }

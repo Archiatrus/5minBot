@@ -33,7 +33,7 @@ class CCBot : public sc2::Agent
 	int m_armor;
 	int m_weapons;
 
-	std::vector<std::vector<double>> m_time;
+	std::map<size_t, std::map<int,double>> m_time;
 
 	void OnError(const std::vector<sc2::ClientError> & client_errors,
 		const std::vector<std::string> & protocol_errors = {}) override;
