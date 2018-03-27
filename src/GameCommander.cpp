@@ -152,11 +152,12 @@ void GameCommander::setScoutUnits()
 		if (shouldSendInitialScout())
 		{
 			//We only need the worker scout for pocket bases
-			if (!m_bot.Map().hasPocketBase())
-			{
-				m_initialScoutSet = true;
-				return;
-			}
+			//...or maybe not
+			//if (!m_bot.Map().hasPocketBase())
+			//{
+			//	m_initialScoutSet = true;
+			//	return;
+			//}
 			// grab the closest worker to the supply provider to send to scout
 			CUnit_ptr workerScout = m_bot.Workers().getClosestMineralWorkerTo(m_bot.GetStartLocation());
 

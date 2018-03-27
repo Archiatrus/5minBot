@@ -572,7 +572,10 @@ void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos,int player)
 	if (m_scoutUnit->isWorker())
 	{
 		auto baseIt = allTargetBases.begin();
-		baseIt++;
+		if (m_bot.Map().hasPocketBase())
+		{
+			baseIt++;
+		}
 		m_targetBasesPositions.push(baseIt->second->getBasePosition());
 	}
 	else
