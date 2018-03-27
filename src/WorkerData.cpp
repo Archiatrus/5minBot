@@ -270,14 +270,14 @@ const char * WorkerData::getJobCode(const CUnit_ptr unit)
 
 void WorkerData::drawDepotDebugInfo()
 {
-	return;
+	return;/*
 	for (const auto & depot: m_depots)
 	{
 		std::stringstream ss;
 		ss << "Workers: " << getNumAssignedWorkers(depot);
 
         Drawing::drawText(m_bot,depot->getPos(), ss.str());
-    }
+    }*/
 }
 
 const CUnits & WorkerData::getWorkers() const

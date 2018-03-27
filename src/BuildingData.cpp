@@ -29,7 +29,7 @@ bool BuildingData::isBeingBuilt(sc2::UnitTypeID type)
 {
 	for (auto & b : _buildings)
 	{
-		if (b.type == type)
+		if (b.m_type == type)
 		{
 			return true;
 		}

@@ -22,17 +22,17 @@ void UnitData::updateUnit(const sc2::Unit * unit)
 	}
 
 	UnitInfo & ui = m_unitMap[unit];
-	ui.unit = unit;
-	ui.player = Util::GetPlayer(unit);
-	ui.lastPosition = unit->pos;
-	ui.lastHealth = unit->health;
-	ui.lastShields = unit->shield;
-	ui.tag = unit->tag;
-	ui.type = unit->unit_type;
-	ui.progress = unit->build_progress;
+	ui.m_unit = unit;
+	ui.m_player = Util::GetPlayer(unit);
+	ui.m_lastPosition = unit->pos;
+	ui.m_lastHealth = unit->health;
+	ui.m_lastShields = unit->shield;
+	ui.m_tag = unit->tag;
+	ui.m_type = unit->unit_type;
+	ui.m_progress = unit->build_progress;
 	if (firstSeen)
 	{
-		m_numUnits[ui.type]++;
+		m_numUnits[ui.m_type]++;
 	}
 }
 
@@ -53,7 +53,7 @@ void UnitData::lostPosition(const sc2::Unit * unit)
 	BOT_ASSERT(it != m_unitMap.end(), "We should not have a snapshot of unit we have never seen!");
 
 	UnitInfo & ui = m_unitMap[unit];
-	ui.lastPosition = sc2::Point3D(0.0f,0.0f,0.0f);
+	ui.m_lastPosition = sc2::Point3D(0.0f,0.0f,0.0f);
 }
 
 void UnitData::removeBadUnits()
@@ -62,7 +62,7 @@ void UnitData::removeBadUnits()
 	{
 		if (badUnitInfo(iter->second))
 		{
-			m_numUnits[iter->second.type]--;
+			m_numUnits[iter->second.m_type]--;
 			iter = m_unitMap.erase(iter);
 		}
 		else
@@ -75,7 +75,7 @@ void UnitData::removeBadUnits()
 bool UnitData::badUnitInfo(const UnitInfo & ui) const
 {
 	//!ui.unit->is_alive does not seem to work for spines?!
-	if (!ui.unit->is_alive || ui.lastHealth==0.0f)
+	if (!ui.m_unit->is_alive || ui.m_lastHealth==0.0f)
 	{
 		return true;
 	}

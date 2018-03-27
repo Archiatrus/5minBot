@@ -7,39 +7,39 @@ struct UnitInfo
 	// we need to store all of this data because if the unit is not visible, we
 	// can't reference it from the unit pointer
 
-	UnitTag		 tag;
-	float		   lastHealth;
-	float		   lastShields;
-	int			 player;
-	const sc2::Unit * unit;
-	sc2::Point3D	lastPosition;
-	sc2::UnitTypeID type;
-	float		   progress;
+	UnitTag			m_tag;
+	float			m_lastHealth;
+	float			m_lastShields;
+	int				m_player;
+	const sc2::Unit * m_unit;
+	sc2::Point3D	m_lastPosition;
+	sc2::UnitTypeID m_type;
+	float			m_progress;
 
 	UnitInfo()
-		: tag(0)
-		, lastHealth(0)
-		, player(-1)
-		, lastPosition(sc2::Point3D(0, 0, 0))
-		, type(0)
-		, progress(1.0)
+		: m_tag(0)
+		, m_lastHealth(0)
+		, m_player(-1)
+		, m_lastPosition(sc2::Point3D(0, 0, 0))
+		, m_type(0)
+		, m_progress(1.0)
 	{
 
 	}
 
-	bool operator == (sc2::Unit * unit) const
+	bool operator == (const sc2::Unit * unit) const
 	{
-		return tag == unit->tag;
+		return m_tag == unit->tag;
 	}
 
 	bool operator == (const UnitInfo & rhs) const
 	{
-		return (tag == rhs.tag);
+		return (m_tag == rhs.m_tag);
 	}
 
 	bool operator < (const UnitInfo & rhs) const
 	{
-		return (tag < rhs.tag);
+		return (m_tag < rhs.m_tag);
 	}
 };
 

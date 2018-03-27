@@ -60,16 +60,16 @@ void MapTools::onFrame()
 {
 	m_frame++;
 	return;
-	for (int x=0; x<m_width; ++x)
-	{
-		for (int y=0; y<m_height; ++y)
-		{
-			if (isVisible(sc2::Point2D((float)x, (float)y)))
-			{
-				m_lastSeen[x][y] = m_frame;
-			}
-		}
-	}
+	//for (int x=0; x<m_width; ++x)
+	//{
+	//	for (int y=0; y<m_height; ++y)
+	//	{
+	//		if (isVisible(sc2::Point2D((float)x, (float)y)))
+	//		{
+	//			m_lastSeen[x][y] = m_frame;
+	//		}
+	//	}
+	//}
 }
 
 void MapTools::computeConnectivity()
@@ -289,17 +289,12 @@ const std::vector<sc2::Point2D> & MapTools::getClosestTilesTo(const sc2::Point2D
 const sc2::Point2D MapTools::getClosestWalkableTo(const sc2::Point2D & pos) const
 {
 	// get the precomputed vector of tile positions which are sorted closes to this location
-	auto & closestToPos = getClosestTilesTo(pos);
-
-
 	// iterate through the list until we've found a suitable location
-	for (size_t i(0); i < closestToPos.size(); ++i)
+	for (const auto & closestToPos : getClosestTilesTo(pos))
 	{
-		auto & pos = closestToPos[i];
-
-		if (isWalkable(pos))
+		if (isWalkable(closestToPos))
 		{
-			return pos;
+			return closestToPos;
 		}
 	}
 	return sc2::Point2D(0,0);
@@ -326,19 +321,11 @@ sc2::Point2D MapTools::getLeastRecentlySeenPosition() const
 	return leastSeen;
 }
 
-const sc2::Point2D MapTools::findNearestValidWalkable(const sc2::Point2D currentPos,const sc2::Point2D targetPos) const
-{
-	//Easiest case
-	if (isWalkable(targetPos) && isValid(targetPos)) { return targetPos; }
-	// ToDo: Find alternative Positions.
-
-	return m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getPosition();
-}
-
 sc2::Point2D MapTools::getWallPosition(sc2::UnitTypeID type) const
 {
 	sc2::Point2D bestPosition(0.0f, 0.0f);
 	return bestPosition;
+	/*
 	float maxDist = 0;
 	const BaseLocation *startBase=m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
 	sc2::Point2D startLocation = startBase->getPosition();
@@ -374,7 +361,7 @@ sc2::Point2D MapTools::getWallPosition(sc2::UnitTypeID type) const
 		}
 	}
 	return bestPosition;
-	
+	*/
 }
 
 bool MapTools::isNextToRamp(int x, int y) const

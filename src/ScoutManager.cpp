@@ -67,8 +67,7 @@ void ScoutManager::checkOurBases()
 			const CUnits rax = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKS);
 			for (const auto & unit : rax)
 			{
-				const auto orders = unit->getOrders();
-				for (const auto & order : orders)
+				for (const auto & order : unit->getOrders())
 				{
 					if (order.ability_id == sc2::ABILITY_ID::TRAIN_REAPER)
 					{
@@ -231,69 +230,42 @@ void ScoutManager::moveScouts()
 	{
 		if (gotAttackedInEnemyRegion && m_targetBasesPositions.empty())
 		{
-			updateNearestUnoccupiedBases(enemyBaseLocation->getPosition(), Players::Enemy); 
+			updateNearestUnoccupiedBases(enemyBaseLocation->getPosition(), Players::Enemy);
 		}
 		else if (m_targetBasesPositions.empty())
 		{
 			m_targetBasesPositions.push(enemyBaseLocation->getPosition());
 		}
-		
-		
-		bool scoutInRangeOfenemy = enemyBaseLocation->containsPosition(scout->getPos());
 
-		// if the scout is in the enemy region
-		if (true)
+
+		//Whos there in sight?
+		CUnits enemyUnitsInSight = m_scoutUnit->getEnemyUnitsInSight();
+		// without words
+		if (dontBlowYourselfUp())
 		{
-			//Whos there in sight?
-			CUnits enemyUnitsInSight = m_scoutUnit->getEnemyUnitsInSight();
-			// without words
-			if (dontBlowYourselfUp())
-			{
 
-			}
-			//if there is a unit and we are getting too close, throw granade and run
-			else if (enemyTooClose(enemyUnitsInSight))
-			{
-				if (m_targetBasesPositions.size()>0 && Util::Dist(scout->getPos(),m_targetBasesPositions.front())<20)
-				{
-					gotAttackedInEnemyRegion = true;
-					m_targetBasesPositions.pop();
-				}
-				
-			}
-			//if there are combat units that can not attack us, but we can attack them, attack the weakest one.
-			else if (attackEnemyCombat(enemyUnitsInSight))
-			{
-
-			}
-			//if there are workers attack the weakest one
-			else if (attackEnemyWorker(enemyUnitsInSight))
-			{
-
-			}
-			// otherwise keep moving to the enemy base location
-			else
-			{
-				if (m_targetBasesPositions.empty())
-				{
-					m_scoutStatus = "I am confused. No empty base left?!";
-					return;
-				}
-				// move to the enemy region
-				int scoutDistanceToEnemy = m_bot.Map().getGroundDistance(scout->getPos(), m_targetBasesPositions.front());
-				if (scoutDistanceToEnemy <= 4 && scoutDistanceToEnemy>=0)
-				{
-					m_scoutStatus = "Nothing here yet";
-					m_targetBasesPositions.pop();
-				}
-				else
-				{
-					m_scoutStatus = "Enemy region known, going there";
-					Micro::SmartMove(m_scoutUnit, m_targetBasesPositions.front(), m_bot);
-				}
-			}
 		}
-		// if the scout is not in the enemy region
+		//if there is a unit and we are getting too close, throw granade and run
+		else if (enemyTooClose(enemyUnitsInSight))
+		{
+			if (m_targetBasesPositions.size() > 0 && Util::Dist(scout->getPos(), m_targetBasesPositions.front()) < 20)
+			{
+				gotAttackedInEnemyRegion = true;
+				m_targetBasesPositions.pop();
+			}
+
+		}
+		//if there are combat units that can not attack us, but we can attack them, attack the weakest one.
+		else if (attackEnemyCombat(enemyUnitsInSight))
+		{
+
+		}
+		//if there are workers attack the weakest one
+		else if (attackEnemyWorker(enemyUnitsInSight))
+		{
+
+		}
+		// otherwise keep moving to the enemy base location
 		else
 		{
 			if (m_targetBasesPositions.empty())
@@ -303,7 +275,7 @@ void ScoutManager::moveScouts()
 			}
 			// move to the enemy region
 			int scoutDistanceToEnemy = m_bot.Map().getGroundDistance(scout->getPos(), m_targetBasesPositions.front());
-			if (scoutDistanceToEnemy <= 3 && scoutDistanceToEnemy >= 0)
+			if (scoutDistanceToEnemy <= 4 && scoutDistanceToEnemy >= 0)
 			{
 				m_scoutStatus = "Nothing here yet";
 				m_targetBasesPositions.pop();
@@ -335,7 +307,7 @@ void ScoutManager::moveScouts()
 	}
 }
 
-CUnit_ptr ScoutManager::closestEnemyWorkerTo(const sc2::Point2D & pos) const
+CUnit_ptr ScoutManager::closestEnemyWorkerTo() const
 {
 	if (!m_scoutUnit) { return nullptr; }
 
@@ -357,7 +329,7 @@ CUnit_ptr ScoutManager::closestEnemyWorkerTo(const sc2::Point2D & pos) const
 	return enemyWorker;
 }
 
-CUnit_ptr ScoutManager::closestEnemyCombatTo(const sc2::Point2D & pos) const
+CUnit_ptr ScoutManager::closestEnemyCombatTo() const
 {
 	if (!m_scoutUnit) { return nullptr; }
 
@@ -387,12 +359,12 @@ bool ScoutManager::enemyTooClose(CUnits enemyUnitsInSight)
 	bool tooClose = false;
 	CUnits enemyPositions;
 	//First gather all units that can shoot at the scout
-	for (const auto &unit : enemyUnitsInSight)
+	for (const auto &m_unit : enemyUnitsInSight)
 	{
-		const float dist = Util::Dist(unit->getPos(), m_scoutUnit->getPos());
-		if (dist < unit->getAttackRange(m_scoutUnit) + 2.0f) //+2 to be on the save side
+		const float dist = Util::Dist(m_unit->getPos(), m_scoutUnit->getPos());
+		if (dist < m_unit->getAttackRange(m_scoutUnit) + 2.0f) //+2 to be on the save side
 		{
-			enemyPositions.push_back(unit);
+			enemyPositions.push_back(m_unit);
 			tooClose = true;
 		}
 	}

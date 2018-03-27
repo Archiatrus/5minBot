@@ -46,16 +46,17 @@ void GameCommander::onFrame()
 
 void GameCommander::drawDebugInterface()
 {
-	drawGameInformation(4, 1);
+	drawGameInformation(sc2::Point2D(4.0f, 1.0f));
 }
 
-void GameCommander::drawGameInformation(int x, int y)
+void GameCommander::drawGameInformation(const sc2::Point2D pos)
 {
 	std::stringstream ss;
 	ss << "Players: " << "\n";
 	ss << "Strategy: " << m_bot.Config().StrategyName << "\n";
 	ss << "Map Name: " << "\n";
 	ss << "Time: " << "\n";
+	Drawing::drawTextScreen(m_bot, pos, ss.str());
 }
 
 // assigns units to various managers
@@ -459,9 +460,9 @@ void GameCommander::handleDTdetections()
 				if (unit->getEnergy() >= 50)
 				{
 					int nearbyUnits = 0;
-					for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
+					for (const auto & combatUnit : m_bot.UnitInfo().getUnits(Players::Self))
 					{
-						if (unit->isCombatUnit() &&  Util::Dist(m_DTdetections.back().m_place, unit->getPos()) < scanRadius)
+						if (combatUnit->isCombatUnit() &&  Util::Dist(m_DTdetections.back().m_place, combatUnit->getPos()) < scanRadius)
 						{
 							++nearbyUnits;
 						}

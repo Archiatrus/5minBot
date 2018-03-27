@@ -338,7 +338,6 @@ const sc2::Point2D BaseLocationManager::getRallyPoint() const
 	const sc2::Point2D rallyPoint = fixpoint + Util::normalizeVector(targetPos - fixpoint, 5.0f);
 
 	// get the precomputed vector of tile positions which are sorted closes to this location
-	auto & closestTorallyPoint = m_bot.Map().getClosestTilesTo(rallyPoint);
 	for (const auto & pos : m_bot.Map().getClosestTilesTo(rallyPoint))
 	{
 		if (m_bot.Map().isWalkable(pos))

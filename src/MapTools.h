@@ -69,8 +69,6 @@ public:
 	
 	sc2::Point2D getLeastRecentlySeenPosition() const;
 
-	const sc2::Point2D findNearestValidWalkable(sc2::Point2D currentPos,sc2::Point2D targetPos) const;
-
 	sc2::Point2D getWallPosition(sc2::UnitTypeID type) const;
 	// returns a list of all tiles on the map, sorted by 4-direcitonal walk distance from the given position
 	const std::vector<sc2::Point2D> & getClosestTilesTo(const sc2::Point2D & pos) const;

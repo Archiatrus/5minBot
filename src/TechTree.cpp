@@ -158,9 +158,7 @@ void TechTree::initUnitTypeData()
 	// Set the Mineral / Gas cost of each unit
 	for (auto & kv : m_unitTypeData)
 	{
-		if (kv.first == 0) { continue; }
-		
-		auto & data = m_bot.Observation()->GetUnitTypeData();
+		if (kv.first == 0U) { continue; }
 
 		kv.second.mineralCost = m_bot.Observation()->GetUnitTypeData()[kv.first].mineral_cost;
 		kv.second.gasCost	 = m_bot.Observation()->GetUnitTypeData()[kv.first].vespene_cost;

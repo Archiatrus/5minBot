@@ -43,10 +43,10 @@ void WorkerManager::setRepairWorker(const CUnit_ptr unitToRepair,int numWorkers)
 		//Repair has higher priority than combat
 		else
 		{
-			const CUnit_ptr worker = getClosestCombatWorkerTo(unitToRepair->getPos());
-			if (worker)
+			const CUnit_ptr combatWorker = getClosestCombatWorkerTo(unitToRepair->getPos());
+			if (combatWorker)
 			{
-				m_workerData.setWorkerJob(worker, WorkerJobs::Repair, unitToRepair);
+				m_workerData.setWorkerJob(combatWorker, WorkerJobs::Repair, unitToRepair);
 			}
 		}
 	}
@@ -366,8 +366,6 @@ void WorkerManager::drawWorkerInformation()
 
 	std::stringstream ss;
 	ss << "Workers: " << m_workerData.getWorkers().size() << "\n";
-
-	int yspace = 0;
 
 	for (const auto & workerTag : m_workerData.getWorkers())
 	{

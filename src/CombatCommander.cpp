@@ -260,6 +260,8 @@ void CombatCommander::updateDefenseSquads()
 		}
 
 		// we can ignore the first enemy worker in our region since we assume it is a scout
+		//......and miss the cannon rush
+		/*
 		for (const auto & unit : enemyUnitsInRegion)
 		{
 			BOT_ASSERT(unit, "null enemyt unit in region");
@@ -270,6 +272,7 @@ void CombatCommander::updateDefenseSquads()
 				break;
 			}
 		}
+		*/
 
 		// calculate how many units are flying / ground units
 		int numEnemyFlyingInRegion = 0;
@@ -348,7 +351,7 @@ void CombatCommander::updateDefenseSquads()
 		}
 
 		bool enemyUnitInRange = false;
-		for (auto & unit : m_bot.UnitInfo().getUnits(Players::Enemy))
+		for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Enemy))
 		{
 			if (Util::Dist(unit->getPos(), order.getPosition()) < order.getRadius())
 			{
@@ -434,7 +437,7 @@ const CUnit_ptr CombatCommander::findClosestDefender(const Squad & defenseSquad,
 
 	// TODO: add back special case of zergling rush defense
 
-	for (auto & unit : m_combatUnits)
+	for (const auto & unit : m_combatUnits)
 	{
 		BOT_ASSERT(unit, "null combat unit");
 
@@ -545,7 +548,7 @@ const CUnit_ptr CombatCommander::findClosestWorkerTo(const CUnits & unitsToAssig
 	float closestDist = std::numeric_limits<float>::max();
 
 	// for each of our workers
-	for (auto & unit : unitsToAssign)
+	for (const auto & unit : unitsToAssign)
 	{
 		if (!unit)
 		{

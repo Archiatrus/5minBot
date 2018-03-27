@@ -692,7 +692,7 @@ void HarassManager::handleHitSquads()
 }
 
 
-std::vector<const BaseLocation *> HarassManager::getPotentialTargets(size_t n) const
+std::vector<const BaseLocation *> HarassManager::getPotentialTargets(const size_t n) const
 {
 	std::vector<const BaseLocation *> targetBases;
 	std::set<const BaseLocation *> bases = m_bot.Bases().getOccupiedBaseLocations(Players::Enemy);
@@ -718,7 +718,10 @@ std::vector<const BaseLocation *> HarassManager::getPotentialTargets(size_t n) c
 	}
 	for (const auto & tb : targetsWithDistance)
 	{
-		targetBases.push_back(tb.second);
+		if (targetBases.size() < n)
+		{
+			targetBases.push_back(tb.second);
+		}
 	}
 	return targetBases;
 }

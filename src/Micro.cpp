@@ -427,5 +427,5 @@ void Micro::SmartStim(CUnits units, CCBot & bot, bool queue)
 			}
 		}
 	}
-	bot.Actions()->UnitCommand(targets, sc2::ABILITY_ID::EFFECT_STIM);
+	bot.Actions()->UnitCommand(targets, sc2::ABILITY_ID::EFFECT_STIM,queue);
 }

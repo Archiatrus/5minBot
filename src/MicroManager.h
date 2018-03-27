@@ -6,13 +6,13 @@
 
 struct AirThreat
 {
-	UnitTag	unit;
+	UnitTag	m_unit;
 	double weight;
 };
 
 struct GroundThreat
 {
-	UnitTag	unit;
+	UnitTag	m_unit;
 	double weight;
 };
 

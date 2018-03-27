@@ -2,7 +2,7 @@
 #include "CCBot.h"
 
 BuildOrderItem::BuildOrderItem(const BuildType & t, int p, bool b)
-	: type(t)
+	: m_type(t)
 	, priority(p)
 	, blocking(b)
 {

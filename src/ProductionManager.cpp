@@ -77,25 +77,25 @@ void ProductionManager::manageBuildOrderQueue()
 void ProductionManager::create(BuildOrderItem item)
 {
 	// send the building task to the building manager
-	if (Util::IsTownHallType(item.type.getUnitTypeID()))
+	if (Util::IsTownHallType(item.m_type.getUnitTypeID()))
 	{
-		m_buildingManager.addBuildingTask(item.type.getUnitTypeID(), m_bot.Bases().getNextExpansion(Players::Self));
+		m_buildingManager.addBuildingTask(item.m_type.getUnitTypeID(), m_bot.Bases().getNextExpansion(Players::Self));
 	}
 	//We want to switch addons from factory to starport. So better build them close.
-	else if (item.type.getUnitTypeID().ToType() == sc2::UNIT_TYPEID::TERRAN_STARPORT)
+	else if (item.m_type.getUnitTypeID().ToType() == sc2::UNIT_TYPEID::TERRAN_STARPORT)
 	{
 		const CUnits Factories = m_bot.UnitInfo().getUnits(sc2::Unit::Alliance::Self, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::TERRAN_FACTORY , sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING }));
 		if (Factories.size() > 0)
 		{
-			m_buildingManager.addBuildingTask(item.type.getUnitTypeID(), Factories.front()->getPos());
+			m_buildingManager.addBuildingTask(item.m_type.getUnitTypeID(), Factories.front()->getPos());
 		}
 		else
 		{
 
-			m_buildingManager.addBuildingTask(item.type.getUnitTypeID(), m_bot.Bases().getBuildingLocation());
+			m_buildingManager.addBuildingTask(item.m_type.getUnitTypeID(), m_bot.Bases().getBuildingLocation());
 		}
 	}
-	else if (item.type.getUnitTypeID().ToType() == sc2::UNIT_TYPEID::TERRAN_BUNKER)
+	else if (item.m_type.getUnitTypeID().ToType() == sc2::UNIT_TYPEID::TERRAN_BUNKER)
 	{
 		sc2::Point2D bPoint;
 		if (m_bot.Map().hasPocketBase())
@@ -142,11 +142,11 @@ void ProductionManager::create(BuildOrderItem item)
 		{
 			bPoint = m_bot.Bases().getRallyPoint();
 		}
-		m_buildingManager.addBuildingTask(item.type.getUnitTypeID(), bPoint);
+		m_buildingManager.addBuildingTask(item.m_type.getUnitTypeID(), bPoint);
 	}
 	else
 	{
-		m_buildingManager.addBuildingTask(item.type.getUnitTypeID(), m_bot.Bases().getBuildingLocation());
+		m_buildingManager.addBuildingTask(item.m_type.getUnitTypeID(), m_bot.Bases().getBuildingLocation());
 	}
 }
 
@@ -669,7 +669,7 @@ void ProductionManager::defaultMacro()
 				maxProgress = 1.0f;
 				break;
 			}
-			float progress = engi->getOrders().front().progress;
+			const float progress = engi->getOrders().front().progress;
 			if (maxProgress < progress)
 			{
 				maxProgress = progress;
@@ -792,7 +792,7 @@ int ProductionManager::howOftenQueued(sc2::UnitTypeID type)
 	int numQueued = 0;
 	for (const auto & b : m_newQueue)
 	{
-		if (b.type.getUnitTypeID() == type)
+		if (b.m_type.getUnitTypeID() == type)
 		{
 			numQueued++;
 		}
@@ -820,7 +820,7 @@ void ProductionManager::drawProductionInformation()
 	}
 	for (const auto & b : m_newQueue)
 	{
-		ss << "\n" << sc2::UnitTypeToName(b.type.getUnitTypeID());
+		ss << "\n" << sc2::UnitTypeToName(b.m_type.getUnitTypeID());
 	}
 	Drawing::drawTextScreen(m_bot,sc2::Point2D(0.01f, 0.01f), ss.str(), sc2::Colors::Yellow);
 }

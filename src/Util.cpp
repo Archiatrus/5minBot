@@ -785,10 +785,6 @@ sc2::Point2D Util::normalizeVector(const sc2::Point2D pos, const float length)
 
 const bool Util::isBadEffect(const sc2::EffectID id)
 {
-	if (id.ToType() == sc2::EFFECT_ID::LURKERATTACK)
-	{
-		int a = 1;
-	}
 	switch (id.ToType())
 	{
 	case sc2::EFFECT_ID::BLINDINGCLOUD:

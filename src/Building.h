@@ -15,7 +15,7 @@ public:
 	sc2::Point2D    desiredPosition;
 	sc2::Point2D    finalPosition;
 	sc2::Point2D    position;
-	sc2::UnitTypeID type;
+	sc2::UnitTypeID m_type;
 	CUnit_ptr buildingUnit;
 	CUnit_ptr builderUnit;
 	size_t          status;

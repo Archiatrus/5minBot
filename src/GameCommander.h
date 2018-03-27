@@ -61,7 +61,7 @@ public:
 
 
 	void drawDebugInterface();
-	void drawGameInformation(int x, int y);
+	void drawGameInformation(const sc2::Point2D pos);
 
 	bool shouldSendInitialScout();
 

@@ -168,10 +168,6 @@ void RangedManager::assignTargets(const CUnits & targets)
 						}
 					}
 				}
-				if (rangedUnit->isSelected())
-				{
-					int a = 1;
-				}
 				if (injuredUnits.size()>0)
 				{
 					CUnit_ptr mostInjured = (injuredUnits.rbegin())->second;
