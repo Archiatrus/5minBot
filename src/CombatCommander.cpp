@@ -316,7 +316,7 @@ void CombatCommander::updateDefenseSquads()
 			// if we don't have a squad assigned to this region already, create one
 			if (!m_squadData.squadExists(squadName.str()))
 			{
-				SquadOrder defendRegion(SquadOrderTypes::Defend, basePosition, 32 * 25, "Defend Region!");
+				SquadOrder defendRegion(SquadOrderTypes::Defend, basePosition, 30.0f, "Defend Region!");
 				m_squadData.addSquad(squadName.str(), Squad(squadName.str(), defendRegion, BaseDefensePriority, m_bot));
 			}
 		}
