@@ -395,7 +395,7 @@ bool ScoutManager::attackEnemyCombat(CUnits enemyUnitsInSight)
 	for (const auto & unit : enemyUnitsInSight)
 	{
 		const float dist = Util::Dist(unit->getPos(), m_scoutUnit->getPos());
-		if (unit->isCombatUnit() && dist < m_scoutUnit->getAttackRange(unit) + 1.0f) //+1 to be on the save side
+		if (unit->isCombatUnit() && unit->isVisible() && dist < m_scoutUnit->getAttackRange(unit) + 1.0f) //+1 to be on the save side
 		{
 			if (attackingEnemy)
 			{
@@ -436,7 +436,7 @@ bool ScoutManager::attackEnemyWorker(CUnits enemyUnitsInSight)
 	CUnit_ptr lowestHealthUnitOutsideRange = nullptr;
 	for (const auto & unit : enemyUnitsInSight)
 	{
-		if (unit->isWorker())
+		if (unit->isWorker() && unit->isVisible())
 		{
 			const float range = m_scoutUnit->getAttackRange(unit);
 			const float dist = Util::Dist(unit->getPos(), m_scoutUnit->getPos());
