@@ -89,9 +89,14 @@ void BuildingManager::validateWorkersAndBuildings()
 
 		auto buildingUnit = b.buildingUnit;
 
-		// TODO: || !b.buildingUnit->getType().isBuilding()
-		if (!buildingUnit || (buildingUnit->getHealthPoints() <= 0))
+		if (!buildingUnit || buildingUnit->getHealthPoints() <= 0)
 		{
+			toRemove.push_back(b);
+		}
+		// Cancel buildings if they are about to be destroyed
+		else if (buildingUnit->getHealthPoints() / buildingUnit->getHealthPointsMax() < 0.1f && buildingUnit->getBuildProgress() > 0.2f)
+		{
+			Micro::SmartAbility(buildingUnit, sc2::ABILITY_ID::CANCEL_BUILDINPROGRESS, m_bot);
 			toRemove.push_back(b);
 		}
 	}
