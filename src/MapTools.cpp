@@ -728,6 +728,24 @@ const bool MapTools::hasPocketBase() const
 	return firstExe ? homeBase->getGroundDistance(enemyStartBase) <= firstExe->getGroundDistance(enemyStartBase) : false;
 }
 
+const CUnit_ptr MapTools::workerSlideMineral(const sc2::Point2D workerPos, const sc2::Point2D enemyPos) const
+{
+	const CUnits minerals = m_bot.UnitInfo().getUnits(Players::Neutral, Util::getMineralTypes());
+	CUnit_ptr slideMineral = nullptr;
+	float closestDistance = std::numeric_limits<float>::max();
+	for (const auto & mineral : minerals)
+	{
+		const float distWorker = Util::Dist(workerPos, mineral->getPos());
+		const float distEnemy = Util::Dist(enemyPos, mineral->getPos());
+		if (distEnemy < distWorker && closestDistance > distEnemy)
+		{
+			closestDistance = distEnemy;
+			slideMineral = mineral;
+		}
+	}
+	return slideMineral;
+}
+
 const float MapTools::getHeight(const sc2::Point2D pos) const
 {
 	return m_bot.Observation()->TerrainHeight(pos);

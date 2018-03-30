@@ -174,7 +174,6 @@ int ProductionManager::getFreeGas()
 
 void ProductionManager::defaultMacro()
 {
-
 	//This avoids repeating the same command twice.
 	++defaultMacroSleep;
 	if (defaultMacroSleep < defaultMacroSleepMax)
@@ -248,7 +247,31 @@ void ProductionManager::defaultMacro()
 	const int numEngibays = static_cast<int>(Engibays.size());
 	const int numEngibaysFinished = buildingsFinished(Engibays);
 
-	//const sc2::Units mineralNodes = m_bot.UnitInfo().getUnits(sc2::Unit::Alliance::Neutral, sc2::IsUnits(Util::getMineralTypes()));
+	if (m_bot.underAttack())
+	{
+		//If we are under attack marines have priority
+		std::cout << "Under attack!" << std::endl;
+		for (const auto & unit : Rax)
+		{
+			//Any finished rax
+			if (unit->isCompleted())
+			{
+				//that is idle
+				const auto addon = m_bot.UnitInfo().getUnit(unit->getAddOnTag());
+				if (unit->isIdle() || (addon && addon->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR && unit->getOrders().size() < 2))
+				{
+
+					if (minerals >= 50 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
+					{
+						m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_MARINE);
+						std::cout << "Marine" << std::endl;
+						return;
+					}
+
+				}
+			}
+		}
+	}
 
 	if (supplyCap < 200 && (supplyCap - supply < (numBasesFinished + 2 * numRaxFinished) || (numDepots==0&&minerals>100)))
 	{
@@ -264,24 +287,24 @@ void ProductionManager::defaultMacro()
 	}
 	for (const auto & unit : CommandCenters)
 	{
-		if (unit->isCompleted()&&unit->isIdle())
+		if (unit->isCompleted() && unit->isIdle())
 		{
 			//Before building a worker, make sure it is a OC
 			if (unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER && numRaxFinished > 0)
 			{
 				if (minerals > 150)
 				{
-					Micro::SmartAbility(unit, sc2::ABILITY_ID::MORPH_ORBITALCOMMAND,m_bot);
+					Micro::SmartAbility(unit, sc2::ABILITY_ID::MORPH_ORBITALCOMMAND, m_bot);
 				}
 				std::cout << "OC" << std::endl;
 				return;
 			}
-			
+
 			//Every Base has to build a worker until 66 workers.
 			if (m_bot.Observation()->GetFoodWorkers() < 66)
 			{
 				//m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_SCV), UNIT, false));
-				Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_SCV,m_bot);
+				Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_SCV, m_bot);
 				std::cout << "TrainSCV" << std::endl;
 				return;
 			}

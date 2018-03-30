@@ -491,3 +491,8 @@ std::shared_ptr<shuttle> GameCommander::requestShuttleService(CUnits passengers,
 	m_shuttles.push_back(newShuttle);
 	return newShuttle;
 }
+
+const bool GameCommander::underAttack() const
+{
+	return m_combatCommander.underAttack();
+}

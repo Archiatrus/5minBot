@@ -201,8 +201,9 @@ const bool SquadData::underAttack() const
 {
 	for (const auto & squad : m_squads)
 	{
-		if (squad.second.getSquadOrder().getType() == SquadOrderTypes::Defend)
+		if (squad.second.getSquadOrder().getType() == SquadOrderTypes::Defend && squad.second.getUnits().size()>0)
 		{
+
 			return true;
 		}
 	}

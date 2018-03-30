@@ -114,42 +114,76 @@ void WorkerManager::handleMineralWorkers()
 {
 	const CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, Util::getTownHallTypes());
 	// for each unit we have
-	for (const auto & unit : CommandCenters)
+	if (!m_bot.underAttack())
 	{
-		// if that unit is a townhall
-		if (unit->isCompleted())
+		for (const auto & unit : CommandCenters)
 		{
-			// get the number of workers currently assigned to it
-			int numAssigned = unit->getAssignedHarvesters();
-			// and the max number
-			int numMaxAssigned = unit->getIdealHarvesters();
-			// if it's too much try to find another base
-			if (numAssigned > numMaxAssigned)
+			// if that unit is a townhall
+			if (unit->isCompleted())
 			{
-
-				for (const auto & unit_next : CommandCenters)
+				// get the number of workers currently assigned to it
+				int numAssigned = unit->getAssignedHarvesters();
+				// and the max number
+				int numMaxAssigned = unit->getIdealHarvesters();
+				// if it's too much try to find another base
+				if (numAssigned > numMaxAssigned)
 				{
-					// if that unit is finished
-					if (unit_next->isCompleted())
+
+					for (const auto & unit_next : CommandCenters)
 					{
-						int numAssigned_next = unit_next->getAssignedHarvesters();
-						int numMaxAssigned_next = unit_next->getIdealHarvesters();
-						if (numAssigned_next<numMaxAssigned_next)
+						// if that unit is finished
+						if (unit_next->isCompleted())
 						{
-							auto transfer_worker = getClosestMineralWorkerTo(unit->getPos()); //THIS WILL PROBABLY CALL THE SAME WORKER OVER AND OVER AGAIN UNTIL HE IS FAR ENOUGH AWAY :(
-							const CUnit_ptr mineralPatch = Util::getClostestMineral(unit_next->getPos(), m_bot);
-							if (mineralPatch && transfer_worker)
+							int numAssigned_next = unit_next->getAssignedHarvesters();
+							int numMaxAssigned_next = unit_next->getIdealHarvesters();
+							if (numAssigned_next < numMaxAssigned_next)
 							{
-								//Micro::SmartMove(unit, unit_next->getPos(), m_bot);
-								m_workerData.setWorkerJob(transfer_worker, WorkerJobs::Minerals, mineralPatch);
-								return;
+								auto transfer_worker = getClosestMineralWorkerTo(unit->getPos()); //THIS WILL PROBABLY CALL THE SAME WORKER OVER AND OVER AGAIN UNTIL HE IS FAR ENOUGH AWAY :(
+								const CUnit_ptr mineralPatch = Util::getClostestMineral(unit_next->getPos(), m_bot);
+								if (mineralPatch && transfer_worker)
+								{
+									//Micro::SmartMove(unit, unit_next->getPos(), m_bot);
+									m_workerData.setWorkerJob(transfer_worker, WorkerJobs::Minerals, mineralPatch);
+									return;
+								}
 							}
 						}
 					}
+					//Only do it for one townhall at a time. Otherwise there might be problems?!
 				}
-				//Only do it for one townhall at a time. Otherwise there might be problems?!
 			}
 		}
+	}
+	else
+	{
+		const CUnits bunkers = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
+		const CUnits enemies = m_bot.UnitInfo().getUnits(Players::Enemy);
+		for (const auto & worker : getMineralWorkers())
+		{
+			float distToBunker = 30.0f;
+			CUnit_ptr closestBunker = nullptr;
+			for (const auto & bunker : bunkers)
+			{
+				float dist = Util::Dist(bunker->getPos(), worker->getPos());
+				if (!closestBunker || distToBunker>dist)
+				{
+					closestBunker = bunker;
+					distToBunker = dist;
+				}
+			}
+			if (closestBunker && distToBunker>20.0f)
+			{
+				for (const auto & enemy : enemies)
+				{
+					if (enemy->isVisible() && Util::Dist(enemy->getPos(), worker->getPos()) < 10.0f)
+					{
+						const CUnit_ptr mineralPatch = Util::getClostestMineral(closestBunker->getPos(), m_bot);
+						m_workerData.setWorkerJob(worker, WorkerJobs::Minerals, mineralPatch);
+					}
+				}
+			}
+		}
+
 	}
 }
 

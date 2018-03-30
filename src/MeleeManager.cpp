@@ -51,7 +51,27 @@ void MeleeManager::assignTargets(const CUnits & targets)
 				CUnit_ptr target = getTarget(meleeUnit, meleeUnitTargets);
 
 				// attack it
-				Micro::SmartAttackUnit(meleeUnit, target, m_bot);
+				if (meleeUnit->isWorker())
+				{
+					const float dist = Util::Dist(meleeUnit->getPos(), target->getPos());
+					CUnit_ptr mineral = nullptr;
+					if (dist < 6.0f*meleeUnit->getRadius() && dist > 4.0f)
+					{
+						mineral = m_bot.Map().workerSlideMineral(meleeUnit->getPos(),target->getPos());
+					}
+					if (mineral)
+					{
+						Micro::SmartRightClick(meleeUnit, mineral, m_bot);
+					}
+					else
+					{
+						Micro::SmartAttackUnit(meleeUnit, target, m_bot);
+					}
+				}
+				else
+				{
+					Micro::SmartAttackUnit(meleeUnit, target, m_bot);
+				}
 			}
 			// if there are no targets
 			else

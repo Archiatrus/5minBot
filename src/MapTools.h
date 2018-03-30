@@ -4,6 +4,7 @@
 #include <queue>
 #include "sc2api/sc2_api.h"
 #include "DistanceMap.h"
+#include "CUnit.h"
 
 class CCBot;
 
@@ -76,6 +77,7 @@ public:
 	const sc2::Point2D getClosestBorderPoint(sc2::Point2D pos,int margin) const;
 	const sc2::Point2D getForbiddenCorner(int margin) const;
 	const bool hasPocketBase() const;
+	const CUnit_ptr workerSlideMineral(const sc2::Point2D workerPos, const sc2::Point2D enemyPos) const;
 	const float getHeight(const sc2::Point2D pos) const;
 	const float getHeight(const float x,const float y) const;
 	void draw() const;

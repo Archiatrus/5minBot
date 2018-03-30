@@ -286,6 +286,11 @@ const int CCBot::getWeapon() const
 	return m_weapons;
 }
 
+const bool CCBot::underAttack() const
+{
+	return m_gameCommander.underAttack();
+}
+
 void * CreateNewAgent()
 {
 	return new CCBot();

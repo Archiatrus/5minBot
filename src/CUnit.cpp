@@ -48,6 +48,10 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 		if ((weapon.type == sc2::Weapon::TargetType::Ground || weapon.type == sc2::Weapon::TargetType::Any) && weapon.range > m_groundWeapons.range)//Siege tanks
 		{
 			m_groundWeapons = weapon;
+			if (m_groundWeapons.range < 0.11f)//melee. Not exactly 0.1
+			{
+				m_groundWeapons.range += unit->radius;
+			}
 		}
 	}
 

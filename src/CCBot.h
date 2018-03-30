@@ -72,6 +72,7 @@ public:
 
 	const int getArmor() const;
 	const int getWeapon() const;
+	const bool underAttack() const;
 };
 
 extern bool useDebug;

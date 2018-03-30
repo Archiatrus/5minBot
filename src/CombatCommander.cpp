@@ -58,7 +58,7 @@ void CombatCommander::onFrame(const CUnits & combatUnits)
 	if (isSquadUpdateFrame())
 	{
 		updateIdleSquad();
-		updateScoutDefenseSquad();
+		//updateScoutDefenseSquad();
 		updateDefenseSquads();
 		updateAttackSquads();
 		updateGuardSquads();
@@ -223,6 +223,7 @@ void CombatCommander::updateScoutDefenseSquad()
 
 void CombatCommander::updateDefenseSquads()
 {
+	m_underAttack = false;
 	//if (m_combatUnits.empty())
 	//{
 	//    return;
@@ -257,6 +258,10 @@ void CombatCommander::updateDefenseSquads()
 			{
 				enemyUnitsInRegion.push_back(unit);
 			}
+		}
+		if (enemyUnitsInRegion.size() > 5)
+		{
+			m_underAttack = true;
 		}
 
 		// we can ignore the first enemy worker in our region since we assume it is a scout
@@ -412,9 +417,11 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
 	}
 	// Emergency draft of workers
 	const CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
-	while (defendersNeeded > defendersAdded && m_bot.UnitInfo().getNumCombatUnits(Players::Self)<20 && (Bunker.empty() || Bunker.front()->getCargoSpaceTaken()==0))
+	const CUnits worker = m_bot.Workers().getMineralWorkers();
+	size_t workerCounter = worker.size();
+	while (defendersNeeded > defendersAdded && m_bot.UnitInfo().getNumCombatUnits(Players::Self)<20 && (Bunker.empty() || Bunker.front()->getCargoSpaceTaken()==0) && workerCounter>5)
 	{
-		const CUnit_ptr workerDefender = findClosestWorkerTo(m_bot.Workers().getMineralWorkers(),defenseSquad.getSquadOrder().getPosition());
+		const CUnit_ptr workerDefender = findClosestWorkerTo(worker,defenseSquad.getSquadOrder().getPosition());
 
 		// grab it from the worker manager and put it in the squad
 		if (workerDefender && m_squadData.canAssignUnitToSquad(workerDefender, defenseSquad))
@@ -422,6 +429,7 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
 			m_bot.Workers().setCombatWorker(workerDefender);
 			m_squadData.assignUnitToSquad(workerDefender, defenseSquad);
 			defendersAdded++;
+			--workerCounter;
 		}
 		else
 		{
@@ -579,7 +587,7 @@ const CUnit_ptr CombatCommander::findClosestWorkerTo(const CUnits & unitsToAssig
 
 const bool CombatCommander::underAttack() const
 {
-	return m_squadData.underAttack();
+	return m_underAttack;
 }
 
 void CombatCommander::requestGuards(const bool req)

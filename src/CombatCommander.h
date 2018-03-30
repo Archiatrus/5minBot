@@ -16,6 +16,7 @@ class CombatCommander
 	bool            m_attackStarted;
 
 	bool			m_needGuards;
+	bool			m_underAttack;
 
 	void			updateScoutDefenseSquad();
 	void			updateDefenseSquads();

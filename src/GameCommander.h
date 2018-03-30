@@ -76,4 +76,5 @@ public:
 	void handleDTdetections();
 	void requestGuards(const bool req);
 	std::shared_ptr<shuttle> requestShuttleService(CUnits passengers, const sc2::Point2D targetPos);
+	const bool underAttack() const;
 };
