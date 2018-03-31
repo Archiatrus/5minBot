@@ -196,6 +196,10 @@ sc2::Tag CUnit::getEngagedTargetTag() const
 {
 	return m_unit->engaged_target_tag;
 }
+std::shared_ptr<CUnit> CUnit::getTarget()
+{
+	return m_bot->UnitInfo().getUnit(getEngagedTargetTag());
+}
 std::vector<sc2::BuffID> CUnit::getBuffs() const
 {
 	return m_unit->buffs;
@@ -220,8 +224,17 @@ void CUnit::update()
 {	
 	if (isVisible())
 	{
+		if (getOwner() == Players::Self)
+		{
+			const auto target = getTarget();
+			if (target)
+			{
+				Drawing::drawLine(*m_bot, m_pos, target->getPos(),sc2::Colors::Red);
+			}
+		}
+
 		//DT detection
-		if (m_bot->GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
+		if (getOwner() == Players::Self && m_bot->GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
 		{
 			const float lostHealth = m_healthPoints - m_unit->health;
 			const int armor = m_bot->getArmor();
@@ -329,7 +342,7 @@ bool CUnit::isWorker() const
 
 bool CUnit::canHitMe(const std::shared_ptr<CUnit> & enemy) const
 {
-	if (!enemy->isCompleted())
+	if (!enemy->isCompleted()||(isBurrowed()&&!isVisible()))
 	{
 		return false;
 	}
@@ -376,7 +389,7 @@ const sc2::Weapon & CUnit::getWeapon(sc2::Weapon::TargetType type) const
 	return m_AAWeapons;
 }
 
-const float CUnit::getAttackRange(std::shared_ptr<CUnit> target) const
+const float CUnit::getAttackRange(const std::shared_ptr<CUnit> & target) const
 {
 	if (getUnitType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 	{

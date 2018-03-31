@@ -33,7 +33,7 @@ void GameCommander::onFrame()
 {
 	m_timer.start();
 
-	handleDTdetections();
+	handleScans();
 	handleShuttleService();
 	handleUnitAssignments();
 	m_productionManager.onFrame();
@@ -115,7 +115,7 @@ void GameCommander::setValidUnits()
 	// make sure the unit is completed and alive and usable
 	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
 	{
-		if (m_bot.GetUnit(unit->getTag()) && unit->isAlive() && unit->getLastSeenGameLoop() == m_bot.Observation()->GetGameLoop() && unit->getUnitType().ToType()!=sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
+		if (m_bot.GetUnit(unit->getTag()) && unit->isAlive() && !unit->isWorker() && !unit->isBuilding() && unit->getLastSeenGameLoop() == m_bot.Observation()->GetGameLoop() && unit->getUnitType().ToType()!=sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
 		{
 			m_validUnits.push_back(unit);
 		}
@@ -356,10 +356,10 @@ void GameCommander::OnUnitEnterVision(CUnit_ptr unit)
 	}
 }
 
-void GameCommander::OnDTdetected(const sc2::Point2D pos)
+void GameCommander::OnDetectedNeeded(const sc2::Point2D pos)
 {
 	m_productionManager.requestScan();
-	m_DTdetections.push_back(timePlace(m_bot.Observation()->GetGameLoop(),pos));
+	m_needDetections.push_back(timePlace(m_bot.Observation()->GetGameLoop(),pos));
 }
 
 void GameCommander::assignUnit(CUnit_ptr unit, CUnits & units)
@@ -385,7 +385,7 @@ const ProductionManager & GameCommander::Production() const
 	return m_productionManager;
 }
 
-void GameCommander::handleDTdetections()
+void GameCommander::handleScans()
 {
 	if (m_bot.Observation()->GetGameLoop() == 5508)
 	{
@@ -417,7 +417,15 @@ void GameCommander::handleDTdetections()
 			}
 		}
 	}
-	if (m_DTdetections.size() > 0)
+	const std::vector<sc2::Effect> effects = m_bot.Observation()->GetEffects();
+	for (const auto & effect : effects)
+	{
+		if (static_cast<sc2::EFFECT_ID>(effect.effect_id) == sc2::EFFECT_ID::LURKERATTACK)
+		{
+			OnDetectedNeeded(effect.positions.front());
+		}
+	}
+	if (m_needDetections.size() > 0)
 	{
 		//If the detection is too old or if we are already scanning discard it.
 		const uint32_t currentTime = m_bot.Observation()->GetGameLoop();
@@ -432,7 +440,7 @@ void GameCommander::handleDTdetections()
 		}
 		const float scanRadius = m_bot.Observation()->GetEffectData()[sc2::EffectID(sc2::EFFECT_ID::SCANNERSWEEP)].radius;
 		int numRemovedDetections = 0;
-		m_DTdetections.erase(std::remove_if(m_DTdetections.begin(), m_DTdetections.end(), [currentTime, scanPoints, scanRadius,&numRemovedDetections](timePlace tp) {
+		m_needDetections.erase(std::remove_if(m_needDetections.begin(), m_needDetections.end(), [currentTime, scanPoints, scanRadius,&numRemovedDetections](timePlace tp) {
 			if (currentTime - tp.m_time > 112) //5 sec
 			{
 				++numRemovedDetections;
@@ -447,9 +455,9 @@ void GameCommander::handleDTdetections()
 				}
 			}
 			return false;
-		}), m_DTdetections.end());
+		}), m_needDetections.end());
 		m_productionManager.usedScan(numRemovedDetections);
-		if (m_DTdetections.empty())
+		if (m_needDetections.empty())
 		{
 			return;
 		}
@@ -463,14 +471,14 @@ void GameCommander::handleDTdetections()
 					int nearbyUnits = 0;
 					for (const auto & combatUnit : m_bot.UnitInfo().getUnits(Players::Self))
 					{
-						if (combatUnit->isCombatUnit() &&  Util::Dist(m_DTdetections.back().m_place, combatUnit->getPos()) < scanRadius)
+						if (combatUnit->isCombatUnit() &&  Util::Dist(m_needDetections.back().m_place, combatUnit->getPos()) < scanRadius)
 						{
 							++nearbyUnits;
 						}
 					}
 					if (nearbyUnits > 5)
 					{
-						Micro::SmartAbility(unit, sc2::ABILITY_ID::EFFECT_SCAN, m_DTdetections.back().m_place,m_bot);
+						Micro::SmartAbility(unit, sc2::ABILITY_ID::EFFECT_SCAN, m_needDetections.back().m_place,m_bot);
 						m_productionManager.usedScan();
 						return;
 					}

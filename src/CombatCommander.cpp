@@ -151,6 +151,8 @@ void CombatCommander::updateGuardSquads()
 	}
 	sc2::Point2D guardPosAux = m_bot.Bases().getNextExpansion(Players::Self);
 	auto base = m_bot.Bases().getBaseLocation(guardPosAux);
+	auto test1 = base->getBasePosition();
+	auto test2 = base->getPosition();
 	const sc2::Point2D guardPos = base->getBasePosition()+Util::normalizeVector(base->getBasePosition() - base->getPosition(), 5.0f);
 	SquadOrder guardDutyOrder(SquadOrderTypes::GuardDuty,guardPos , 25, "Guard Duty");
 	guardSquad.setSquadOrder(guardDutyOrder);
@@ -249,7 +251,7 @@ void CombatCommander::updateDefenseSquads()
 		for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Enemy))
 		{
 			// if it's an overlord, don't worry about it for defense, we don't care what they see
-			if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_OVERLORD)
+			if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_OVERLORD || !unit->isVisible())
 			{
 				continue;
 			}

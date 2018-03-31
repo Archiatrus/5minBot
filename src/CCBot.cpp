@@ -69,7 +69,7 @@ void CCBot::OnStep()
 {
 	Timer t;
 	t.start();
-	Control()->GetObservation();
+	//Control()->GetObservation();
 
 	m_map.onFrame();
 	m_unitInfo.onFrame();
@@ -120,7 +120,7 @@ void CCBot::OnStep()
 		Debug()->SendDebug();
 	}
 	#ifdef VSHUMAN
-	while (timer.getElapsedTimeInMilliSec() - oldTime < 0.9*1000.0 / 20.4) {};
+	while (timer.getElapsedTimeInMilliSec() - oldTime < 1000.0 / 22.4) {};
 	oldTime = timer.getElapsedTimeInMilliSec();
 	#endif // VSHUMAN
 }
@@ -168,7 +168,7 @@ void CCBot::OnUnitEnterVision(const sc2::Unit * unit)
 
 void CCBot::OnDTdetected(const sc2::Point2D pos)
 {
-	m_gameCommander.OnDTdetected(pos);
+	m_gameCommander.OnDetectedNeeded(pos);
 }
 
 void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)

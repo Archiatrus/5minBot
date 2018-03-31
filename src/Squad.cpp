@@ -59,8 +59,8 @@ void Squad::onFrame()
 	}
 	for (const auto & unit : m_units)
 	{
-		Drawing::drawSphereAroundUnit(m_bot,unit->getTag());
-		Drawing::drawText(m_bot,unit->getPos(),m_order.getStatus());
+		//Drawing::drawSphereAroundUnit(m_bot,unit->getTag());
+		Drawing::drawText(m_bot,unit->getPos()-sc2::Point3D(0.0f,0.0f,0.0f),"\n"+m_order.getStatus());
 	}
 }
 

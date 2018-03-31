@@ -114,7 +114,7 @@ void Hitsquad::harass(const BaseLocation * target)
 			}
 			else if (m_medivac->getHealth() != m_medivac->getHealthMax())
 			{
-				m_bot.Workers().setRepairWorker(m_medivac);
+				m_bot.Workers().setRepairWorker(m_medivac,3);
 			}
 		}
 		break;

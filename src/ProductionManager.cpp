@@ -247,7 +247,7 @@ void ProductionManager::defaultMacro()
 	const int numEngibays = static_cast<int>(Engibays.size());
 	const int numEngibaysFinished = buildingsFinished(Engibays);
 
-	if (m_bot.underAttack())
+	if (m_bot.underAttack() && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
 	{
 		//If we are under attack marines have priority
 		std::cout << "Under attack!" << std::endl;

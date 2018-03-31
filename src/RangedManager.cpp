@@ -108,12 +108,20 @@ void RangedManager::assignTargets(const CUnits & targets)
 				for (const auto & pos : effect.positions)
 				{
 					Drawing::drawSphere(m_bot, pos, radius, sc2::Colors::Purple);
-					if (Util::Dist(rangedUnit->getPos(), pos)<radius + 2.0f)
+					const float dist = Util::Dist(rangedUnit->getPos(), pos);
+					if (dist<radius + 2.0f)
 					{
 						sc2::Point2D fleeingPos;
 						if (effect.positions.size() == 1)
 						{
-							fleeingPos = pos + Util::normalizeVector(rangedUnit->getPos() - pos, radius + 2.0f);
+							if (dist > 0)
+							{
+								fleeingPos = pos + Util::normalizeVector(rangedUnit->getPos() - pos, radius + 2.0f);
+							}
+							else
+							{
+								fleeingPos = pos + sc2::Point2D(0.1f,0.1f);
+							}
 						}
 						else
 						{
@@ -309,7 +317,7 @@ const CUnit_ptr RangedManager::getTarget(const CUnit_ptr rangedUnit, const CUnit
 	{
 		BOT_ASSERT(targetUnit, "null target unit in getTarget");
 		//Ignore dead units or ones we can not hit
-		if (!targetUnit->isAlive() || !targetUnit->canHitMe(rangedUnit))
+		if (!targetUnit->isAlive())
 		{
 			continue;
 		}
@@ -326,18 +334,24 @@ const CUnit_ptr RangedManager::getTarget(const CUnit_ptr rangedUnit, const CUnit
 			// if it's a higher priority, or it's closer, set it
 			if (!closestTargetOutsideRange || (priority > highPriorityFar) || (priority == highPriorityFar && distance < closestDist))
 			{
-				closestDist = distance;
-				highPriorityFar = priority;
-				closestTargetOutsideRange = targetUnit;
+				if (targetUnit->canHitMe(rangedUnit)) //Costly call
+				{
+					closestDist = distance;
+					highPriorityFar = priority;
+					closestTargetOutsideRange = targetUnit;
+				}
 			}
 		}
 		else
 		{
 			if (!weakestTargetInsideRange || (priority > highPriorityNear) || (priority == highPriorityNear && targetUnit->getHealth() < lowestHealth))
 			{
-				lowestHealth = targetUnit->getHealth();
-				highPriorityNear = priority;
-				weakestTargetInsideRange = targetUnit;
+				if (targetUnit->canHitMe(rangedUnit)) //Costly call
+				{
+					lowestHealth = targetUnit->getHealth();
+					highPriorityNear = priority;
+					weakestTargetInsideRange = targetUnit;
+				}
 			}
 		}
 
@@ -353,6 +367,10 @@ int RangedManager::getAttackPriority(const CUnit_ptr & unit)
 	if (unit->isCombatUnit())
 	{
 		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_BANELING)
+		{
+			return 12;
+		}
+		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_LURKERMPBURROWED)
 		{
 			return 11;
 		}

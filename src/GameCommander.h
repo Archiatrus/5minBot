@@ -34,7 +34,7 @@ class GameCommander
 	CUnits    m_harassUnits;
 	std::vector<std::shared_ptr<shuttle>>	m_shuttles;
 
-	std::vector<timePlace> m_DTdetections;
+	std::vector<timePlace> m_needDetections;
 
 	bool					m_initialScoutSet;
 
@@ -70,10 +70,10 @@ public:
 	void OnBuildingConstructionComplete(CUnit_ptr unit);
 	void onUnitDestroy(CUnit_ptr unit);
 	void OnUnitEnterVision(CUnit_ptr unit);
-	void OnDTdetected(const sc2::Point2D pos);
+	void OnDetectedNeeded(const sc2::Point2D pos);
 
 	const ProductionManager & Production() const;
-	void handleDTdetections();
+	void handleScans();
 	void requestGuards(const bool req);
 	std::shared_ptr<shuttle> requestShuttleService(CUnits passengers, const sc2::Point2D targetPos);
 	const bool underAttack() const;

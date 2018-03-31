@@ -780,6 +780,10 @@ sc2::Point3D Util::get3DPoint(const sc2::Point2D pos,CCBot & bot)
 
 sc2::Point2D Util::normalizeVector(const sc2::Point2D pos, const float length)
 {
+	if (Util::Dist(pos) == 0.0f)
+	{
+		return sc2::Point2D();
+	}
 	return (length / Util::Dist(pos)) * pos ;
 }
 
@@ -794,7 +798,7 @@ const bool Util::isBadEffect(const sc2::EffectID id)
 	case sc2::EFFECT_ID::LURKERATTACK:
 	case sc2::EFFECT_ID::NUKEDOT:
 	case sc2::EFFECT_ID::PSISTORM:
-	case sc2::EFFECT_ID::THERMALLANCES:
+	//case sc2::EFFECT_ID::THERMALLANCES:
 		return true;
 	}
 	return false;

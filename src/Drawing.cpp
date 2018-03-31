@@ -14,7 +14,7 @@ void Drawing::drawLine(CCBot & bot, float x1, float y1, float x2, float y2, cons
 	bot.Debug()->DebugLineOut(sc2::Point3D(x1, y1, maxZ + 0.2f), sc2::Point3D(x2, y2, maxZ + 0.2f), color);
 }
 
-void Drawing::drawLine(CCBot & bot, const sc2::Point2D & min, const sc2::Point2D max, const sc2::Color & color)
+void Drawing::drawLine(CCBot & bot, const sc2::Point2D & min, const sc2::Point2D & max, const sc2::Color & color)
 {
 	if (!useDebug)
 	{
@@ -22,6 +22,15 @@ void Drawing::drawLine(CCBot & bot, const sc2::Point2D & min, const sc2::Point2D
 	}
 	const float maxZ = bot.Map().getHeight(min);
 	bot.Debug()->DebugLineOut(sc2::Point3D(min.x, min.y, maxZ + 0.2f), sc2::Point3D(max.x, max.y, maxZ + 0.2f), color);
+}
+
+void Drawing::drawLine(CCBot & bot, const sc2::Point3D & min, const sc2::Point3D & max, const sc2::Color & color)
+{
+	if (!useDebug)
+	{
+		return;
+	}
+	bot.Debug()->DebugLineOut(min+sc2::Point3D(0.0f,0.0f,0.2f), max + sc2::Point3D(0.0f, 0.0f, 0.2f), color);
 }
 
 void Drawing::drawSquare(CCBot & bot, float x1, float y1, float x2, float y2, const sc2::Color & color)

@@ -33,6 +33,10 @@ void SiegeManager::assignTargets(const CUnits & targets)
 	for (const auto & siegeUnit : SiegeUnits)
 	{
 		BOT_ASSERT(siegeUnit, "melee unit is null");
+		if (siegeUnit->isSelected())
+		{
+			int a = 1;
+		}
 		// if the order is to attack or defend
 		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend)
 		{
@@ -41,6 +45,7 @@ void SiegeManager::assignTargets(const CUnits & targets)
 			{
 				// find the best target for this Unit
 				const CUnit_ptr target = getTarget(siegeUnit, SiegeUnitTargets);
+
 				//if we have a target
 				if (target)
 				{
@@ -130,10 +135,13 @@ void SiegeManager::assignTargets(const CUnits & targets)
 const CUnit_ptr SiegeManager::getTarget(const CUnit_ptr siegeUnit, const CUnits & targets)
 {
 	BOT_ASSERT(siegeUnit, "null melee unit in getTarget");
-	int highPriorityFar = 0;
-	int highPriorityNear = 0;
-	double closestDist = std::numeric_limits<double>::max();
-	double lowestHealth = std::numeric_limits<double>::max();
+
+	const CUnit_ptr currentTarget = siegeUnit->getTarget();
+
+	float highPriorityFar = 0;
+	float highPriorityNear = 0;
+	float closestDist = std::numeric_limits<float>::max();
+	float lowestHealth = std::numeric_limits<float>::max();
 	CUnit_ptr closestTargetOutsideRange = nullptr;
 	CUnit_ptr weakestTargetInsideRange = nullptr;
 	const float range = 13.0; //We want the sieged range
@@ -150,7 +158,11 @@ const CUnit_ptr SiegeManager::getTarget(const CUnit_ptr siegeUnit, const CUnits 
 		{
 			continue;
 		}
-		int priority = getAttackPriority(siegeUnit, targetUnit);
+		float priority = getAttackPriority(siegeUnit, targetUnit);
+		if (currentTarget && targetUnit->getTag() == currentTarget->getTag())
+		{
+			priority += 0.5;
+		}
 		float distance = Util::Dist(siegeUnit->getPos(), targetUnit->getPos());
 		//Tanks have a minimum range
 		if (distance < 2.0f)
@@ -163,7 +175,7 @@ const CUnit_ptr SiegeManager::getTarget(const CUnit_ptr siegeUnit, const CUnits 
 			// If in sight we just add 20 to prio. This should make sure that a unit in sight has higher priority than any unit outside of range
 			if (distance <= siegeUnit->getSightRange())
 			{
-				priority += 20;
+				priority += 20.0f;
 			}
 			// if it's a higher priority, or it's closer, set it
 			if (!closestTargetOutsideRange || (priority > highPriorityFar) || (priority == highPriorityFar && distance < closestDist))
@@ -184,11 +196,11 @@ const CUnit_ptr SiegeManager::getTarget(const CUnit_ptr siegeUnit, const CUnits 
 		}
 
 	}
-	return weakestTargetInsideRange&&highPriorityNear>1 ? weakestTargetInsideRange : closestTargetOutsideRange;
+	return weakestTargetInsideRange&&highPriorityNear>1.5 ? weakestTargetInsideRange : closestTargetOutsideRange;
 }
 
 // get the attack priority of a type in relation to a zergling
-int SiegeManager::getAttackPriority(const CUnit_ptr attacker, const CUnit_ptr unit)
+float SiegeManager::getAttackPriority(const CUnit_ptr attacker, const CUnit_ptr unit) const
 {
 	BOT_ASSERT(unit, "null unit in getAttackPriority");
 
@@ -196,25 +208,25 @@ int SiegeManager::getAttackPriority(const CUnit_ptr attacker, const CUnit_ptr un
 	{
 		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_BANELING)
 		{
-			return 11;
+			return 11.0f;
 		}
-		return 10;
+		return 10.0f;
 	}
 	if (unit->getUnitType() == sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON || unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPINECRAWLER)
 	{
-		return 10;
+		return 10.0f;
 	}
 	if (unit->isWorker())
 	{
-		return 10;
+		return 10.0f;
 	}
 	if (unit->getUnitType() == sc2::UNIT_TYPEID::PROTOSS_PYLON || unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
 	{
-		return 5;
+		return 5.0f;
 	}
 	if (Util::IsTownHallType(unit->getUnitType()))
 	{
-		return 4;
+		return 4.0f;
 	}
-	return 1;
+	return 1.0f;
 }

@@ -51,12 +51,10 @@ void Micro::SmartAttackUnit(const CUnits & attacker, const CUnit_ptr target, CCB
 		float range = a->getAttackRange(target);
 		if (a->getWeaponCooldown() == 0.0f && dist>range + 0.5f)
 		{
-			Drawing::drawLine(bot,a->getPos(), target->getPos(), sc2::Colors::Yellow);
 			attackerThatNeedToAttackMove.push_back(a->getUnit_ptr());
 		}
 		else
 		{
-			Drawing::drawLine(bot,a->getPos(), target->getPos(), sc2::Colors::Red);
 			attackerThatNeedToAttack.push_back(a->getUnit_ptr());
 		}
 	}
