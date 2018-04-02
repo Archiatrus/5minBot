@@ -303,6 +303,13 @@ const std::set<const BaseLocation *> & BaseLocationManager::getOccupiedBaseLocat
 {
 	return m_occupiedBaseLocations.at(player);
 }
+
+const bool BaseLocationManager::isOccupiedBy(int player, sc2::Point2D pos) const
+{
+	const auto base = getBaseLocation(pos);
+	return base && base->isOccupiedByPlayer(player);
+}
+
 const sc2::Point2D BaseLocationManager::getBuildingLocation() const
 {
 	return m_bot.GetStartLocation();
@@ -350,6 +357,7 @@ const sc2::Point2D BaseLocationManager::getRallyPoint() const
 
 sc2::Point2D BaseLocationManager::getNextExpansion(int player) const
 {
+	int a = 1;
 	const BaseLocation * homeBase = getPlayerStartingBaseLocation(player);
 	const BaseLocation * closestBase = nullptr;
 	int minDistance = std::numeric_limits<int>::max();
@@ -368,13 +376,6 @@ sc2::Point2D BaseLocationManager::getNextExpansion(int player) const
 
 		// get the tile position of the base
 		auto tile = base->getDepotPosition();
-		
-		bool buildingInTheWay = false; // TODO: check if there are any units on the tile
-
-		if (buildingInTheWay)
-		{
-			continue;
-		}
 
 		// the base's distance from our main nexus
 		int distanceFromHome = homeBase->getGroundDistance(tile);

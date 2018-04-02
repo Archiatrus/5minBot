@@ -20,14 +20,25 @@ void Hitsquad::escapePathPlaning()
 	pathPlaning escapePlan(m_bot, m_medivac->getPos(), targetPos, m_bot.Map().width(), m_bot.Map().height(), 1.0f);
 	
 	std::vector<sc2::Point2D> escapePath=escapePlan.planPath();
-	for (sc2::Point2D pos : escapePath)
+	if (escapePath.empty())
 	{
-		if (m_wayPoints.size() > 0)
-		{
-			Drawing::drawLine(m_bot,m_wayPoints.back(), pos);
-		}
-		m_wayPoints.push(pos);
+		return;
 	}
+	m_wayPoints.push(escapePath.front());
+	for (size_t i = 1; i<escapePath.size() - 1; ++i)
+	{
+		const sc2::Point2D directionNext = escapePath[i] - m_wayPoints.back();
+		const sc2::Point2D directionNextNext = escapePath[i + 1] - m_wayPoints.back();
+		if (directionNext.x*directionNextNext.y != directionNext.y*directionNextNext.x)
+		{
+			m_wayPoints.push(escapePath[i]);
+			if (m_wayPoints.size() > 0)
+			{
+				Drawing::drawLine(m_bot, m_wayPoints.back(), escapePath[i]);
+			}
+		}
+	}
+	m_wayPoints.push(escapePath.back());
 }
 
 
@@ -142,19 +153,25 @@ void Hitsquad::harass(const BaseLocation * target)
 		{
 			m_status = HarassStatus::Harass;
 		}
-		if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || shouldWeFlee(getNearbyEnemyUnits()))
+		for (const auto & enemy : getNearbyEnemyUnits())
 		{
-			while (!m_wayPoints.empty())
+			if (shouldWeFlee(getNearbyEnemyUnits(), m_marines.size())
+				|| ((enemy->getUnitType()==sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON || enemy->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || enemy->getUnitType() == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
+					&& enemy->isCompleted() && Util::Dist(enemy->getPos(),m_medivac->getPos())<enemy->getAttackRange()))
 			{
-				m_wayPoints.pop();
+				while (!m_wayPoints.empty())
+				{
+					m_wayPoints.pop();
+				}
+				m_status = HarassStatus::Fleeing;
+				break;
 			}
-			m_status = HarassStatus::Fleeing;
 		}
 		break;
 	case HarassStatus::Harass:
 	{
 		CUnits targetUnits = getNearbyEnemyUnits();
-		if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || shouldWeFlee(targetUnits))
+		if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || shouldWeFlee(targetUnits,m_marines.size()))
 		{
 			m_status = HarassStatus::Fleeing;
 			return;
@@ -279,7 +296,7 @@ void Hitsquad::harass(const BaseLocation * target)
 			{
 				if (marine->getHealth() != marine->getHealthMax())
 				{
-					if (m_medivac->getOrders().empty())
+					if (m_medivac->getOrders().empty() && m_medivac->getEnergy() > 5.0f)
 					{
 						Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::EFFECT_HEAL, marine,m_bot);
 					}
@@ -354,17 +371,17 @@ const BaseLocation * Hitsquad::getSavePosition() const
 	return allTargetBases.empty() ? m_bot.Bases().getPlayerStartingBaseLocation(Players::Self) : allTargetBases.begin()->second;
 }
 
-const bool Hitsquad::shouldWeFlee(CUnits targets) const
+const bool Hitsquad::shouldWeFlee(CUnits targets,int threshold) const
 {
 	int opponents = 0;
 	for (const auto & t : targets)
 	{
-		if (Util::IsCombatUnitType(t->getUnitType().ToType(), m_bot))
+		if (t->isCombatUnit() && t->isVisible() && t->isCompleted())
 		{
 			opponents++;
 		}
 	}
-	if (opponents >= m_marines.size())
+	if (opponents >= threshold)
 	{
 		return true;
 	}
@@ -373,16 +390,26 @@ const bool Hitsquad::shouldWeFlee(CUnits targets) const
 
 CUnits Hitsquad::getNearbyEnemyUnits() const
 {
-	CUnits enemyUnits = m_bot.UnitInfo().getUnits(Players::Enemy);
 	CUnits nearbyEnemyUnits;
 	const sc2::Point2D pos = m_medivac->getPos();
 	const float range = m_medivac->getSightRange();
-	for (const auto & t : enemyUnits)
+	const BaseLocation * targetBase = m_bot.Bases().getBaseLocation(pos);
+	for (const auto & t : m_bot.UnitInfo().getUnits(Players::Enemy))
 	{
-		if (Util::Dist(pos, t->getPos()) <= range)
+		const float dist = Util::Dist(pos, t->getPos());
+		if (dist <= range)
 		{
 			nearbyEnemyUnits.push_back(t);
 		}
+		else if (targetBase && t->isBuilding() && dist < 30.0f)
+		{
+			BaseLocation * base = m_bot.Bases().getBaseLocation(t->getPos());
+			if (base && base->getBaseID() == targetBase->getBaseID())
+			{
+				nearbyEnemyUnits.push_back(t);
+			}
+		}
+
 	}
 	return nearbyEnemyUnits;
 }
@@ -460,6 +487,7 @@ const bool Hitsquad::manhattenMove(const BaseLocation * target)
 		if (m_wayPoints.empty())
 		{
 			m_wayPoints=m_bot.Map().getEdgePath(m_medivac->getPos(), posEnd);
+
 		}
 		//If we found a new base and it is closer to us then our current target
 		else if (Util::Dist(m_wayPoints.back(),posEnd)>10.0f && Util::Dist(m_medivac->getPos(), posEnd)<Util::Dist(m_medivac->getPos(), m_wayPoints.back()))

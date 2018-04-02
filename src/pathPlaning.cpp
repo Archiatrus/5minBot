@@ -56,7 +56,7 @@ const float pathPlaning::calcThreatLvl(sc2::Point2D pos) const
 			float dist = Util::Dist(enemy->getPos(), pos);
 			if (dist < range) 
 			{
-				threatLvl += dps*(range - dist) / range;
+				threatLvl += std::max(0.0f,dps*(range - dist) / range);
 			}
 		}
 	}
@@ -158,7 +158,7 @@ void pathPlaning::expandFrontNode(std::shared_ptr<node> frontNode)
 			if (i != 0.0f || j != 0.0f)
 			{
 				sc2::Point2D newPos = currentPos + i*xMove + j*yMove;
-				if (newPos.x < 0 || newPos.x > m_bot.Map().width() || newPos.y < 0 || newPos.y > m_bot.Map().height())
+				if (newPos.x < m_bot.Observation()->GetGameInfo().playable_min.x || newPos.x > m_bot.Observation()->GetGameInfo().playable_max.x || newPos.y < m_bot.Observation()->GetGameInfo().playable_min.y || newPos.y > m_bot.Observation()->GetGameInfo().playable_max.y)
 				{
 					continue;
 				}

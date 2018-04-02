@@ -2,6 +2,7 @@
 #include "Util.h"
 #include "CCBot.h"
 #include "Drawing.h"
+#include "pathPlaning.h"
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -379,7 +380,7 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 	std::queue<sc2::Point2D> wayPoints;
 	const int margin = 5;
 	const sc2::Point2D posA = m_bot.Map().getClosestBorderPoint(posStart, margin);
-	const sc2::Point2D posB = m_bot.Map().getClosestBorderPoint(posEnd, margin);
+	sc2::Point2D posB = m_bot.Map().getClosestBorderPoint(posEnd, margin);
 	const sc2::Point2D forbiddenCorner = m_bot.Map().getForbiddenCorner(margin);
 
 	float x_min = m_bot.Observation()->GetGameInfo().playable_min.x + margin;
@@ -533,9 +534,9 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 		//down to right
 		else if (posA.y == y_min && posB.x == x_max)
 		{
-			if (forbiddenCorner.x != x_min || forbiddenCorner.y != y_max)
+			if (forbiddenCorner.x != x_max || forbiddenCorner.y != y_min)
 			{
-				wayPoints.push(sc2::Point2D(x_min, y_max));
+				wayPoints.push(sc2::Point2D(x_max, y_min));
 			}
 			else
 			{
@@ -574,8 +575,54 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 		}
 
 	}
-	wayPoints.push(posB);
-	wayPoints.push(posEnd);
+	if (m_bot.Bases().isOccupiedBy(Players::Enemy, posEnd))
+	{
+		CUnits staticDs = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON,sc2::UNIT_TYPEID::ZERG_SPORECRAWLER,sc2::UNIT_TYPEID::TERRAN_MISSILETURRET }));
+		staticDs.erase(std::remove_if(staticDs.begin(), staticDs.end(), [posEnd](const auto & staticD) {
+			return Util::Dist(staticD->getPos(), posEnd) > 20.0f;
+		}), staticDs.end());
+		const sc2::Point2D saveDirection = Util::normalizeVector(wayPoints.back() - posB);
+		bool inRange = true;
+		while (inRange)
+		{
+			inRange = false;
+			for (const auto & staticD : staticDs)
+			{
+				while (Util::Dist(staticD->getPos(), posB) <= staticD->getAttackRange() + 1.0f)
+				{
+					posB += saveDirection;
+					inRange = true;
+				}
+			}
+		}
+		wayPoints.push(posB);
+
+		if (staticDs.empty())
+		{
+			wayPoints.push(posB);
+			wayPoints.push(posEnd);
+		}
+		else
+		{
+			pathPlaning escapePlan(m_bot, posB, posEnd, m_bot.Map().width(), m_bot.Map().height(), 1.0f);
+			std::vector<sc2::Point2D> escapePath = escapePlan.planPath();
+			for (size_t i = 0;i<escapePath.size()-1;++i)
+			{
+				const sc2::Point2D directionNext = escapePath[i] - wayPoints.back();
+				const sc2::Point2D directionNextNext = escapePath[i + 1] - wayPoints.back();
+				if (directionNext.x*directionNextNext.y != directionNext.y*directionNextNext.x)
+				{
+					wayPoints.push(escapePath[i]);
+				}
+			}
+			wayPoints.push(escapePath.back());
+		}
+	}
+	else
+	{
+		wayPoints.push(posB);
+		wayPoints.push(posEnd);
+	}
 	return wayPoints;
 }
 

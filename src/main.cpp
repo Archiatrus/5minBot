@@ -17,12 +17,12 @@
 
 #ifdef LADDEREXE
 bool useDebug = false;
-bool useAutoObserver = true;
+bool useAutoObserver = false;
 #elif VSHUMAN
 bool useDebug = false;
 bool useAutoObserver = false;
 #else
-bool useDebug = true;
+bool useDebug = false;
 bool useAutoObserver = false;
 #endif
 
@@ -127,51 +127,67 @@ int main(int argc, char* argv[])
 #else //DEBUG
 int main(int argc, char* argv[])
 {
-	const int stepSize = 1;
+	std::vector<std::string> maps = { "AscensiontoAiurLE.SC2Map","BelShirVestigeLE.SC2Map","MechDepotLE.SC2Map","NewkirkPrecinctTE.SC2Map","OdysseyLE.SC2Map","ProximaStationLE.SC2Map" };
+	std::vector<sc2::Race> opponents = { sc2::Race::Protoss,sc2::Race::Terran,sc2::Race::Zerg };
+	std::map<std::string, sc2::Point2D> mapScore;
+	std::map<sc2::Race, sc2::Point2D> raceScore;
+	
 	while (true)
 	{
-		// Add the custom bot, it will control the players.
-		CCBot bot;
-		//CCBot bot2;
-		sc2::Coordinator coordinator;
-		if (!coordinator.LoadSettings(argc, argv))
+		for (const auto & map : maps)
 		{
-			std::cout << "Unable to find or parse settings." << std::endl;
-			return 1;
-		}
-		// WARNING: Bot logic has not been thorougly tested on step sizes > 1
-		//		  Setting this = N means the bot's onFrame gets called once every N frames
-		//		  The bot may crash or do unexpected things if its logic is not called every frame
-		coordinator.SetStepSize(stepSize);
-		coordinator.SetRealtime(false);
-		coordinator.SetMultithreaded(true);
-		coordinator.SetParticipants({
-			CreateParticipant(sc2::Race::Terran, &bot),
-			//sc2::PlayerSetup(sc2::PlayerType::Observer,Util::GetRaceFromString(enemyRaceString)),
-			CreateComputer(sc2::Race::Random, sc2::Difficulty::CheatInsane)
-			//CreateParticipant(sc2::Race::Terran, &bot2),
-		});
-		// Start the game.
-		coordinator.LaunchStarcraft();
-		//coordinator.StartGame("C:/Program Files (x86)/StarCraft II/Maps/AcolyteLE.SC2Map");
-		coordinator.StartGame("BelShirVestigeLE.SC2Map");
-		//coordinator.StartGame("Proxima Station LE");
-		//coordinator.StartGame("SequencerLE.SC2Map");
+			for (const auto & opponent : opponents)
+			{
 
-		// Step forward the game simulation.
-		while (coordinator.Update())
-		{
+				// Add the custom bot, it will control the players.
+				CCBot bot;
+				//CCBot bot2;
+				sc2::Coordinator coordinator;
+				if (!coordinator.LoadSettings(argc, argv))
+				{
+					std::cout << "Unable to find or parse settings." << std::endl;
+					return 1;
+				}
+				// WARNING: Bot logic has not been thorougly tested on step sizes > 1
+				//		  Setting this = N means the bot's onFrame gets called once every N frames
+				//		  The bot may crash or do unexpected things if its logic is not called every frame
+				coordinator.SetStepSize(1);
+				coordinator.SetRealtime(false);
+				coordinator.SetMultithreaded(true);
+				coordinator.SetParticipants({
+					CreateParticipant(sc2::Race::Terran, &bot),
+					CreateComputer(opponent, sc2::Difficulty::CheatInsane)
+				});
+				// Start the game.
+				coordinator.LaunchStarcraft();
+				coordinator.StartGame(map);
+
+				// Step forward the game simulation.
+				while (coordinator.Update())
+				{
+				}
+				if (bot.Observation()->GetResults().front().result == sc2::GameResult::Win)
+				{
+					mapScore[map] += sc2::Point2D(1, 0);
+					raceScore[opponent] += sc2::Point2D(1, 0);
+				}
+				else
+				{
+					mapScore[map] += sc2::Point2D(0, 1);
+					raceScore[opponent] += sc2::Point2D(0, 1);
+				}
+				for (const auto & rs : raceScore)
+				{
+					std::cout << Util::GetStringFromRace(rs.first) << " = " << rs.second.x << " : " << rs.second.y << std::endl;
+				}
+				for (const auto & ms : mapScore)
+				{
+					std::cout << ms.first << " = " << ms.second.x << " : " << ms.second.y << std::endl;
+				}
+				coordinator.LeaveGame();
+				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			}
 		}
-		if (bot.Control()->SaveReplay("C:/Users/D/Documents/StarCraft II/Accounts/115842237/2-S2-1-1338490/Replays/Multiplayer/asdf.Sc2Replay"))
-		{
-			std::cout << "REPLAY SUCESS" << "replay/asdf.Sc2Replay" << std::endl;
-		}
-		else
-		{
-			std::cout << "REPLAY FAIL" << "replay/asdf.Sc2Replay" << std::endl;
-		}
-		coordinator.LeaveGame();
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 	return 0;
 }
