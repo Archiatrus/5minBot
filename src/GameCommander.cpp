@@ -417,8 +417,7 @@ void GameCommander::handleScans()
 			}
 		}
 	}
-	const std::vector<sc2::Effect> effects = m_bot.Observation()->GetEffects();
-	for (const auto & effect : effects)
+	for (const auto & effect : m_bot.Observation()->GetEffects())
 	{
 		if (static_cast<sc2::EFFECT_ID>(effect.effect_id) == sc2::EFFECT_ID::LURKERATTACK)
 		{
@@ -429,9 +428,8 @@ void GameCommander::handleScans()
 	{
 		//If the detection is too old or if we are already scanning discard it.
 		const uint32_t currentTime = m_bot.Observation()->GetGameLoop();
-		const std::vector<sc2::Effect> effects = m_bot.Observation()->GetEffects();
 		std::vector<sc2::Point2D> scanPoints;
-		for (auto & effect : effects)
+		for (auto & effect : m_bot.Observation()->GetEffects())
 		{
 			if (sc2::EffectID(effect.effect_id).ToType() == sc2::EFFECT_ID::SCANNERSWEEP)
 			{

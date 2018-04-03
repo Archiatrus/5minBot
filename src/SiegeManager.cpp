@@ -58,7 +58,7 @@ void SiegeManager::assignTargets(const CUnits & targets)
 						}
 						else
 						{
-							Micro::SmartAttackMove(siegeUnit, target->getPos(), m_bot);
+							Micro::SmartMove(siegeUnit, target->getPos(), m_bot);
 						}
 					}
 					//if we are stationary
@@ -91,7 +91,7 @@ void SiegeManager::assignTargets(const CUnits & targets)
 						}
 						else
 						{
-							Micro::SmartAttackMove(siegeUnit, order.getPosition(), m_bot);
+							Micro::SmartMove(siegeUnit, order.getPosition(), m_bot);
 						}
 					}
 					else
@@ -116,7 +116,7 @@ void SiegeManager::assignTargets(const CUnits & targets)
 					}
 					else
 					{
-						Micro::SmartAttackMove(siegeUnit, order.getPosition(), m_bot);
+						Micro::SmartMove(siegeUnit, order.getPosition(), m_bot);
 					}
 				}
 				else

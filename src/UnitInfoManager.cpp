@@ -194,18 +194,31 @@ const size_t UnitInfoManager::getUnitTypeCount(int player, sc2::UnitTypeID type,
 		return 0;
 	}
     size_t count = 0;
-	if (!completed)
+	if (type!=sc2::UNIT_TYPEID::TERRAN_REFINERY)
 	{
-		return m_unitDataBase.at(player).at(type).getUnits().size();
+		if (!completed)
+		{
+			return m_unitDataBase.at(player).at(type).getUnits().size();
+		}
+		for (const auto & unit : m_unitDataBase.at(player).at(type).getUnits())
+		{
+			if (unit->isCompleted())
+			{
+				++count;
+			}
+		}
 	}
-    for (const auto & unit : m_unitDataBase.at(player).at(type).getUnits())
-    {
-        if (unit->isCompleted())
-        {
-            count++;
-        }
-    }
-    return count;
+	else
+	{
+		for (const auto & unit : m_unitDataBase.at(player).at(type).getUnits())
+		{
+			if ((!completed || unit->isCompleted()) && unit->getVespeneContents())
+			{
+				++count;
+			}
+		}
+	}
+	return count;
 }
 
 const size_t UnitInfoManager::getUnitTypeCount(int player, std::vector<sc2::UnitTypeID> types, bool completed) const

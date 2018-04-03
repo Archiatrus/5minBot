@@ -178,7 +178,10 @@ void WorkerManager::handleMineralWorkers()
 					if (enemy->isVisible() && Util::Dist(enemy->getPos(), worker->getPos()) < 10.0f)
 					{
 						const CUnit_ptr mineralPatch = Util::getClostestMineral(closestBunker->getPos(), m_bot);
-						m_workerData.setWorkerJob(worker, WorkerJobs::Minerals, mineralPatch);
+						if (mineralPatch)
+						{
+							m_workerData.setWorkerJob(worker, WorkerJobs::Minerals, mineralPatch);
+						}
 					}
 				}
 			}

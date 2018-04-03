@@ -250,7 +250,7 @@ void ProductionManager::defaultMacro()
 	if (m_bot.underAttack() && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
 	{
 		//If we are under attack marines have priority
-		std::cout << "Under attack!" << std::endl;
+		//std::cout << "Under attack!" << std::endl;
 		for (const auto & unit : Rax)
 		{
 			//Any finished rax
@@ -312,6 +312,7 @@ void ProductionManager::defaultMacro()
 		}
 	}
 	//Refinaries
+	auto test = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_REFINERY);
 	int numOfRefinaries = static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_REFINERY, false) + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_REFINERY));
 	if (numRax > 0 && minerals >= 75 && ((m_bot.Observation()->GetFoodWorkers() >= 15 && numOfRefinaries == 0) || (m_bot.Observation()->GetFoodWorkers() >= 21 && numOfRefinaries == 1) || (m_bot.Observation()->GetFoodWorkers() >= 40 && numOfRefinaries <= 3)))
 	{
@@ -380,43 +381,19 @@ void ProductionManager::defaultMacro()
 	{
 		if (unit->isCompleted() && unit->isIdle())
 		{
-
-			//If you have enough minerals but not enough gas do not block. That mins could be marines.
-			//Weapons first
-			if ((weapon == 0 && armor == 0 && gas >= 100) || (weapon == 1 && armor == 1 && gas >= 175 && numArmoriesFinished > 0) || (weapon == 2 && armor == 2 && gas >= 250))
-			{
-				if ((weapon == 0 && minerals >= 100) || (weapon == 1 && minerals >= 175) || (weapon == 2 && minerals >= 250))
-				{
-					Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONS, m_bot);
-				}
-				std::cout << "Weapon++" << std::endl;
-				return;
-			}
-			if ((weapon == 1 && armor == 0 && gas >= 100) || (weapon == 2 && armor == 1 && gas >= 175) || (weapon == 3 && armor == 2 && gas >= 250))
-			{
-				if ((armor == 0 && minerals >= 100) || (armor == 1 && minerals >= 175) || (armor == 2 && minerals >= 250))
-				{
-					Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMOR, m_bot);
-				}
-				std::cout << "Armor++" << std::endl;
-				return;
-			}
-
-			/*
-			//THE METHOD BELOW WOULD BE MUCH NICER... BUT THERE IS A BUG :/
-			std::vector<sc2::AvailableAbility> abilities = m_bot.Query()->GetAbilitiesForUnit(unit).abilities;
+			std::vector<sc2::AvailableAbility> abilities = m_bot.Query()->GetAbilitiesForUnit(unit->getUnit_ptr(),true).abilities;
 			// Weapons and armor research has consecutive numbers
 			//First weapons
 			for (sc2::AvailableAbility & ability : abilities)
 			{
-				if (ability.ability_id >= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONSLEVEL1 && ability.ability_id <= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONSLEVEL3)
+				if (ability.ability_id == sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONS)
 				{
 					const sc2::UpgradeID upgradeID = Util::abilityIDToUpgradeID(ability.ability_id);
-					if (gas >= m_bot.UnitInfo().getUpgradeData().at(upgradeID).vespene_cost)
+					if ((weapon == 0 && gas >= 100) || (weapon == 1 && gas >= 175) || (weapon == 2 && gas >= 250))
 					{
-						if (minerals >= m_bot.UnitInfo().getUpgradeData().at(upgradeID).mineral_cost)
+						if ((weapon == 0 && minerals >= 100) || (weapon == 1 && minerals >= 175) || (weapon == 2 && minerals >= 250))
 						{
-							m_bot.Actions()->UnitCommand(unit, ability.ability_id);
+							Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONS, m_bot);
 						}
 						std::cout << "Weapon ++" << std::endl;
 						return;
@@ -426,21 +403,20 @@ void ProductionManager::defaultMacro()
 			//Then armor
 			for (sc2::AvailableAbility & ability : abilities)
 			{
-				if (ability.ability_id >= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMORLEVEL1 && ability.ability_id <= sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMORLEVEL3)
+				if (ability.ability_id == sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMOR)
 				{
 					const sc2::UpgradeID upgradeID = Util::abilityIDToUpgradeID(ability.ability_id);
-					if (gas >= m_bot.UnitInfo().getUpgradeData().at(upgradeID).vespene_cost)
+					if ((armor == 0 && gas >= 100) || (armor == 1 && gas >= 175) || (armor == 2 && gas >= 250))
 					{
-						if (minerals >= m_bot.UnitInfo().getUpgradeData().at(upgradeID).mineral_cost)
+						if ((armor == 0 && minerals >= 100) || (armor == 1 && minerals >= 175) || (armor == 2 && minerals >= 250))
 						{
-							m_bot.Actions()->UnitCommand(unit, ability.ability_id);
+							Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMOR, m_bot);
 						}
 						std::cout << "Armor ++" << std::endl;
 						return;
 					}
 				}
 			}
-			*/
 		}
 	}
 	//Every rax has to build
@@ -669,7 +645,9 @@ void ProductionManager::defaultMacro()
 
 	//Engineering bay
 	//We start with one. We want to built it after the starport has finished
-	if (minerals >= 125 && numStarportFinished == 1 && numEngibays + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY) == 0)
+	if (minerals >= 125
+		&& ((numStarportFinished == 1 && numEngibays + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY) == 0)
+		|| (numEngibays + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY) == 1 && numArmoriesFinished == 1)))
 	{
 		m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY), BUILDING, false));
 		std::cout << "Engineering Bay" << std::endl;
@@ -678,7 +656,7 @@ void ProductionManager::defaultMacro()
 
 	//Armory
 	//Needed for upgrades after +1
-	if (weapon == 1 && armor == 0 && gas >= 100 && numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ARMORY) == 0)
+	if (weapon >= 1 && armor >= 0 && gas >= 100 && numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ARMORY) == 0)
 	{
 		//A armory needs 46 seconds to build.
 		//+1 weapons needs 114 seconds.
@@ -749,7 +727,7 @@ void ProductionManager::defaultMacro()
 	{
 		if (numRax==1 || numStarport>0)
 		{
-			if (minerals >= 150 && numRax + 2 + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 3 * numBases - 2 && numRax<=14)
+			if (minerals >= 150 && numRax + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 3 * numBases - 4 && numRax <= 9)
 			{
 				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
 				std::cout << "Barracks" << std::endl;

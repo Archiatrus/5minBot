@@ -94,7 +94,7 @@ void BuildingManager::validateWorkersAndBuildings()
 			toRemove.push_back(b);
 		}
 		// Cancel buildings if they are about to be destroyed
-		else if (buildingUnit->getHealthPoints() / buildingUnit->getHealthPointsMax() < 0.1f && buildingUnit->getBuildProgress() > 0.2f)
+		else if (buildingUnit->getHealthPoints() / buildingUnit->getHealthPointsMax() < 0.1f && buildingUnit->getBuildProgress() >buildingUnit->getHealthPoints() / buildingUnit->getHealthPointsMax())
 		{
 			Micro::SmartAbility(buildingUnit, sc2::ABILITY_ID::CANCEL_BUILDINPROGRESS, m_bot);
 			toRemove.push_back(b);
@@ -417,11 +417,28 @@ void BuildingManager::addBuildingTask(const sc2::UnitTypeID & type, const sc2::P
 	b.status = BuildingStatus::Unassigned;
 
 	//with an empty building task queue there shouldn't be any reserved tiles.
-	//Well there are. The ones reserved for addons...
-	//if (m_buildings.empty())
-	//{
-	//	m_buildingPlacer.freeTiles();
-	//}
+	if (m_buildings.empty())
+	{
+		bool canReset = true;
+		//Well there are. The ones reserved for addons...
+		const CUnits flyingBuildings = m_bot.UnitInfo().getUnits(Players::Self, std::vector<sc2::UNIT_TYPEID>({sc2::UNIT_TYPEID::TERRAN_STARPORTFLYING, sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING }));
+		if (flyingBuildings.empty())
+		{
+			const CUnits addonBuildings = m_bot.UnitInfo().getUnits(Players::Self, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::TERRAN_BARRACKS, sc2::UNIT_TYPEID::TERRAN_STARPORT , sc2::UNIT_TYPEID::TERRAN_STARPORTFLYING,sc2::UNIT_TYPEID::TERRAN_FACTORY , sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING }));
+			for (const auto & addonBuilding : addonBuildings)
+			{
+				if (!addonBuilding->getAddOnTag())
+				{
+					canReset = false;
+					break;
+				}
+			}
+		}
+		if (canReset)
+		{
+			m_buildingPlacer.freeTiles();
+		}
+	}
 	m_buildings.push_back(b);
 }
 

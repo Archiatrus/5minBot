@@ -127,7 +127,7 @@ int main(int argc, char* argv[])
 #else //DEBUG
 int main(int argc, char* argv[])
 {
-	std::vector<std::string> maps = { "AscensiontoAiurLE.SC2Map","BelShirVestigeLE.SC2Map","MechDepotLE.SC2Map","NewkirkPrecinctTE.SC2Map","OdysseyLE.SC2Map","ProximaStationLE.SC2Map" };
+	std::vector<std::string> maps = { "OdysseyLE.SC2Map","ProximaStationLE.SC2Map","AscensiontoAiurLE.SC2Map","BelShirVestigeLE.SC2Map","MechDepotLE.SC2Map","NewkirkPrecinctTE.SC2Map" };
 	std::vector<sc2::Race> opponents = { sc2::Race::Protoss,sc2::Race::Terran,sc2::Race::Zerg };
 	std::map<std::string, sc2::Point2D> mapScore;
 	std::map<sc2::Race, sc2::Point2D> raceScore;
@@ -176,14 +176,17 @@ int main(int argc, char* argv[])
 					mapScore[map] += sc2::Point2D(0, 1);
 					raceScore[opponent] += sc2::Point2D(0, 1);
 				}
+				std::cout << std::endl;
 				for (const auto & rs : raceScore)
 				{
 					std::cout << Util::GetStringFromRace(rs.first) << " = " << rs.second.x << " : " << rs.second.y << std::endl;
 				}
+				std::cout << std::endl;
 				for (const auto & ms : mapScore)
 				{
 					std::cout << ms.first << " = " << ms.second.x << " : " << ms.second.y << std::endl;
 				}
+				std::cout << std::endl << std::endl;
 				coordinator.LeaveGame();
 				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 			}

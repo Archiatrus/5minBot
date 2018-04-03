@@ -105,6 +105,7 @@ public:
 	bool isCompleted() const;
 	bool isIdle() const;
 	bool isVisible() const;
+	bool CUnit::isType(sc2::UnitTypeID type) const;
 	void drawSphere() const;
 };
 

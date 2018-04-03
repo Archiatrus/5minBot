@@ -33,7 +33,7 @@ class Hitsquad
 	const bool manhattenMove(const BaseLocation * target);
 	CUnits getNearbyEnemyUnits() const;
 	const BaseLocation * getSavePosition() const;
-	const bool shouldWeFlee(CUnits targets) const;
+	const bool shouldWeFlee(CUnits targets,int threshold) const;
 	void escapePathPlaning();
 
 public:

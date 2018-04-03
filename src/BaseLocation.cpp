@@ -172,7 +172,10 @@ const sc2::Point2D & BaseLocation::getPosition() const
 int BaseLocation::getGroundDistance(const sc2::Point2D & pos) const
 {
 	//return Util::Dist(pos, m_centerOfResources);
-	return m_distanceMap.getDistance(pos);
+	//return m_bot.Query()->PathingDistance(pos, m_centerOfResources);
+	//return m_distanceMap.getDistance(pos);
+	const int dist = m_distanceMap.getDistance(pos);
+	return dist > 0 ? dist : static_cast<int>(Util::Dist(pos, m_centerOfResources));
 }
 
 bool BaseLocation::isStartLocation() const
@@ -297,4 +300,9 @@ void BaseLocation::incrementNumEnemyCombatUnits()
 const int BaseLocation::getNumEnemyCombatUnits() const
 {
 	return m_numEnemyCombatUnits;
+}
+
+const int BaseLocation::getBaseID() const
+{
+	return m_baseID;
 }

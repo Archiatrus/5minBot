@@ -41,6 +41,7 @@ public:
 	void resetNumEnemyCombatUnits();
 	void incrementNumEnemyCombatUnits();
 	const int getNumEnemyCombatUnits() const;
+	const int getBaseID() const;
 	bool containsPosition(const sc2::Point2D & pos) const;
 	const sc2::Point2D & getDepotPosition() const;
 	const sc2::Point2D & getPosition() const;

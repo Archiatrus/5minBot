@@ -476,6 +476,11 @@ bool CUnit::isVisible() const
 	return getDisplayType() != sc2::Unit::DisplayType::Snapshot && getLastSeenGameLoop() == m_bot->Observation()->GetGameLoop();
 }
 
+bool CUnit::isType(sc2::UnitTypeID type) const
+{
+	return m_unitTypeId == type;
+}
+
 void CUnit::drawSphere() const
 {
 	switch (getAlliance())

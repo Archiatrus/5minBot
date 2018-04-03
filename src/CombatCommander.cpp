@@ -366,8 +366,16 @@ void CombatCommander::updateDefenseSquads()
 				break;
 			}
 		}
-
-		if (!enemyUnitInRange)
+		bool onlyMedivacs = true;;
+		for (const auto & unit : squad.getUnits())
+		{
+			if (!unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC))
+			{
+				onlyMedivacs = false;
+				break;
+			}
+		}
+		if (!enemyUnitInRange||onlyMedivacs)
 		{
 			m_squadData.getSquad(squad.getName()).clear();
 		}
