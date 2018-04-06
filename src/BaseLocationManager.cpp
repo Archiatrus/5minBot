@@ -357,7 +357,6 @@ const sc2::Point2D BaseLocationManager::getRallyPoint() const
 
 sc2::Point2D BaseLocationManager::getNextExpansion(int player) const
 {
-	int a = 1;
 	const BaseLocation * homeBase = getPlayerStartingBaseLocation(player);
 	const BaseLocation * closestBase = nullptr;
 	int minDistance = std::numeric_limits<int>::max();

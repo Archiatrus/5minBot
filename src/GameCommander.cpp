@@ -208,10 +208,13 @@ bool GameCommander::shouldSendInitialScout()
 void GameCommander::setHarassUnits()
 {
 	//Re-assign the ones already in the harass manager
-	CUnit_ptr medivac = m_harassManager.getMedivac();
-	if (medivac)
+	CUnits medivacs = m_harassManager.getMedivacs();
+	if (medivacs.size()>0)
 	{
-		assignUnit(medivac, m_harassUnits);
+		for (const auto & medivac : medivacs)
+		{
+			assignUnit(medivac, m_harassUnits);
+		}
 	}
 	CUnits marines = m_harassManager.getMarines();
 	if (marines.size()>0)
@@ -251,7 +254,7 @@ void GameCommander::setHarassUnits()
 					}
 				}
 				//We only assign marines, after we have a medivac
-				else if (medivac && unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MARINE && unit->getHealth() == unit->getHealthMax() && m_harassManager.needMarine())
+				else if (medivacs.size()>0 && unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MARINE && unit->getHealth() == unit->getHealthMax() && m_harassManager.needMarine())
 				{
 					//If the marine is currently close to an anti air enemy, the medivac does not know what to do
 					bool tooClose = false;

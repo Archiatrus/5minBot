@@ -8,7 +8,7 @@
 const int updateRatePathplaning = 10;
 
 
-Hitsquad::Hitsquad(CCBot & bot, CUnit_ptr medivac) : m_bot(bot), m_status(HarassStatus::Idle), m_medivac(medivac), m_pathPlanCounter(updateRatePathplaning+1)
+Hitsquad::Hitsquad(CCBot & bot, CUnit_ptr medivac) : m_bot(bot), m_status(HarassStatus::Idle), m_medivac(medivac),m_pathPlanCounter(updateRatePathplaning+1), m_target(nullptr)
 {
 }
 
@@ -91,8 +91,27 @@ bool isDead(const CUnit_ptr unit)
 void Hitsquad::checkForCasualties()
 {
 	//Last game loop check prevents units in bunker... but this is also true for in medivac
-	//m_marines.erase(std::remove_if(m_marines.begin(), m_marines.end(), [this](const sc2::Unit * unit) {return !(unit->is_alive && unit->last_seen_game_loop == m_bot.Observation()->GetGameLoop()); }), m_marines.end());
-	m_marines.erase(std::remove_if(m_marines.begin(), m_marines.end(), &isDead), m_marines.end());
+	m_marines.erase(std::remove_if(m_marines.begin(), m_marines.end(), [this](const CUnit_ptr & unit) {
+		if (!unit->isAlive())
+		{
+			return true;
+		}
+		if (unit->getLastSeenGameLoop() == m_bot.Observation()->GetGameLoop())
+		{
+			return false;
+		}
+		for (const auto & p : m_medivac->getPassengers())
+		{
+			if (p.tag == unit->getTag())
+			{
+				return false;
+			}
+		}
+		return true;
+	}), m_marines.end());
+	
+	
+	//m_marines.erase(std::remove_if(m_marines.begin(), m_marines.end(), &isDead), m_marines.end());
 	if (m_medivac && !m_medivac->isAlive())
 	{
 		m_medivac = nullptr;
@@ -104,6 +123,25 @@ void Hitsquad::checkForCasualties()
 
 void Hitsquad::harass(const BaseLocation * target)
 {
+	//New target
+	if (target)
+	{
+		//target = new target
+		m_target = target;
+	}
+	//No new target
+	else
+	{
+		//new target = previous target
+		if (m_target)
+		{
+			target = m_target;
+		}
+		else
+		{
+			return;
+		}
+	}
 	checkForCasualties();
 	switch (m_status)
 	{
@@ -155,7 +193,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		}
 		for (const auto & enemy : getNearbyEnemyUnits())
 		{
-			if (shouldWeFlee(getNearbyEnemyUnits(), m_marines.size())
+			if (shouldWeFlee(getNearbyEnemyUnits(), static_cast<int>(m_marines.size()))
 				|| ((enemy->getUnitType()==sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON || enemy->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || enemy->getUnitType() == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
 					&& enemy->isCompleted() && Util::Dist(enemy->getPos(),m_medivac->getPos())<enemy->getAttackRange()))
 			{
@@ -171,7 +209,7 @@ void Hitsquad::harass(const BaseLocation * target)
 	case HarassStatus::Harass:
 	{
 		CUnits targetUnits = getNearbyEnemyUnits();
-		if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || shouldWeFlee(targetUnits,m_marines.size()))
+		if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || shouldWeFlee(targetUnits, static_cast<int>(m_marines.size())))
 		{
 			m_status = HarassStatus::Fleeing;
 			return;
@@ -460,13 +498,18 @@ CUnit_ptr Hitsquad::getTargetMarines(CUnits targets) const
 	return target;
 }
 
-const bool Hitsquad::manhattenMove(const BaseLocation * target)
+//target = proposed target.
+const bool Hitsquad::manhattenMove(const BaseLocation * newTarget)
 {
-	if (!target || m_bot.Workers().isBeingRepairedNum(m_medivac)>0)
+	if (!newTarget || m_bot.Workers().isBeingRepairedNum(m_medivac)>0)
 	{
 		return false;
 	}
-	sc2::Point2D posEnd = target->getPosition() + 1.2f*(target->getPosition() - target->getBasePosition());
+	//If we get a new target
+
+	
+
+	sc2::Point2D posEnd = newTarget->getPosition() + 1.2f*(newTarget->getPosition() - newTarget->getBasePosition());
 	posEnd = m_bot.Map().findLandingZone(posEnd);
 	float dist;
 	if (m_wayPoints.empty())
@@ -708,25 +751,46 @@ void HarassManager::onFrame()
 
 void HarassManager::handleHitSquads()
 {
-	std::vector<const BaseLocation *> targetBases=getPotentialTargets(m_hitSquads.size());
-	if (targetBases.size() < 1)
+	const BaseLocation * targetBases = getPotentialTarget();
+	if (!targetBases)
 	{
 		return;
 	}
-	for (int i = 0; i < m_hitSquads.size() && i < targetBases.size(); ++i)
+	//On which side is the target
+	const sc2::Point2D targetPos = targetBases->getPosition();
+
+	const sc2::Point2D homePos = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getPosition();//We always know our location
+	const BaseLocation * enemy = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);//Not sure here...
+	sc2::Point2D enemyPos;
+	if (enemy)
 	{
-		m_hitSquads[i].harass(targetBases[i]);
+		enemyPos = enemy->getPosition();
+	}
+	else
+	{
+		enemyPos = sc2::Point2D(m_bot.Map().width() - homePos.x, m_bot.Map().height() - homePos.y);
+	}
+	const float side = (targetPos.x - homePos.x)*(enemyPos.y - homePos.y) - (targetPos.y - homePos.y)*(enemyPos.x - homePos.x);
+
+	if (m_hitSquads.find(side >= 0) == m_hitSquads.end())
+	{
+		m_hitSquads.emplace(side >= 0, Hitsquad(m_bot, nullptr));
+	}
+	m_hitSquads.at(side >= 0).harass(targetBases);
+	if (m_hitSquads.find(side < 0) != m_hitSquads.end())
+	{
+		m_hitSquads.at(side < 0).harass();
 	}
 }
 
 
-std::vector<const BaseLocation *> HarassManager::getPotentialTargets(const size_t n) const
+const BaseLocation * HarassManager::getPotentialTarget() const
 {
-	std::vector<const BaseLocation *> targetBases;
+	const BaseLocation * targetBase=nullptr;
 	std::set<const BaseLocation *> bases = m_bot.Bases().getOccupiedBaseLocations(Players::Enemy);
 	if (bases.empty())
 	{
-		return targetBases;
+		return targetBase;
 	}
 	const BaseLocation * homeBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
 	sc2::Point2D homePos;
@@ -738,34 +802,26 @@ std::vector<const BaseLocation *> HarassManager::getPotentialTargets(const size_
 	{
 		homePos = (*(bases.begin()))->getBasePosition();
 	}
-	std::map<float, const BaseLocation *> targetsWithDistance;
+	int maxDist = 0; //First sets the distance anyway
 	for (const auto & base : bases)
 	{
-		float dist = static_cast<float>(base->getGroundDistance(homePos));
-		targetsWithDistance[-dist] = base;
-	}
-	for (const auto & tb : targetsWithDistance)
-	{
-		if (targetBases.size() < n)
+		const int dist = base->getGroundDistance(homePos);
+		if (!targetBase || maxDist < dist)
 		{
-			targetBases.push_back(tb.second);
+			targetBase = base;
+			maxDist = dist;
 		}
 	}
-	return targetBases;
+	return targetBase;
 }
 
 
 const bool HarassManager::needMedivac() const
 {
-	//if there are not enough
-	if (m_hitSquads.size() < m_numHitSquads)
-	{
-		return true;
-	}
 	//if one is missing a medivac
 	for (const auto & hs : m_hitSquads)
 	{
-		if (!hs.getMedivac())
+		if (!hs.second.getMedivac())
 		{
 			return true;
 		}
@@ -778,7 +834,7 @@ const bool HarassManager::needMarine() const
 	for (const auto & hs : m_hitSquads)
 	{
 		//Only if it already has a Medivac
-		if (hs.getMedivac() && hs.getStatus() == HarassStatus::Idle && hs.getNumMarines()<8)
+		if (hs.second.getMedivac() && hs.second.getStatus() == HarassStatus::Idle && hs.second.getNumMarines()<8)
 		{
 			return true;
 		}
@@ -800,16 +856,10 @@ const bool HarassManager::setMedivac(CUnit_ptr medivac)
 {
 	for (auto & hs : m_hitSquads)
 	{
-		if (!hs.getMedivac())
+		if (!hs.second.getMedivac())
 		{
-			hs.addMedivac(medivac);
-			return true;
+			return hs.second.addMedivac(medivac);
 		}
-	}
-	if (m_hitSquads.size() < m_numHitSquads)
-	{
-		m_hitSquads.push_back(Hitsquad(m_bot, medivac));
-		return true;
 	}
 	return false;
 }
@@ -818,7 +868,7 @@ const bool HarassManager::setMarine(CUnit_ptr marine)
 {
 	for (auto & hs : m_hitSquads)
 	{
-		if (hs.addMarine(marine))
+		if (hs.second.addMarine(marine))
 		{
 			return true;
 		}
@@ -852,22 +902,30 @@ void HarassManager::handleWMHarass()
 }
 
 
-CUnit_ptr HarassManager::getMedivac()
+CUnits HarassManager::getMedivacs()
 {
-	if (m_hitSquads.empty())
+	CUnits medivacs;
+	for (const auto & hs : m_hitSquads)
 	{
-		return nullptr;
+		if (hs.second.getMedivac())
+		{
+			medivacs.push_back(hs.second.getMedivac());
+		}
 	}
-	return m_hitSquads.front().getMedivac();
+	return medivacs;
 }
 
 CUnits HarassManager::getMarines()
 {
-	if (m_hitSquads.empty())
+	CUnits marines;
+	for (const auto & hs : m_hitSquads)
 	{
-		return CUnits();
+		for (const auto & marine:hs.second.getMarines() )
+		{
+			marines.push_back(marine);
+		}
 	}
-	return m_hitSquads.front().getMarines();
+	return marines;
 }
 
 CUnit_ptr HarassManager::getLiberator()

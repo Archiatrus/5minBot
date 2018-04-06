@@ -419,6 +419,72 @@ void ProductionManager::defaultMacro()
 			}
 		}
 	}
+	//Starports
+	for (const auto & unit : Starports)
+	{
+		//Any finished Starport
+		if (unit->isCompleted())
+		{
+			//that is idle
+			const auto addon = m_bot.UnitInfo().getUnit(unit->getAddOnTag());
+			if (unit->isIdle() || unit->getOrders().size() == 1 && addon && addon->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_STARPORTREACTOR)
+			{
+				//if it is only a Starport build addon
+				if (!addon)
+				{
+					//The reactor for the first starport should be with the factory
+					for (const auto & factory : Factories)
+					{
+						if ((factory->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORY && factory->getOrders().empty() && factory->getAddOnTag() && !unit->isFlying()) || (factory->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING && factory->getOrders().empty() && unit->isFlying()))
+						{
+							Util::swapBuildings(unit, factory, m_bot);
+							std::cout << "Swap" << std::endl;
+							return;
+						}
+						else
+						{
+							//Something went wrong. The Factory has a techlab. Build the reactor yourself.
+							if (factory->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORY && factory->getOrders().empty() && (!factory->getAddOnTag() || (m_bot.UnitInfo().getUnit(factory->getAddOnTag())->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORYTECHLAB)))
+							{
+								if (minerals >= 50 && gas >= 25)
+								{
+									Micro::SmartAbility(unit, sc2::ABILITY_ID::BUILD_REACTOR_STARPORT, m_bot);
+									std::cout << "ReactorStarport" << std::endl;
+									return;
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					const size_t numMedivacs = m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, sc2::UNIT_TYPEID::TERRAN_MEDIVAC);
+					const size_t numVikings = m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, { sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER,sc2::UNIT_TYPEID::TERRAN_VIKINGASSAULT });
+					if (numMedivacs<12 && !m_vikingRequested)
+					{
+						if (gas >= 100 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
+						{
+							if (minerals >= 100)
+							{
+								m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_MEDIVAC);
+							}
+							std::cout << "Medivac" << std::endl;
+							return;
+						}
+					}
+					else
+					{
+						if (minerals >= 150 && gas >= 75 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER).supplyCost)
+						{
+							m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_VIKINGFIGHTER);
+							std::cout << "Viking" << std::endl;
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
 	//Every rax has to build
 	const CUnits bReactor = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR);
 	for (const auto & unit : Rax)
@@ -445,7 +511,7 @@ void ProductionManager::defaultMacro()
 					}
 				}
 				//if it is only a rax build addon
-				if (!unit->getAddOnTag())
+				if (!addon)
 				{
 					//The second barracks gets a lab
 					if (bTechLab.size() == 1 || bReactor.size() == 0)
@@ -468,18 +534,13 @@ void ProductionManager::defaultMacro()
 					}
 				}
 				//If we have an addon
-				else if (unit->getAddOnTag())
+				else
 				{
 					//Reactor -> double marines
-					if (addon && addon->getUnitType() == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR)
+					if (addon->getUnitType() == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR)
 					{
 						if (minerals >= 50 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
 						{
-							if (unit->getOrders().size() == 0 && unit->getAddOnTag() && minerals >= 100 && m_bot.UnitInfo().getUnit(unit->getAddOnTag())->getUnitType() == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR && supply <= 200 - 2 * m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
-							{
-								m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_MARINE);
-								std::cout << "Marine" << std::endl;
-							}
 							m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_MARINE);
 							std::cout << "Marine" << std::endl;
 							return;
@@ -493,16 +554,6 @@ void ProductionManager::defaultMacro()
 							std::cout << "Marauder" << std::endl;
 							return;
 						}
-					}
-				}
-				//We really should not reach here. But if we do, build marine
-				else
-				{
-					if (minerals >= 50 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
-					{
-						Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_MARINE,m_bot);
-						std::cout << "Marine" << std::endl;
-						return;
 					}
 				}
 			}
@@ -558,83 +609,7 @@ void ProductionManager::defaultMacro()
 			}
 		}
 	}
-	for (const auto & unit : Starports)
-	{
-		//Any finished Starport
-		if (unit->isCompleted())
-		{
-			//that is idle
-			if (unit->isIdle() || unit->getOrders().size() == 1 && unit->getAddOnTag() && m_bot.UnitInfo().getUnit(unit->getAddOnTag())->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_STARPORTREACTOR)
-			{
-				//if it is only a Starport build addon
-				if (!unit->getAddOnTag())
-				{
-					//The reactor for the first starport should be with the factory
-					for (const auto & factory : Factories)
-					{
-						if ((factory->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORY && factory->getOrders().empty() && factory->getAddOnTag() && !unit->isFlying())||(factory->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING && factory->getOrders().empty()&& unit->isFlying()))
-						{
-							Util::swapBuildings(unit, factory,m_bot);
-							std::cout << "Swap" << std::endl;
-							return;
-						}
-						else
-						{
-							//Something went wrong. The Factory has a techlab. Build the reactor yourself.
-							if (factory->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORY && factory->getOrders().empty() && (!factory->getAddOnTag() || (m_bot.UnitInfo().getUnit(factory->getAddOnTag())->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORYTECHLAB)))
-							{
-								if (minerals >= 50 && gas >= 25)
-								{
-									Micro::SmartAbility(unit, sc2::ABILITY_ID::BUILD_REACTOR_STARPORT,m_bot);
-									std::cout << "ReactorStarport" << std::endl;
-									return;
-								}
-							}
-						}
-					}
-				}
-				else
-				{
-					int numVikings=0;
-					int numMedivacs=0;
-					if (m_vikingRequested)
-					{
-						numMedivacs = static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, sc2::UNIT_TYPEID::TERRAN_MEDIVAC));
-						numVikings = static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, { sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER,sc2::UNIT_TYPEID::TERRAN_VIKINGASSAULT }));
-					}
-					if (!m_vikingRequested || numMedivacs - 2 < numVikings)
-					{
-						if (minerals >= 100 && gas >= 100 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
-						{
-							if (minerals >= 200 && gas >= 200 && unit->getOrders().size() == 0 && supply <= 200 - 2 * m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
-							{
-								m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_MEDIVAC);
-								std::cout << "Medivac" << std::endl;
-							}
-							m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_MEDIVAC);
-							std::cout << "Medivac" << std::endl;
-							return;
-						}
-					}
-					else
-					{
-						if (minerals >= 150 && gas >= 75 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER).supplyCost)
-						{
-							if (minerals >= 300 && gas >= 150 && unit->getOrders().size() == 0 && supply <= 200 - 2 * m_bot.Data(sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER).supplyCost)
-							{
-								m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_VIKINGFIGHTER);
-								std::cout << "Viking" << std::endl;
-							}
-							m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_VIKINGFIGHTER);
-							std::cout << "Viking" << std::endl;
-							return;
-						}
-					}
-				}
-			}
-		}
-	}
-	if (minerals >= 100 && m_bot.GetPlayerRace(Players::Enemy) != sc2::Race::Terran && numBases == 2)
+	if (minerals >= 100 && numBases == 2)// m_bot.GetPlayerRace(Players::Enemy) != sc2::Race::Terran &&
 	{
 		const CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER );
 		if (Bunker.size() + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BUNKER) < 1)
