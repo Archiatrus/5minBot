@@ -266,6 +266,10 @@ void Micro::SmartRepair(CUnit_ptr unit, CUnit_ptr target, CCBot & bot)
 {
 	BOT_ASSERT(unit != nullptr, "Unit is null");
 	bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::EFFECT_REPAIR, target->getUnit_ptr());
+	if (!(target->isBuilding()))
+	{
+		bot.Actions()->UnitCommand(target->getUnit_ptr(), sc2::ABILITY_ID::MOVE, unit->getPos());
+	}
 }
 
 void Micro::SmartKiteTarget(CUnit_ptr rangedUnit, CUnit_ptr target, CCBot & bot,bool queue)

@@ -36,6 +36,7 @@ class Hitsquad
 	const BaseLocation * getSavePosition() const;
 	const bool shouldWeFlee(CUnits targets,int threshold) const;
 	void escapePathPlaning();
+	const bool haveNoTarget() const;
 
 public:
 	Hitsquad(CCBot & bot, CUnit_ptr medivac);
@@ -46,7 +47,7 @@ public:
 	CUnits	getMarines() const;
 	CUnit_ptr getMedivac() const;
 	const int getStatus() const;
-	void harass(const BaseLocation *pos = nullptr);
+	bool harass(const BaseLocation *pos = nullptr);
 };
 
 class WMHarass
@@ -78,7 +79,7 @@ class HarassManager
 	WMHarass m_WMHarass;
 	int	m_numHitSquads = 1;
 
-	const BaseLocation * getPotentialTarget() const;
+	std::vector<const BaseLocation *> getPotentialTargets() const;
 	//Medivac hit squad
 	void handleHitSquads();
 	//Liberator harass

@@ -38,7 +38,7 @@ void BuildingPlacer::expandBuildingTesterOnce()
 			Drawing::drawSphere(m_bot,newPos, sqrtf(static_cast<float>(buildLocationTester.m_footPrintArea))/2.0f,sc2::Colors::Yellow);
 		}
 		//We don't need to find another base right next to the old one
-		if (buildLocationTester.m_canBuildHere || buildLocationTester.m_footPrintArea==25)
+		if (buildLocationTester.m_canBuildHere || buildLocationTester.m_footPrintArea==25 || buildLocationTester.m_closestTiles.size()>=buildLocationTester.m_idx)
 		{
 			continue;
 		}

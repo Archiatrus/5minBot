@@ -272,6 +272,16 @@ void ProductionManager::defaultMacro()
 			}
 		}
 	}
+	if (!m_bot.underAttack() && numRax > 3 * numBases && numBases - numBasesFinished + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER) == 0)
+	{
+		if (minerals > 400)
+		{
+			m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER), BUILDING, false));
+			std::cout << "CC" << std::endl;	
+		}
+		std::cout << "Need CC" << std::endl;
+		return;
+	}
 
 	if (supplyCap < 200 && (supplyCap - supply < (numBasesFinished + 2 * numRaxFinished) || (numDepots==0&&minerals>100)))
 	{
@@ -460,7 +470,7 @@ void ProductionManager::defaultMacro()
 				{
 					const size_t numMedivacs = m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, sc2::UNIT_TYPEID::TERRAN_MEDIVAC);
 					const size_t numVikings = m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, { sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER,sc2::UNIT_TYPEID::TERRAN_VIKINGASSAULT });
-					if (numMedivacs<12 && !m_vikingRequested)
+					if ((!m_vikingRequested && numMedivacs < 12) || (m_vikingRequested && numMedivacs <= numVikings))
 					{
 						if (gas >= 100 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
 						{

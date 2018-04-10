@@ -142,8 +142,6 @@ void RangedManager::assignTargets(const CUnits & targets)
 					}
 				}
 			}
-			
-			
 			if (fleeYouFools)
 			{
 				break;
@@ -212,6 +210,36 @@ void RangedManager::assignTargets(const CUnits & targets)
 			}
 			else
 			{
+				if (!rangedUnit->isFlying())
+				{
+					const CUnits disruptorShots = m_bot.UnitInfo().getUnits(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_DISRUPTORPHASED);
+					bool fleeYouFools = false;
+					for (const auto & shot : disruptorShots)
+					{
+						const float dist = Util::Dist(rangedUnit->getPos(), shot->getPos());
+						if (dist < 5.0f)
+						{
+							sc2::Point2D fleeingPos;
+							const sc2::Point2D pos = rangedUnit->getPos();
+							if (dist > 0)
+							{
+								fleeingPos = pos + Util::normalizeVector(pos - shot->getPos());
+							}
+							else
+							{
+								fleeingPos = pos + sc2::Point2D(0.1f, 0.1f);
+							}
+							Micro::SmartMove(rangedUnit, fleeingPos, m_bot);
+							fleeYouFools = true;
+							break;
+						}
+					}
+					if (fleeYouFools)
+					{
+						continue;
+					}
+				}
+					
 				if (!rangedUnitTargets.empty() || (order.getType() == SquadOrderTypes::Defend && Util::Dist(rangedUnit->getPos(), order.getPosition()) > 7))
 				{
 					CUnit_ptr target = getTarget(rangedUnit, rangedUnitTargets);

@@ -165,8 +165,7 @@ void BaseLocationManager::onFrame()
 		}
 
 		BaseLocation * baseLocation = getBaseLocation(unit->getPos());
-
-		if (baseLocation != nullptr)
+		if (baseLocation != nullptr && m_bot.Map().getHeight(baseLocation->getBasePosition()) == m_bot.Map().getHeight(unit->getPos()))
 		{
 			baseLocation->setPlayerOccupying(Players::Self, true);
 			baseLocation->setPlayerOccupying(Players::Enemy, false);

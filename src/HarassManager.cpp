@@ -121,7 +121,7 @@ void Hitsquad::checkForCasualties()
 	}
 }
 
-void Hitsquad::harass(const BaseLocation * target)
+bool Hitsquad::harass(const BaseLocation * target)
 {
 	//New target
 	if (target)
@@ -139,13 +139,25 @@ void Hitsquad::harass(const BaseLocation * target)
 		}
 		else
 		{
-			return;
+			return false;
 		}
 	}
 	checkForCasualties();
 	switch (m_status)
 	{
 	case HarassStatus::Idle:
+		if (haveNoTarget())
+		{
+			if (m_medivac && m_medivac->getCargoSpaceTaken() > 0)
+			{
+				Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, m_medivac, m_bot);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
 		//We get here if we have a brand new hit squad or want to restart from home
 		if (m_medivac)
 		{
@@ -212,7 +224,7 @@ void Hitsquad::harass(const BaseLocation * target)
 		if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || shouldWeFlee(targetUnits, static_cast<int>(m_marines.size())))
 		{
 			m_status = HarassStatus::Fleeing;
-			return;
+			return true;
 		}
 		if (m_medivac->getCargoSpaceTaken() > 0)
 		{
@@ -262,7 +274,6 @@ void Hitsquad::harass(const BaseLocation * target)
 		if (injuredCounter == m_marines.size())
 		{
 			m_status = HarassStatus::Fleeing;
-			return;
 		}
 		break;
 	}
@@ -274,7 +285,7 @@ void Hitsquad::harass(const BaseLocation * target)
 			Micro::SmartRightClick(m_marines, m_medivac, m_bot);
 			Micro::SmartRightClick(m_medivac, m_marines, m_bot);
 			Micro::SmartCDAbility(m_medivac, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
-			return;
+			return true;
 		}
 		//nearby enemies
 		CUnits targetUnits = getNearbyEnemyUnits();
@@ -297,7 +308,7 @@ void Hitsquad::harass(const BaseLocation * target)
 				}
 				escapePathPlaning();
 				m_pathPlanCounter = 0;
-				return;
+				return true;
 			}
 		}
 		m_pathPlanCounter++;
@@ -338,10 +349,10 @@ void Hitsquad::harass(const BaseLocation * target)
 					{
 						Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::EFFECT_HEAL, marine,m_bot);
 					}
-					return;
+					return true;
 				}
 			}
-			if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || m_marines.size() < 6)
+			if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || m_marines.size() < 6 || haveNoTarget())
 			{
 				m_status = HarassStatus::GoingHome;
 			}
@@ -358,7 +369,7 @@ void Hitsquad::harass(const BaseLocation * target)
 			Micro::SmartRightClick(m_marines, m_medivac, m_bot);
 			Micro::SmartRightClick(m_medivac, m_marines, m_bot);
 			Micro::SmartCDAbility(m_medivac, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
-			return;
+			return true;
 		}
 		const CUnit_ptr worker = m_bot.Workers().getClosestMineralWorkerTo(m_medivac->getPos());
 		if (worker)
@@ -377,6 +388,19 @@ void Hitsquad::harass(const BaseLocation * target)
 	default:
 		break;
 	}
+	return true;
+}
+
+const bool Hitsquad::haveNoTarget() const
+{
+	for (const auto & base : m_bot.Bases().getOccupiedBaseLocations(Players::Enemy))
+	{
+		if (base->getBaseID() == m_target->getBaseID())
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 const BaseLocation * Hitsquad::getSavePosition() const
@@ -751,68 +775,87 @@ void HarassManager::onFrame()
 
 void HarassManager::handleHitSquads()
 {
-	const BaseLocation * targetBases = getPotentialTarget();
-	if (!targetBases)
+	std::vector<const BaseLocation *> targetBases = getPotentialTargets();
+	if (targetBases.empty())
 	{
 		return;
 	}
-	//On which side is the target
-	const sc2::Point2D targetPos = targetBases->getPosition();
-
-	const sc2::Point2D homePos = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getPosition();//We always know our location
-	const BaseLocation * enemy = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);//Not sure here...
-	sc2::Point2D enemyPos;
-	if (enemy)
+	//On which side is the target? One 
+	if (targetBases[0])
 	{
-		enemyPos = enemy->getPosition();
+		if (m_hitSquads.find(0) == m_hitSquads.end())
+		{
+			m_hitSquads.emplace(0, Hitsquad(m_bot, nullptr));
+		}
+		m_hitSquads.at(0).harass(targetBases[0]);
 	}
 	else
 	{
-		enemyPos = sc2::Point2D(m_bot.Map().width() - homePos.x, m_bot.Map().height() - homePos.y);
+		if (m_hitSquads.find(0) != m_hitSquads.end())
+		{
+			if (!m_hitSquads.at(0).harass())
+			{
+				m_hitSquads.erase(0);
+			}
+		}
 	}
-	const float side = (targetPos.x - homePos.x)*(enemyPos.y - homePos.y) - (targetPos.y - homePos.y)*(enemyPos.x - homePos.x);
+	if (targetBases[1])
+	{
+		if (m_hitSquads.find(1) == m_hitSquads.end())
+		{
+			m_hitSquads.emplace(1, Hitsquad(m_bot, nullptr));
+		}
+		m_hitSquads.at(1).harass(targetBases[1]);
+	}
+	else
+	{
+		if (m_hitSquads.find(1) != m_hitSquads.end())
+		{
 
-	if (m_hitSquads.find(side >= 0) == m_hitSquads.end())
-	{
-		m_hitSquads.emplace(side >= 0, Hitsquad(m_bot, nullptr));
-	}
-	m_hitSquads.at(side >= 0).harass(targetBases);
-	if (m_hitSquads.find(side < 0) != m_hitSquads.end())
-	{
-		m_hitSquads.at(side < 0).harass();
+			if (!m_hitSquads.at(1).harass())
+			{
+				m_hitSquads.erase(1);
+			}
+		}
 	}
 }
 
 
-const BaseLocation * HarassManager::getPotentialTarget() const
+std::vector<const BaseLocation *> HarassManager::getPotentialTargets() const
 {
-	const BaseLocation * targetBase=nullptr;
+	std::vector<const BaseLocation *> targetBases;
 	std::set<const BaseLocation *> bases = m_bot.Bases().getOccupiedBaseLocations(Players::Enemy);
 	if (bases.empty())
 	{
-		return targetBase;
+		return targetBases;
 	}
-	const BaseLocation * homeBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
-	sc2::Point2D homePos;
-	if (homeBase)
+	const BaseLocation * enemyHomeBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
+	sc2::Point2D enemyHomePos;
+	if (enemyHomeBase)
 	{
-		homePos = homeBase->getBasePosition();
+		enemyHomePos = enemyHomeBase->getBasePosition();
 	}
 	else
 	{
-		homePos = (*(bases.begin()))->getBasePosition();
+		enemyHomePos = (*(bases.begin()))->getBasePosition();
 	}
-	int maxDist = 0; //First sets the distance anyway
+	
+	const sc2::Point2D homePos = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getPosition();//We always know our location
+	const sc2::Point2D diff = enemyHomePos - homePos;
+	targetBases = { nullptr,nullptr };
+	std::vector<int> maxDist = { 0,0 };
 	for (const auto & base : bases)
 	{
-		const int dist = base->getGroundDistance(homePos);
-		if (!targetBase || maxDist < dist)
+		const sc2::Point2D targetPos = base->getBasePosition();
+		const float side = (targetPos.x - homePos.x)*diff.y - (targetPos.y - homePos.y)*diff.x;
+		const int dist = base->getGroundDistance(enemyHomePos);
+		if (!(targetBases[side>=0]) || maxDist[side >= 0] < dist)
 		{
-			targetBase = base;
-			maxDist = dist;
+			targetBases[side >= 0] = base;
+			maxDist[side >= 0] = dist;
 		}
 	}
-	return targetBase;
+	return targetBases;
 }
 
 
