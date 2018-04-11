@@ -1,0 +1,3 @@
+[submodule "Sc2AutoObserver"]
+	path = Sc2AutoObserver
+	url = https://github.com/Archiatrus/Sc2AutoObserver.git

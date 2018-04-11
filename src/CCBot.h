@@ -12,7 +12,7 @@
 #include "StrategyManager.h"
 #include "TechTree.h"
 #include "BuildType.h"
-#include "AutoObserver/CameraModule.h"
+#include "../Sc2AutoObserver/CameraModule.h"
 #include "Drawing.h"
 
 class CCBot : public sc2::Agent
@@ -63,6 +63,7 @@ public:
 	const TypeData & Data(const sc2::UnitTypeID & type) const;
 	const TypeData & Data(const sc2::UpgradeID & type) const;
 	const TypeData & Data(const BuildType & type) const;
+	const int Data(const sc2::AbilityID & type) const;
 	const sc2::Race & GetPlayerRace(int player) const;
 	sc2::Point2D GetStartLocation() const;
 	const CUnit_ptr GetUnit(const UnitTag & tag);

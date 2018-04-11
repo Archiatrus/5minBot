@@ -1,5 +1,5 @@
 # All the source files for the bot.
-file(GLOB BOT_SOURCES "*.cpp" "*.h" "AutoObserver/*.cpp" "AutoObserver/*.h")
+file(GLOB BOT_SOURCES "*.cpp" "*.h" "../Sc2AutoObserver/*.cpp" "../Sc2AutoObserver/*.h")
 
 include_directories(SYSTEM "${SC2Api_INCLUDE_DIRS}")
 

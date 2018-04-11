@@ -2,7 +2,6 @@
 
 #include "CCBot.h"
 #include "Util.h"
-#include "AutoObserver/CameraModule.h"
 
 int lvl85 = 0;
 int lvl1000 = 0;
@@ -241,6 +240,11 @@ const TypeData & CCBot::Data(const sc2::UpgradeID & type) const
 }
 
 const TypeData & CCBot::Data(const BuildType & type) const
+{
+	return m_techTree.getData(type);
+}
+
+const int CCBot::Data(const sc2::AbilityID & type) const
 {
 	return m_techTree.getData(type);
 }
