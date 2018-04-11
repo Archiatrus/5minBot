@@ -14,8 +14,16 @@ void TechTree::onStart()
 {
 	initUnitTypeData();
 	initUpgradeData();
+	initAbilityData();
 	//outputJSON("TechTree.json");
 }
+
+void TechTree::initAbilityData()
+{
+	m_abilityCooldown[sc2::ABILITY_ID::EFFECT_STIM] = 247;//11s
+	m_abilityCooldown[sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS] = 320;//14s
+}
+
 
 void TechTree::initUnitTypeData()
 {
@@ -334,6 +342,15 @@ const TypeData & TechTree::getData(const sc2::UpgradeID & type)  const
 	}
 
 	return m_upgradeData.at(type);
+}
+
+const int TechTree::getData(const sc2::AbilityID & type)  const
+{
+	if (m_abilityCooldown.find(type) == m_abilityCooldown.end())
+	{
+		return 0;
+	}
+	return m_abilityCooldown.at(type);
 }
 
 const TypeData & TechTree::getData(const BuildType & type) const

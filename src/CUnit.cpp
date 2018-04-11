@@ -23,9 +23,9 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 	m_isFlying(unit->is_flying),
 	m_isBurrowed(unit->is_burrowed),
 	m_weaponCooldown(unit->weapon_cooldown),
+	m_abilityCooldown(bot->Observation()->GetGameLoop()),
 	m_AAWeapons(sc2::Weapon()),
 	m_groundWeapons(sc2::Weapon())
-
 {
 	//The default constructor is not setting the values...
 	m_AAWeapons.type = sc2::Weapon::TargetType::Air;
@@ -504,7 +504,15 @@ void CUnit::drawSphere() const
 	Drawing::drawText(*m_bot, m_pos, sc2::UnitTypeToName(getUnitType()));
 }
 
+const int CUnit::getAbilityCoolDown() const
+{
+	return m_abilityCooldown;
+}
 
+void CUnit::newAbilityCoolDown(const int CD)
+{
+	m_abilityCooldown=CD;
+}
 ///////////////////////////////////////////////////////////////////
 
 const std::vector<std::shared_ptr<CUnit>> &CUnitsData::getUnits() const

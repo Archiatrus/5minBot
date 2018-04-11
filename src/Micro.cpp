@@ -377,14 +377,17 @@ void Micro::SmartAbility(CUnit_ptr unit, const sc2::AbilityID & abilityID, CUnit
 void Micro::SmartCDAbility(CUnit_ptr builder, const sc2::AbilityID & abilityID, CCBot & bot, bool queue)
 {
 	BOT_ASSERT(builder != nullptr, "Builder is null");
-	sc2::AvailableAbilities abilities = builder->getAbilities();
-
-	for (const auto & ability : abilities.abilities)
+	if (builder->getAbilityCoolDown() <= bot.Observation()->GetGameLoop())
 	{
-		if (ability.ability_id == abilityID)
+		sc2::AvailableAbilities abilities = builder->getAbilities();
+		for (const auto & ability : abilities.abilities)
 		{
-			bot.Actions()->UnitCommand(builder->getUnit_ptr(), abilityID,queue);
-			return;
+			if (ability.ability_id == abilityID)
+			{
+				builder->newAbilityCoolDown(bot.Observation()->GetGameLoop() + bot.Data(abilityID));
+				bot.Actions()->UnitCommand(builder->getUnit_ptr(), abilityID, queue);
+				return;
+			}
 		}
 	}
 }
@@ -394,14 +397,16 @@ void Micro::SmartCDAbility(CUnits units, const sc2::AbilityID & abilityID, CCBot
 	sc2::Units targets;
 	for (const auto & unit : units)
 	{
-		sc2::AvailableAbilities abilities = unit->getAbilities();
-
-		for (const auto & ability : abilities.abilities)
+		if (unit->getAbilityCoolDown() <= bot.Observation()->GetGameLoop())
 		{
-			if (ability.ability_id == abilityID)
+			for (const auto & ability : unit->getAbilities().abilities)
 			{
-				targets.push_back(unit->getUnit_ptr());
-				continue;
+				if (ability.ability_id == abilityID)
+				{
+					unit->newAbilityCoolDown(bot.Observation()->GetGameLoop()+bot.Data(abilityID));
+					targets.push_back(unit->getUnit_ptr());
+					continue;
+				}
 			}
 		}
 	}
