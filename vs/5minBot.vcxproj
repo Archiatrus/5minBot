@@ -152,7 +152,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>$(SolutionDir)..\..\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
     <IncludePath>$(SolutionDir)..\..\s2client-api\project\include;$(IncludePath)</IncludePath>
-    <SourcePath>C:\Users\D\Desktop\SC2 AI\5min\src\AutoObserver;$(SourcePath)</SourcePath>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'">
     <LibraryPath>$(SolutionDir)..\..\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
@@ -589,7 +589,13 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\AutoObserver\CameraModule.cpp" />
+    <ClCompile Include="..\Overseer\src\ChokePoint.cpp" />
+    <ClCompile Include="..\Overseer\src\Graph.cpp" />
+    <ClCompile Include="..\Overseer\src\Map.cpp" />
+    <ClCompile Include="..\Overseer\src\MapImpl.cpp" />
+    <ClCompile Include="..\Overseer\src\Region.cpp" />
+    <ClCompile Include="..\Overseer\src\Tile.cpp" />
+    <ClCompile Include="..\Sc2AutoObserver\CameraModule.cpp" />
     <ClCompile Include="..\src\CCBot.cpp" />
     <ClCompile Include="..\src\BaseLocation.cpp" />
     <ClCompile Include="..\src\BaseLocationManager.cpp" />
@@ -632,7 +638,14 @@
     <ClCompile Include="..\src\WorkerManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\AutoObserver\CameraModule.h" />
+    <ClInclude Include="..\Overseer\src\ChokePoint.h" />
+    <ClInclude Include="..\Overseer\src\Definitions.h" />
+    <ClInclude Include="..\Overseer\src\Graph.h" />
+    <ClInclude Include="..\Overseer\src\Map.h" />
+    <ClInclude Include="..\Overseer\src\MapImpl.h" />
+    <ClInclude Include="..\Overseer\src\Region.h" />
+    <ClInclude Include="..\Overseer\src\Tile.h" />
+    <ClInclude Include="..\Sc2AutoObserver\CameraModule.h" />
     <ClInclude Include="..\src\CCBot.h" />
     <ClInclude Include="..\src\BaseLocation.h" />
     <ClInclude Include="..\src\BaseLocationManager.h" />
@@ -652,6 +665,7 @@
     <ClInclude Include="..\src\GameCommander.h" />
     <ClInclude Include="..\src\HarassManager.h" />
     <ClInclude Include="..\src\JSONTools.h" />
+    <ClInclude Include="..\src\LadderInterface.h" />
     <ClInclude Include="..\src\MapTools.h" />
     <ClInclude Include="..\src\MeleeManager.h" />
     <ClInclude Include="..\src\BuildType.h" />

@@ -5,6 +5,7 @@
 #include "sc2api/sc2_api.h"
 #include "DistanceMap.h"
 #include "CUnit.h"
+#include "../Overseer/src/MapImpl.h"
 
 class CCBot;
 
@@ -15,7 +16,7 @@ class MapTools
 	int	 m_height;
 	float   m_maxZ;
 	int	 m_frame;
-	
+	Overseer::MapImpl overseerMap;
 
 	// a cache of already computed distance maps, which is mutable since it only acts as a cache
 	mutable std::map<std::pair<int, int>, DistanceMap>   _allMaps;   

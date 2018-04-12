@@ -17,11 +17,12 @@ typedef std::vector<std::vector<float>>  vvf;
 
 // constructor for MapTools
 MapTools::MapTools(CCBot & bot)
-	: m_bot	 (bot)
-	, m_width   (0)
-	, m_height  (0)
-	, m_maxZ	(0.0f)
-	, m_frame   (0)
+	: m_bot (bot)
+	, m_width (0)
+	, m_height (0)
+	, m_maxZ (0.0f)
+	, m_frame (0)
+	, overseerMap ()
 {
 
 }
@@ -55,6 +56,11 @@ void MapTools::onStart()
 	}
 
 	computeConnectivity();
+
+	//overseerMap.setBot(&m_bot); //ADD THIS LINE (OVERSEER)
+	//overseerMap.Initialize(); //ADD THIS LINE (OVERSEER)
+	std::cout << "Number of tiles on map: " << overseerMap.size() << std::endl; //ADD THIS LINE (OVERSEER)
+	std::cout << "Number of regions: " << overseerMap.getRegions().size() << std::endl; //ADD THIS LINE (OVERSEER)
 }
 
 void MapTools::onFrame()

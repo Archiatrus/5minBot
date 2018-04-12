@@ -1,3 +1,6 @@
 [submodule "Sc2AutoObserver"]
 	path = Sc2AutoObserver
 	url = https://github.com/Archiatrus/Sc2AutoObserver.git
+[submodule "Overseer"]
+	path = Overseer
+	url = https://github.com/pimmen/Overseer.git
