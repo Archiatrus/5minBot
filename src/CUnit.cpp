@@ -11,7 +11,7 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 	m_healthPointsMax(unit->health_max),
 	m_shieldMax(unit->shield_max),
 	m_maxEnergy(unit->energy_max),
-	m_isBuilding(Util::IsBuildingType(unit->unit_type, *bot)),
+	m_isBuilding([&]{const auto attributes = this->getAttributes(); return std::find(attributes.begin(), attributes.end(), sc2::Attribute::Structure)!=attributes.end(); }()), //m_isBuilding(Util::IsBuildingType(unit->unit_type, *bot)),
 	m_isCombatUnit(unit->alliance!=sc2::Unit::Alliance::Neutral && Util::IsCombatUnitType(unit->unit_type, *bot)),
 	m_sight(m_bot->Observation()->GetUnitTypeData()[getUnitType()].sight_range),
 	m_pos(unit->pos),

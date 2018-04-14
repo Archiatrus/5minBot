@@ -122,9 +122,9 @@ void WorkerManager::handleMineralWorkers()
 			if (unit->isCompleted())
 			{
 				// get the number of workers currently assigned to it
-				int numAssigned = unit->getAssignedHarvesters();
+				const int numAssigned = unit->getAssignedHarvesters();
 				// and the max number
-				int numMaxAssigned = unit->getIdealHarvesters();
+				const int numMaxAssigned = unit->getIdealHarvesters();
 				// if it's too much try to find another base
 				if (numAssigned > numMaxAssigned)
 				{
@@ -150,6 +150,42 @@ void WorkerManager::handleMineralWorkers()
 						}
 					}
 					//Only do it for one townhall at a time. Otherwise there might be problems?!
+				}
+				// if it's really too much try to find anything
+				if (numAssigned > 1.5f*numMaxAssigned)
+				{
+					auto transfer_worker = getClosestMineralWorkerTo(unit->getPos()); //THIS WILL PROBABLY CALL THE SAME WORKER OVER AND OVER AGAIN UNTIL HE IS FAR ENOUGH AWAY :(
+					CUnit_ptr closestMineralPatch = nullptr;
+					sc2::Point2D pos = sc2::Point2D();
+					for (const auto & CCs : CommandCenters)
+					{
+						if (!(CCs->isCompleted()))
+						{
+							pos = CCs->getPos();
+							break;
+						}
+					}
+					if (pos == sc2::Point2D())
+					{
+						pos = m_bot.Bases().getNextExpansion(Players::Self);
+					}
+					for (const auto & mineralPatch : m_bot.UnitInfo().getUnits(Players::Neutral,Util::getMineralTypes()))
+					{
+						if (Util::Dist(mineralPatch->getPos(),pos)<10.0f)
+						{
+							//Bad things happen if it is not alive or just snapshot. But they are probably snapshots if we get till here.
+							if (mineralPatch->isAlive() && mineralPatch->getDisplayType() == sc2::Unit::DisplayType::Visible && mineralPatch->getMineralContents() > 200)
+							{
+								closestMineralPatch = mineralPatch;
+							}
+						}
+					}
+					if (closestMineralPatch && transfer_worker)
+					{
+						//Micro::SmartMove(unit, unit_next->getPos(), m_bot);
+						m_workerData.setWorkerJob(transfer_worker, WorkerJobs::Minerals, closestMineralPatch);
+						return;
+					}
 				}
 			}
 		}

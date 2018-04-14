@@ -256,7 +256,7 @@ void CombatCommander::updateDefenseSquads()
 				continue;
 			}
 
-			if (Util::Dist(basePosition,unit->getPos())<25)
+			if (Util::Dist(basePosition, unit->getPos()) < 25 + unit->getAttackRange())
 			{
 				enemyUnitsInRegion.push_back(unit);
 			}
