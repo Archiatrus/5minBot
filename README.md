@@ -1,9 +1,13 @@
 # 5minBot
 The Terran bot plays macro bio. A notable feature is the drop play.
 
-At this stage the bot has a fair chance to beat the inbuilt insane AI (sc2::Difficulty::CheatInsane). It won season 3 of the Starcraft 2 AI Ladder.
+The bot won season 3 of the Starcraft 2 AI Ladder and is on top of the ladder since the start of season 4. The last pushed version is always the same version I have sent to the Starcraft 2 AI Ladder.
 
-The bot is always work in progress. I can not guarantee that it is always working as intended. The list of known bugs is still growing with every game...
+The bot has a fair chance to beat the inbuilt insane AI (sc2::Difficulty::CheatInsane). At the moment it has the following win:loss ratio:
+- Terran: 11 : 35
+- Zerg: 33 : 14
+- Protoss: 32 : 14
+
 
 ---
 
@@ -14,6 +18,7 @@ The starting point of this bot was the [CommandCenter bot](https://github.com/da
 
 ## Building
 For more explicit instructions that hopefully still work, see the [Commandcenter Readme.](https://github.com/davechurchill/commandcenter/blob/master/README.md) General steps are listed below.
+Remember to make a recursive clone to get the used submodules.
 ### Windows
 1. Install SC2 via the [Blizzard app.](https://www.blizzard.com/en-us/apps/battle.net/desktop) Update it.
 2. Install [VS2017 Community.](https://www.visualstudio.com/downloads/)
