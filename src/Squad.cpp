@@ -330,6 +330,10 @@ void Squad::addUnit(const CUnit_ptr unit)
 
 void Squad::removeUnit(const CUnit_ptr unit)
 {
+	if (unit->isWorker())
+	{
+		m_bot.Workers().finishedWithWorker(unit);
+	}
 	m_units.erase(std::remove_if(m_units.begin(), m_units.end(), [unit](CUnit_ptr & newUnit) {return unit->getTag() == newUnit->getTag(); }),m_units.end());
 }
 

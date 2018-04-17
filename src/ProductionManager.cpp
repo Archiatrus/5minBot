@@ -688,7 +688,7 @@ void ProductionManager::defaultMacro()
 	//On one base save a little to get an expansion
 	if (numBases == 1)
 	{
-		if (m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
+		if (true)//m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
 		{
 			if (numDepotsFinished > 0 && minerals >= 150 && numRax + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 2)
 			{
