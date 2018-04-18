@@ -165,6 +165,11 @@ void BuildingManager::constructAssignedBuildings()
 		sc2::AbilityID buildAbility = m_bot.Data(b.m_type).buildAbility;
 		std::shared_ptr<CUnit> builderUnit = b.builderUnit;
 
+		if (builderUnit && !builderUnit->isAlive())
+		{
+			toRemove.push_back(b);
+			continue;
+		}
 		bool isConstructing = false;
 
 		// if we're zerg and the builder unit is null, we assume it morphed into the building
@@ -180,7 +185,6 @@ void BuildingManager::constructAssignedBuildings()
 			BOT_ASSERT(builderUnit, "null builder unit");
 			isConstructing = (builderUnit->getOrders().size() > 0) && (builderUnit->getOrders().front().ability_id == buildAbility);
 		}
-
 		// if that worker is not currently constructing
 		if (!isConstructing)
 		{

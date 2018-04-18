@@ -360,7 +360,7 @@ void CombatCommander::updateDefenseSquads()
 		bool enemyUnitInRange = false;
 		for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Enemy))
 		{
-			if (Util::Dist(unit->getPos(), order.getPosition()) < order.getRadius())
+			if (unit->getPos()!=sc2::Point3D() && Util::Dist(unit->getPos(), order.getPosition()) < order.getRadius())
 			{
 				enemyUnitInRange = true;
 				break;

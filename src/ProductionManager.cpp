@@ -2,7 +2,7 @@
 #include "Util.h"
 #include "CCBot.h"
 #include "Micro.h"
-
+#include "sc2api/sc2_score.h"
 
 
 const int UNIT = 5;
@@ -272,7 +272,9 @@ void ProductionManager::defaultMacro()
 			}
 		}
 	}
-	if (!m_bot.underAttack() && numRax > 3 * numBases && numBases - numBasesFinished + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER) == 0)
+	const float mineralRate = m_bot.Observation()->GetScore().score_details.collection_rate_minerals;
+	const int reactorsFinished = buildingsFinished(m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR));
+	if (!m_bot.underAttack() && mineralRate / static_cast<float>(reactorsFinished)<400.f && numBases - numBasesFinished + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER) == 0)
 	{
 		if (minerals > 400)
 		{
@@ -322,7 +324,6 @@ void ProductionManager::defaultMacro()
 		}
 	}
 	//Refinaries
-	auto test = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_REFINERY);
 	int numOfRefinaries = static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_REFINERY, false) + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_REFINERY));
 	if (numRax > 0 && minerals >= 75 && ((m_bot.Observation()->GetFoodWorkers() >= 15 && numOfRefinaries == 0) || (m_bot.Observation()->GetFoodWorkers() >= 21 && numOfRefinaries == 1) || (m_bot.Observation()->GetFoodWorkers() >= 40 && numOfRefinaries <= 3)))
 	{
