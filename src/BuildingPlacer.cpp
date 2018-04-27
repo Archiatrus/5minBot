@@ -140,12 +140,13 @@ bool BuildingPlacer::canBuildHereWithSpace(int bx, int by, const Building & b, i
 		return buildable(b, startx, starty);
 	}
 	// if we can't build here, or space is reserved, or it's in the resource box, we can't build here
-	for (int x = startx; x < endx; x++)
+	if (!Util::IsRefineryType(b.m_type) && !Util::IsTownHallType(b.m_type))
 	{
-		for (int y = starty; y < endy; y++)
+		for (int x = startx; x < endx; x++)
 		{
-			if (!Util::IsRefineryType(b.m_type)&&!Util::IsTownHallType(b.m_type))
+			for (int y = starty; y < endy; y++)
 			{
+
 				if (m_reserveMap[x][y] || !buildable(b, x, y))
 				{
 					return false;
@@ -184,7 +185,7 @@ sc2::Point2D BuildingPlacer::getBuildLocationNear(const Building & b, int buildD
 	for (int i = idx->m_idx; i != idx->m_closestTiles.size(); ++i)
 	{
 		sc2::Point2D pos = idx->m_closestTiles[i];
-		Drawing::drawSphere(m_bot, pos, 1.0f);
+		//Drawing::drawSphere(m_bot, pos, 1.0f);
 		if (canBuildHereWithSpace((int)pos.x, (int)pos.y, b, buildDist))
 		{
 			//double ms = t.getElapsedTimeInMilliSec();
@@ -223,8 +224,8 @@ bool BuildingPlacer::tileOverlapsBaseLocation(int x, int y, sc2::UnitTypeID type
 	for (const BaseLocation * base : m_bot.Bases().getBaseLocations())
 	{
 		// dimensions of the base location
-		int bx1 = (int)base->getDepotPosition().x;
-		int by1 = (int)base->getDepotPosition().y;
+		int bx1 = (int)base->getCenterOfBase().x;
+		int by1 = (int)base->getCenterOfBase().y;
 		int bx2 = bx1 + Util::GetUnitTypeWidth(Util::GetTownHall(m_bot.GetPlayerRace(Players::Self)), m_bot);
 		int by2 = by1 + Util::GetUnitTypeHeight(Util::GetTownHall(m_bot.GetPlayerRace(Players::Self)), m_bot);
 

@@ -165,7 +165,7 @@ void BaseLocationManager::onFrame()
 		}
 
 		BaseLocation * baseLocation = getBaseLocation(unit->getPos());
-		if (baseLocation != nullptr && m_bot.Map().getHeight(baseLocation->getBasePosition()) == m_bot.Map().getHeight(unit->getPos()))
+		if (baseLocation != nullptr && m_bot.Map().getHeight(baseLocation->getCenterOfBase()) == m_bot.Map().getHeight(unit->getPos()))
 		{
 			baseLocation->setPlayerOccupying(Players::Self, true);
 			baseLocation->setPlayerOccupying(Players::Enemy, false);
@@ -324,7 +324,7 @@ const sc2::Point2D BaseLocationManager::getRallyPoint() const
 	sc2::Point2D targetPos(0.0f, 0.0f);
 	for (const auto & base : startingBases)
 	{
-		targetPos+=base->getPosition();
+		targetPos+=base->getCenterOfBase();
 	}
 	targetPos /= static_cast<float>(startingBases.size());
 
@@ -367,13 +367,13 @@ sc2::Point2D BaseLocationManager::getNextExpansion(int player) const
 	for (const auto & base : getBaseLocations())
 	{
 		// skip mineral only and starting locations (TODO: fix this)
-		if (base->isMineralOnly() || base->isOccupiedByPlayer(player))
+		if (base->isMineralOnly() || base->isOccupiedByPlayer(Players::Self) || base->isOccupiedByPlayer(Players::Enemy))
 		{
 			continue;
 		}
 
 		// get the tile position of the base
-		auto tile = base->getDepotPosition();
+		auto tile = base->getCenterOfBase();
 
 		// the base's distance from our main nexus
 		int distanceFromHome = homeBase->getGroundDistance(tile);
@@ -391,7 +391,7 @@ sc2::Point2D BaseLocationManager::getNextExpansion(int player) const
 		}
 	}
 
-	return closestBase ? closestBase->getPosition() : sc2::Point2D(0.0f, 0.0f);
+	return closestBase ? closestBase->getCenterOfBase() : sc2::Point2D(0.0f, 0.0f);
 }
 
 sc2::Point2D BaseLocationManager::getNewestExpansion(int player) const
@@ -401,7 +401,7 @@ sc2::Point2D BaseLocationManager::getNewestExpansion(int player) const
 	float maxDistance = -1;
 	for (const auto & base : getBaseLocations())
 	{
-		float dist = Util::Dist(homeBase->getPosition(), base->getPosition());
+		float dist = Util::Dist(homeBase->getCenterOfBase(), base->getCenterOfBase());
 		if (base->isOccupiedByPlayer(Players::Self) && maxDistance < dist && base->getTownHall())
 		{
 			maxDistance = dist;
@@ -410,7 +410,7 @@ sc2::Point2D BaseLocationManager::getNewestExpansion(int player) const
 	}
 	if (newestBase)
 	{
-		return newestBase->getBasePosition();
+		return newestBase->getCenterOfBase();
 	}
 	else
 	{

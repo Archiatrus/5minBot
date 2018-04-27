@@ -88,7 +88,7 @@ void ScoutManager::checkOurBases()
 
 	if (m_targetBasesPositions.empty())
 	{
-		updateNearestUnoccupiedBases(m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getPosition(), Players::Self);
+		updateNearestUnoccupiedBases(m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase(), Players::Self);
 	}
 	//Sometimes all bases are taken
 	if (!m_targetBasesPositions.empty())
@@ -196,7 +196,7 @@ void ScoutManager::moveScouts()
 		if (m_numScouts==1)
 		{
 			//We HAD a scout....
-			if (scout && Util::Dist(scout->getPos(),m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getBasePosition()) > 50)
+			if (scout && Util::Dist(scout->getPos(),m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase()) > 50)
 			{
 				gotAttackedInEnemyRegion = true;
 			}
@@ -230,11 +230,11 @@ void ScoutManager::moveScouts()
 	{
 		if (gotAttackedInEnemyRegion && m_targetBasesPositions.empty())
 		{
-			updateNearestUnoccupiedBases(enemyBaseLocation->getPosition(), Players::Enemy);
+			updateNearestUnoccupiedBases(enemyBaseLocation->getCenterOfBase(), Players::Enemy);
 		}
 		else if (m_targetBasesPositions.empty())
 		{
-			m_targetBasesPositions.push(enemyBaseLocation->getPosition());
+			m_targetBasesPositions.push(enemyBaseLocation->getCenterOfBase());
 		}
 
 
@@ -297,10 +297,10 @@ void ScoutManager::moveScouts()
 		{
 			// if we haven't explored it yet then scout it out
 			// TODO: this is where we could change the order of the base scouting, since right now it's iterator order
-			if (!m_bot.Map().isExplored(startLocation->getPosition()))
+			if (!m_bot.Map().isExplored(startLocation->getCenterOfBase()))
 			{
 
-				Micro::SmartMove(m_scoutUnit, startLocation->getPosition(), m_bot);
+				Micro::SmartMove(m_scoutUnit, startLocation->getCenterOfBase(), m_bot);
 				return;
 			}
 		}
@@ -576,7 +576,7 @@ void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos,int player)
 		{
 			baseIt++;
 		}
-		m_targetBasesPositions.push(baseIt->second->getBasePosition());
+		m_targetBasesPositions.push(baseIt->second->getCenterOfBase());
 	}
 	else
 	{
@@ -585,7 +585,7 @@ void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos,int player)
 
 			if (m_targetBasesPositions.size() < numBasesEnemy || numBasesEnemy == 0)
 			{
-				m_targetBasesPositions.push(base.second->getBasePosition());
+				m_targetBasesPositions.push(base.second->getCenterOfBase());
 			}
 		}
 	}

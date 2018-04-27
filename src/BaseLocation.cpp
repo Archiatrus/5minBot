@@ -65,31 +65,12 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 	size_t numResources = m_minerals.size() + m_geysers.size();
 	sc2::Point2D centerMinerals(mineralsCenterX / m_minerals.size(), mineralsCenterY / m_minerals.size());
 	m_centerOfResources = sc2::Point2D(m_left + (m_right-m_left)*0.5f, m_top + (m_bottom-m_top)*0.5f);
-	if (numResources == 10)
-	{
-		m_centerOfBase = m_centerOfResources + (m_centerOfResources - centerMinerals);
-	}
-	else
-	{
-		m_centerOfBase = m_centerOfResources;
-	}
-
 	// compute this BaseLocation's DistanceMap, which will compute the ground distance
 	// from the center of its recourses to every other tile on the map
 	m_distanceMap = m_bot.Map().getDistanceMap(m_centerOfResources);
 
-	// check to see if this is a start location for the map
-	for (const auto & pos : m_bot.Observation()->GetGameInfo().enemy_start_locations)
-	{
-		if (containsPosition(pos))
-		{
-			m_isStartLocation = true;
-			m_depotPosition = pos;
-		}
-	}
-	
 	// if this base location position is near our own resource depot, it's our start location
-	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self,sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER))
+	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER))
 	{
 		if (containsPosition(unit->getPos()))
 		{
@@ -97,18 +78,50 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 			m_isStartLocation = true;
 			m_isPlayerOccupying[Players::Self] = true;
 			m_townhall = unit;
+			m_centerOfBase = unit->getPos();
 			break;
 		}
 	}
+
+	// check to see if this is a start location for the map
+	for (const auto & pos : m_bot.Observation()->GetGameInfo().enemy_start_locations)
+	{
+		if (containsPosition(pos))
+		{
+			m_isStartLocation = true;
+			m_centerOfBase = pos;
+		}
+	}
+	//Get the CC/Nexus/hatch position
+	if (!m_isStartLocation)
+	{
+		if (numResources == 10)
+		{
+			m_centerOfBase = m_centerOfResources + (m_centerOfResources - centerMinerals);
+		}
+		else
+		{
+			m_centerOfBase = m_centerOfResources;
+		}
+		for (const auto & pos : m_distanceMap.getSortedTiles())
+		{
+			if (m_bot.Map().isValid(pos.x, pos.y) && m_bot.Map().canBuildTypeAtPosition(pos.x, pos.y, sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER))
+			{
+				m_centerOfBase = pos;
+				break;
+			}
+		}
+	}
+	
 }
 
 // TODO: calculate the actual depot position
-const sc2::Point2D & BaseLocation::getDepotPosition() const
-{
-	return getPosition();
-}
+//const sc2::Point2D & BaseLocation::getDepotPosition() const
+//{
+//	return getCenterOfRessources();
+//}
 
-const sc2::Point2D & BaseLocation::getBasePosition() const
+const sc2::Point2D & BaseLocation::getCenterOfBase() const
 {
 	return m_centerOfBase;
 }
@@ -164,7 +177,7 @@ const CUnits & BaseLocation::getMinerals() const
 	return m_minerals;
 }
 
-const sc2::Point2D & BaseLocation::getPosition() const
+const sc2::Point2D & BaseLocation::getCenterOfRessources() const
 {
 	return m_centerOfResources;
 }
@@ -269,13 +282,13 @@ void BaseLocation::draw()
 
 	if (m_isStartLocation)
 	{
-		Drawing::drawSphere(m_bot,m_depotPosition, 1.0f, sc2::Colors::Red);
+		Drawing::drawSphere(m_bot, m_centerOfBase, 1.0f, sc2::Colors::Red);
 	}
 	
 	float ccWidth = 5;
 	float ccHeight = 4;
-	sc2::Point2D boxtl = m_depotPosition - sc2::Point2D(ccWidth/2, -ccHeight/2);
-	sc2::Point2D boxbr = m_depotPosition + sc2::Point2D(ccWidth/2, -ccHeight/2);
+	sc2::Point2D boxtl = m_centerOfBase - sc2::Point2D(ccWidth/2, -ccHeight/2);
+	sc2::Point2D boxbr = m_centerOfBase + sc2::Point2D(ccWidth/2, -ccHeight/2);
 
 	Drawing::drawBox(m_bot,boxtl.x, boxtl.y, boxbr.x, boxbr.y, sc2::Colors::Red);
 

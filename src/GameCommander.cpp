@@ -404,7 +404,7 @@ void GameCommander::handleScans()
 		}
 		else
 		{
-			scanPos=m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy)->getDepotPosition();
+			scanPos=m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy)->getCenterOfBase();
 		}
 		CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND);
 		for (const auto & unit : CommandCenters)

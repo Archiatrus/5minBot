@@ -669,7 +669,7 @@ const sc2::Point2D MapTools::getForbiddenCorner(int margin) const
 	{
 		return sc2::Point2D(-1.0f, -1.0f);
 	}
-	const sc2::Point2D pos = enemyBase->getDepotPosition();
+	const sc2::Point2D pos = enemyBase->getCenterOfBase();
 
 	const float x_min = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_min.x + margin);
 	const float x_max = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_max.x - margin);
@@ -764,7 +764,11 @@ const bool MapTools::hasPocketBase() const
 	int minDistance = std::numeric_limits<int>::max();
 	for (const auto & base : m_bot.Bases().getBaseLocations())
 	{
-		auto tile = base->getDepotPosition();
+		if (homeBase->getBaseID() == base->getBaseID())
+		{
+			continue;
+		}
+		auto tile = base->getCenterOfBase();
 		int distanceFromHome = homeBase->getGroundDistance(tile);
 		if (distanceFromHome <= 0)
 		{

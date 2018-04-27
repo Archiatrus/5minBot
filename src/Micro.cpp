@@ -116,7 +116,7 @@ void Micro::SmartMove(CUnit_ptr attacker, const sc2::Point2D & targetPosition, C
 		sc2::Point2D validWalkableTargetPosition = targetPosition;
 		if (!(bot.Map().isWalkable(targetPosition) && bot.Map().isValid(targetPosition)))
 		{
-			sc2::Point2D homeVector = bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getPosition() - attacker->getPos();
+			sc2::Point2D homeVector = bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase() - attacker->getPos();
 			homeVector *= Util::DistSq(attacker->getPos(), targetPosition) / Util::DistSq(homeVector);
 			validWalkableTargetPosition += homeVector;
 		}
@@ -184,7 +184,7 @@ void Micro::SmartMove(CUnits attackers, const sc2::Point2D & targetPosition, CCB
 	if (!(bot.Map().isWalkable(targetPosition) && bot.Map().isValid(targetPosition)))
 	{
 		sc2::Point2D attackersPos = Util::CalcCenter(attackers);
-		sc2::Point2D homeVector = bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getPosition() - attackersPos;
+		sc2::Point2D homeVector = bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase() - attackersPos;
 		homeVector *= Util::DistSq(attackersPos, targetPosition) / Util::DistSq(homeVector);
 		validWalkableTargetPosition += homeVector;
 	}
@@ -257,7 +257,7 @@ void Micro::SmartRightClick(CUnit_ptr unit, CUnits targets, CCBot & bot)
 	{
 		for (const auto & t : targets)
 		{
-			bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::SMART, t->getUnit_ptr(), true);
+			bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::SMART, t->getUnit_ptr());
 		}
 	}
 }

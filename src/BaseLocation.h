@@ -10,10 +10,9 @@ class BaseLocation
 	CCBot &					 m_bot;
 	DistanceMap				 m_distanceMap;
 
-	sc2::Point2D				m_depotPosition;
 	sc2::Point2D				m_centerOfResources;
-	CUnit_ptr					m_townhall;
 	sc2::Point2D				m_centerOfBase;
+	CUnit_ptr					m_townhall;
 	CUnits						m_geysers;
 	CUnits						m_minerals;
 
@@ -43,9 +42,9 @@ public:
 	const int getNumEnemyCombatUnits() const;
 	const int getBaseID() const;
 	bool containsPosition(const sc2::Point2D & pos) const;
-	const sc2::Point2D & getDepotPosition() const;
-	const sc2::Point2D & getPosition() const;
-	const sc2::Point2D & getBasePosition() const;
+	//const sc2::Point2D & getDepotPosition() const;
+	const sc2::Point2D & getCenterOfRessources() const;
+	const sc2::Point2D & getCenterOfBase() const;
 	const CUnits & getGeysers() const;
 	const CUnits & getMinerals() const;
 	bool isOccupiedByPlayer(int player) const;

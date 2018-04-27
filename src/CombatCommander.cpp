@@ -151,11 +151,12 @@ void CombatCommander::updateGuardSquads()
 	}
 	sc2::Point2D guardPosAux = m_bot.Bases().getNextExpansion(Players::Self);
 	auto base = m_bot.Bases().getBaseLocation(guardPosAux);
-	auto test1 = base->getBasePosition();
-	auto test2 = base->getPosition();
-	const sc2::Point2D guardPos = base->getBasePosition()+Util::normalizeVector(base->getBasePosition() - base->getPosition(), 5.0f);
-	SquadOrder guardDutyOrder(SquadOrderTypes::GuardDuty,guardPos , 25, "Guard Duty");
-	guardSquad.setSquadOrder(guardDutyOrder);
+	if (base)
+	{
+		const sc2::Point2D guardPos = base->getCenterOfBase() + Util::normalizeVector(base->getCenterOfBase() - base->getCenterOfRessources(), 5.0f);
+		SquadOrder guardDutyOrder(SquadOrderTypes::GuardDuty, guardPos, 25, "Guard Duty");
+		guardSquad.setSquadOrder(guardDutyOrder);
+	}
 }
 
 void CombatCommander::updateScoutDefenseSquad()
@@ -241,7 +242,7 @@ void CombatCommander::updateDefenseSquads()
 			continue;
 		}
 
-		sc2::Point2D basePosition = myBaseLocation->getPosition();
+		sc2::Point2D basePosition = myBaseLocation->getCenterOfBase();
 
 		// start off assuming all enemy units in region are just workers
 		int numDefendersPerEnemyUnit = 2;
@@ -488,7 +489,7 @@ sc2::Point2D CombatCommander::getMainAttackLocation()
 	// First choice: Attack an enemy region if we can see units inside it
 	if (enemyBaseLocation)
 	{
-		sc2::Point2D enemyBasePosition = enemyBaseLocation->getPosition();
+		sc2::Point2D enemyBasePosition = enemyBaseLocation->getCenterOfBase();
 
 		// If the enemy base hasn't been seen yet, go there.
 		if (!m_bot.Map().isExplored(enemyBasePosition))

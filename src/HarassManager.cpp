@@ -15,7 +15,7 @@ Hitsquad::Hitsquad(CCBot & bot, CUnit_ptr medivac) : m_bot(bot), m_status(Harass
 void Hitsquad::escapePathPlaning()
 {
 	const BaseLocation * saveBase = getSavePosition();
-	sc2::Point2D targetPos = saveBase->getBasePosition();
+	sc2::Point2D targetPos = saveBase->getCenterOfBase();
 	
 	pathPlaning escapePlan(m_bot, m_medivac->getPos(), targetPos, m_bot.Map().width(), m_bot.Map().height(), 1.0f);
 	
@@ -324,7 +324,7 @@ bool Hitsquad::harass(const BaseLocation * target)
 		}
 		//I probably could also just see if m_wayPoints is empty?!
 		const BaseLocation * savePos = Hitsquad::getSavePosition();
-		if (Util::Dist(m_medivac->getPos(), savePos->getBasePosition()) < 0.95f)
+		if (Util::Dist(m_medivac->getPos(), savePos->getCenterOfBase()) < 0.95f)
 		{
 			m_status = HarassStatus::Refueling;
 		}
@@ -418,7 +418,7 @@ const BaseLocation * Hitsquad::getSavePosition() const
 			bool actuallySafe = true;
 			for (const auto & enemy : enemyUnits)
 			{
-				if (Util::Dist(enemy->getPos(), base->getBasePosition()) < 15.0f)
+				if (Util::Dist(enemy->getPos(), base->getCenterOfBase()) < 15.0f)
 				{
 					actuallySafe = false;
 					break;
@@ -426,7 +426,7 @@ const BaseLocation * Hitsquad::getSavePosition() const
 			}
 			if (actuallySafe)
 			{
-				allTargetBases[Util::Dist(base->getBasePosition(), pos)] = base;
+				allTargetBases[Util::Dist(base->getCenterOfBase(), pos)] = base;
 			}
 		}
 	}
@@ -533,7 +533,7 @@ const bool Hitsquad::manhattenMove(const BaseLocation * newTarget)
 
 	
 
-	sc2::Point2D posEnd = newTarget->getPosition() + 1.2f*(newTarget->getPosition() - newTarget->getBasePosition());
+	sc2::Point2D posEnd = newTarget->getCenterOfRessources() + 1.2f*(newTarget->getCenterOfRessources() - newTarget->getCenterOfBase());
 	posEnd = m_bot.Map().findLandingZone(posEnd);
 	float dist;
 	if (m_wayPoints.empty())
@@ -833,20 +833,20 @@ std::vector<const BaseLocation *> HarassManager::getPotentialTargets() const
 	sc2::Point2D enemyHomePos;
 	if (enemyHomeBase)
 	{
-		enemyHomePos = enemyHomeBase->getBasePosition();
+		enemyHomePos = enemyHomeBase->getCenterOfBase();
 	}
 	else
 	{
-		enemyHomePos = (*(bases.begin()))->getBasePosition();
+		enemyHomePos = (*(bases.begin()))->getCenterOfBase();
 	}
 	
-	const sc2::Point2D homePos = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getPosition();//We always know our location
+	const sc2::Point2D homePos = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase();//We always know our location
 	const sc2::Point2D diff = enemyHomePos - homePos;
 	targetBases = { nullptr,nullptr };
 	std::vector<int> maxDist = { 0,0 };
 	for (const auto & base : bases)
 	{
-		const sc2::Point2D targetPos = base->getBasePosition();
+		const sc2::Point2D targetPos = base->getCenterOfBase();
 		const float side = (targetPos.x - homePos.x)*diff.y - (targetPos.y - homePos.y)*diff.x;
 		const int dist = base->getGroundDistance(enemyHomePos);
 		if (!(targetBases[side>=0]) || maxDist[side >= 0] < dist)
@@ -938,9 +938,14 @@ void HarassManager::handleWMHarass()
 {
 	if (m_WMHarass.getwidowMine())
 	{
-		const sc2::Point2D pos = m_bot.Bases().getNextExpansion(Players::Enemy);
+		sc2::Point2D pos;
+		pos = m_bot.Bases().getNextExpansion(Players::Enemy);
+		if (pos == sc2::Point2D())
+		{
+			pos = m_bot.Bases().getNewestExpansion(Players::Enemy);
+		}
 		auto base = m_bot.Bases().getBaseLocation(pos);
-		m_WMHarass.harass(base->getBasePosition());
+		m_WMHarass.harass(base->getCenterOfBase());
 	}
 }
 

@@ -213,7 +213,7 @@ void RangedManager::assignTargets(const CUnits & targets)
 				if (!rangedUnit->isFlying())
 				{
 					const CUnits disruptorShots = m_bot.UnitInfo().getUnits(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_DISRUPTORPHASED);
-					bool fleeYouFools = false;
+					bool fleeYouFoolsPart2 = false;
 					for (const auto & shot : disruptorShots)
 					{
 						const float dist = Util::Dist(rangedUnit->getPos(), shot->getPos());
@@ -230,11 +230,11 @@ void RangedManager::assignTargets(const CUnits & targets)
 								fleeingPos = pos + sc2::Point2D(0.1f, 0.1f);
 							}
 							Micro::SmartMove(rangedUnit, fleeingPos, m_bot);
-							fleeYouFools = true;
+							fleeYouFoolsPart2 = true;
 							break;
 						}
 					}
-					if (fleeYouFools)
+					if (fleeYouFoolsPart2)
 					{
 						continue;
 					}
