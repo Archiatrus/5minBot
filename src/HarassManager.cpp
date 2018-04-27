@@ -228,7 +228,14 @@ bool Hitsquad::harass(const BaseLocation * target)
 		}
 		if (m_medivac->getCargoSpaceTaken() > 0)
 		{
-			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, m_medivac, m_bot);
+			for (const auto & passanger : m_medivac->getPassengers())
+			{
+				if (passanger.health == passanger.health_max)
+				{
+					Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, m_medivac, m_bot);
+					break;
+				}
+			}
 		}
 		const CUnit_ptr targetUnit = getTargetMarines(targetUnits);
 		if (targetUnit)
@@ -337,7 +344,22 @@ bool Hitsquad::harass(const BaseLocation * target)
 		}
 		if (m_medivac->getCargoSpaceTaken() > 0)
 		{
-			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, m_medivac, m_bot);
+			for (const auto & passanger : m_medivac->getPassengers())
+			{
+				if (passanger.health != passanger.health_max)
+				{
+					Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, m_medivac, m_bot);
+					return true;
+				}
+			}
+			if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || m_marines.size() < 6 || haveNoTarget())
+			{
+				m_status = HarassStatus::GoingHome;
+			}
+			else
+			{
+				m_status = HarassStatus::Loading;
+			}
 		}
 		else
 		{
