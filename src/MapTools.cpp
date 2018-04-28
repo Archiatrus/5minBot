@@ -648,7 +648,7 @@ sc2::Point2D MapTools::findLandingZone(sc2::Point2D pos) const
 		{
 			const float range = staticD->getAttackRange();
 			const float dist = Util::Dist(staticD->getPos(), tile);
-			threatLvl +=std::max(2.0f + range - dist,0.0f);
+			threatLvl +=std::max(3.0f + range - dist,0.0f);
 		}
 		if (threatLvl == 0.0f)
 		{

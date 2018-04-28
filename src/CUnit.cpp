@@ -44,6 +44,10 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 		if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
 		{
 			m_AAWeapons = weapon;
+			if (isType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET))
+			{
+				m_AAWeapons.range += 1.0f; //We never know when Hi-Sec Auto Tracking is researched
+			}
 		}
 		if ((weapon.type == sc2::Weapon::TargetType::Ground || weapon.type == sc2::Weapon::TargetType::Any) && weapon.range > m_groundWeapons.range)//Siege tanks
 		{
