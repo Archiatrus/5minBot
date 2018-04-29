@@ -77,6 +77,55 @@ void Micro::SmartAttackMove(CUnit_ptr attacker, const sc2::Point2D & targetPosit
 	}
 }
 
+void Micro::SmartAttackMoveToUnit(CUnits & attacker, const CUnit_ptr target, CCBot & bot)
+{
+	sc2::Units attackerThatNeedToAttackTarget;
+	sc2::Units attackerThatNeedToMove;
+	sc2::Units attackerThatNeedToAttackMove;
+	for (const auto & a : attacker)
+	{
+		const float range = a->getAttackRange(target);
+		const float dist = Util::Dist(a->getPos(), target->getPos());
+		if (dist <= range)
+		{
+			if (a->getOrders().empty() || a->getOrders().front().ability_id != sc2::ABILITY_ID::ATTACK || a->getOrders().front().target_unit_tag != target->getTag())
+			{
+				attackerThatNeedToAttackTarget.push_back(a->getUnit_ptr());
+			}
+		}
+		else
+		{
+			if (a->getWeaponCooldown() > 0.0f)
+			{
+				if (a->getOrders().empty() || a->getOrders().front().ability_id != sc2::ABILITY_ID::MOVE || a->getOrders().front().target_pos != target->getPos())
+				{
+					attackerThatNeedToMove.push_back(a->getUnit_ptr());
+				}
+			}
+			else
+			{
+				if (a->getOrders().empty() || a->getOrders().front().target_pos != target->getPos())
+				{
+				attackerThatNeedToAttackMove.push_back(a->getUnit_ptr());
+				}
+			}
+		}
+	}
+	if (attackerThatNeedToAttackTarget.size()>0)
+	{
+		bot.Actions()->UnitCommand(attackerThatNeedToAttackTarget, sc2::ABILITY_ID::ATTACK_ATTACK, target->getUnit_ptr());
+	}
+	if (attackerThatNeedToMove.size()>0)
+	{
+		bot.Actions()->UnitCommand(attackerThatNeedToMove, sc2::ABILITY_ID::MOVE, target->getPos());
+	}
+	if (attackerThatNeedToAttackMove.size()>0)
+	{
+		bot.Actions()->UnitCommand(attackerThatNeedToAttackMove, sc2::ABILITY_ID::ATTACK, target->getPos());
+	}
+}
+
+
 void Micro::SmartAttackMove(CUnits & attacker, const sc2::Point2D & targetPosition, CCBot & bot)
 {
 	sc2::Units attackerThatNeedToMove;
@@ -89,7 +138,7 @@ void Micro::SmartAttackMove(CUnits & attacker, const sc2::Point2D & targetPositi
 	}
 	if (attackerThatNeedToMove.size()>0)
 	{
-		bot.Actions()->UnitCommand(attackerThatNeedToMove, sc2::ABILITY_ID::ATTACK_ATTACK, targetPosition);
+		bot.Actions()->UnitCommand(attackerThatNeedToMove, sc2::ABILITY_ID::ATTACK, targetPosition);
 	}
 }
 

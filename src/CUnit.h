@@ -26,7 +26,7 @@ class CUnit
 	bool	m_isFlying;
 	bool	m_isBurrowed;
 	float 	m_weaponCooldown;
-	int		m_abilityCooldown;
+	uint32_t m_abilityCooldown;
 
 	sc2::Weapon m_groundWeapons;
 	sc2::Weapon m_AAWeapons;
@@ -108,8 +108,8 @@ public:
 	bool isVisible() const;
 	bool CUnit::isType(sc2::UnitTypeID type) const;
 	void drawSphere() const;
-	const int getAbilityCoolDown() const;
-	void newAbilityCoolDown(const int CD);
+	const uint32_t getAbilityCoolDown() const;
+	void newAbilityCoolDown(const uint32_t CD);
 };
 
 class CUnitsData

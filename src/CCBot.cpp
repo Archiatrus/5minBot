@@ -313,5 +313,5 @@ int GetAgentRace()
 
 void CCBot::OnError(const std::vector<sc2::ClientError> & client_errors, const std::vector<std::string> & protocol_errors)
 {
-	
+	int a = 1;
 }

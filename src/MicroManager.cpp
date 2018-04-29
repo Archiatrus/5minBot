@@ -49,6 +49,10 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 					{
 						attackMoveUnits.push_back(unit);
 					}
+					if (unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC))
+					{
+						Micro::SmartCDAbility(unit, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
+					}
 				}
 				else
 				{
@@ -169,7 +173,12 @@ void MicroManager::regroup(const sc2::Point2D & regroupPosition) const
 		if (Util::Dist(unit->getPos(), regroupPosition) > 8.0f)
 		{
 			regroupUnits.push_back(unit);
+			if (unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC))
+			{
+				Micro::SmartCDAbility(unit, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
+			}
 		}
+
 	}
 	
 	Micro::SmartAttackMove(regroupUnits, regroupPosition, m_bot);

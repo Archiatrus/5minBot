@@ -292,8 +292,15 @@ void ProductionManager::defaultMacro()
 		
 		if (numBuildingDepots + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT) < numBasesFinished)
 		{
-			m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT), BUILDING, false));
-			std::cout << "Depot" << std::endl;
+			if (minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT).mineralCost)
+			{
+				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT), BUILDING, false));
+				std::cout << "Depot" << std::endl;
+			}
+			else
+			{
+				std::cout << "Saving minerals for depot" << std::endl;
+			}
 			return;
 		}
 	}
@@ -307,13 +314,17 @@ void ProductionManager::defaultMacro()
 				if (minerals > 150)
 				{
 					Micro::SmartAbility(unit, sc2::ABILITY_ID::MORPH_ORBITALCOMMAND, m_bot);
+					std::cout << "OC" << std::endl;
 				}
-				std::cout << "OC" << std::endl;
+				else
+				{
+					std::cout << "Saving minerals for OC" << std::endl;
+				}
 				return;
 			}
 
 			//Every Base has to build a worker until 66 workers.
-			if (m_bot.Observation()->GetFoodWorkers() < 66)
+			if (m_bot.Observation()->GetFoodWorkers() < 66 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_SCV).supplyCost)
 			{
 				//m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_SCV), UNIT, false));
 				Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_SCV, m_bot);

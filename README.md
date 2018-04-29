@@ -1,17 +1,17 @@
 # 5minBot
 The Terran bot plays macro bio. A notable feature is the drop play.
 
-The bot won season 3 of the Starcraft 2 AI Ladder and is on top of the ladder since the start of season 4. The last pushed version is always the same version I have sent to the Starcraft 2 AI Ladder.
+The bot won season 3 of the Starcraft 2 AI Ladder and is on top of the elo based ladder since the start of season 4. The version you see here on Github is always the same version I have sent to the Starcraft 2 AI Ladder.
 
-The bot has a fair chance to beat the inbuilt insane AI (sc2::Difficulty::CheatInsane). At the moment it has the following win:loss ratio:
-- Terran: 11 : 35
-- Zerg: 33 : 14
-- Protoss: 32 : 14
+The bot has a fair chance to beat the inbuilt insane AI (sc2::Difficulty::CheatInsane) if it is not Terran. At the moment it has the following win:loss ratio:
+- Terran: 8 : 39
+- Zerg: 37 : 10
+- Protoss: 41 : 6
 
 
 ---
 
-If you use my bot as sparing partner for your bot (this is my intention with uploading it to github) feel free to drop me a message in the discord channel https://discord.gg/qTZ65sh Archiatrus#3053
+If you use my bot as sparing partner for your bot (this is my intention with uploading it to Github) feel free to drop me a message in the discord channel https://discord.gg/qTZ65sh Archiatrus#3053
 
 ---
 The starting point of this bot was the [CommandCenter bot](https://github.com/davechurchill/commandcenter) by David Churchill cloned mid November 2017.

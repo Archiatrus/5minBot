@@ -91,7 +91,7 @@ bool isDead(const CUnit_ptr unit)
 void Hitsquad::checkForCasualties()
 {
 	//Last game loop check prevents units in bunker... but this is also true for in medivac
-	m_marines.erase(std::remove_if(m_marines.begin(), m_marines.end(), [this](const CUnit_ptr & unit) {
+	m_marines.erase(std::remove_if(m_marines.begin(), m_marines.end(), [&](const CUnit_ptr & unit) {
 		if (!unit->isAlive())
 		{
 			return true;
@@ -175,7 +175,7 @@ bool Hitsquad::harass(const BaseLocation * target)
 			}
 			else if (m_medivac->getHealth() != m_medivac->getHealthMax())
 			{
-				m_bot.Workers().setRepairWorker(m_medivac,3);
+				m_bot.Workers().setRepairWorker(m_medivac, 3);
 			}
 		}
 		break;
@@ -206,8 +206,8 @@ bool Hitsquad::harass(const BaseLocation * target)
 		for (const auto & enemy : getNearbyEnemyUnits())
 		{
 			if (shouldWeFlee(getNearbyEnemyUnits(), static_cast<int>(m_marines.size()))
-				|| ((enemy->getUnitType()==sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON || enemy->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || enemy->getUnitType() == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
-					&& enemy->isCompleted() && Util::Dist(enemy->getPos(),m_medivac->getPos())<enemy->getAttackRange()))
+				|| ((enemy->getUnitType() == sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON || enemy->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || enemy->getUnitType() == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
+					&& enemy->isCompleted() && Util::Dist(enemy->getPos(), m_medivac->getPos()) < enemy->getAttackRange()))
 			{
 				while (!m_wayPoints.empty())
 				{
@@ -249,10 +249,11 @@ bool Hitsquad::harass(const BaseLocation * target)
 			if (oldTargetTag && m_bot.GetUnit(oldTargetTag) && m_bot.GetUnit(oldTargetTag)->isWorker())
 			{
 				//If we already attack a probe don't change the target
+				int a = 1;
 			}
 			else
 			{
-				Micro::SmartAttackUnit(m_marines, targetUnit, m_bot);
+				Micro::SmartAttackMoveToUnit(m_marines, targetUnit, m_bot);
 				Micro::SmartStim(m_marines, m_bot);
 			}
 		}
@@ -281,6 +282,17 @@ bool Hitsquad::harass(const BaseLocation * target)
 		if (injuredCounter == m_marines.size())
 		{
 			m_status = HarassStatus::Fleeing;
+		}
+		for (const auto & enemy : targetUnits)
+		{
+			if (enemy->isCompleted() && (enemy->isType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET) || enemy->isType(sc2::UNIT_TYPEID::ZERG_SPORECRAWLER)))
+			{
+				if (Util::Dist(m_medivac->getPos(), enemy->getPos()) <= enemy->getAttackRange() + 1.0f)
+				{
+					sc2::Point2D fleeingVector = Util::normalizeVector(m_medivac->getPos() - enemy->getPos(), enemy->getAttackRange() + 1.5f);
+					Micro::SmartMove(m_medivac, enemy->getPos() + fleeingVector, m_bot);
+				}
+			}
 		}
 		break;
 	}
@@ -352,36 +364,29 @@ bool Hitsquad::harass(const BaseLocation * target)
 					return true;
 				}
 			}
-			if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || m_marines.size() < 6 || haveNoTarget())
+		}
+		for (const auto & marine : m_marines)
+		{
+			if (marine->isVisible() &&  marine->getHealth() != marine->getHealthMax())
 			{
-				m_status = HarassStatus::GoingHome;
+				if (m_medivac->getOrders().empty() && m_medivac->getEnergy() > 5.0f)
+				{
+					Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::EFFECT_HEAL, marine, m_bot);
+				}
+				return true;
 			}
-			else
-			{
-				m_status = HarassStatus::Loading;
-			}
+		}
+		if (m_medivac->getOrders().size() > 0 && m_medivac->getOrders().front().ability_id == sc2::ABILITY_ID::UNLOADALLAT)
+		{
+			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::STOP,m_bot);
+		}
+		if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || m_marines.size() < 6 || haveNoTarget())
+		{
+			m_status = HarassStatus::GoingHome;
 		}
 		else
 		{
-			for (const auto & marine : m_marines)
-			{
-				if (marine->getHealth() != marine->getHealthMax())
-				{
-					if (m_medivac->getOrders().empty() && m_medivac->getEnergy() > 5.0f)
-					{
-						Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::EFFECT_HEAL, marine,m_bot);
-					}
-					return true;
-				}
-			}
-			if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || m_marines.size() < 6 || haveNoTarget())
-			{
-				m_status = HarassStatus::GoingHome;
-			}
-			else
-			{
-				m_status = HarassStatus::Loading;
-			}
+			m_status = HarassStatus::Loading;
 		}
 		break;
 	case HarassStatus::GoingHome:
@@ -508,11 +513,25 @@ CUnit_ptr Hitsquad::getTargetMarines(CUnits targets) const
 		int prio = 0;
 		if (t->getUnitType().ToType() == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || t->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
 		{
-			prio = 10;
+			if (t->isVisible())
+			{
+				prio = 10;
+			}
+			else
+			{
+				prio = 3;
+			}
 		}
 		else if (t->getUnitType().ToType() == sc2::UNIT_TYPEID::ZERG_QUEEN || t->getUnitType().ToType() == sc2::UNIT_TYPEID::ZERG_SPINECRAWLER || t->getUnitType().ToType() == sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON)
 		{
-			prio = 9;
+			if (t->isVisible())
+			{
+				prio = 9;
+			}
+			else
+			{
+				prio = 2;
+			}
 		}
 		else if (Util::IsWorkerType(t->getUnitType().ToType()))
 		{
@@ -524,7 +543,7 @@ CUnit_ptr Hitsquad::getTargetMarines(CUnits targets) const
 		}
 		else if (Util::IsTownHallType(t->getUnitType().ToType()))
 		{
-			prio = 2;
+			prio = 4;
 		}
 		else if (t->getUnitType().ToType() == sc2::UNIT_TYPEID::ZERG_EGG || t->getUnitType().ToType() == sc2::UNIT_TYPEID::ZERG_LARVA)
 		{

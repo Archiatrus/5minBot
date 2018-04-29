@@ -508,12 +508,12 @@ void CUnit::drawSphere() const
 	Drawing::drawText(*m_bot, m_pos, sc2::UnitTypeToName(getUnitType()));
 }
 
-const int CUnit::getAbilityCoolDown() const
+const uint32_t CUnit::getAbilityCoolDown() const
 {
 	return m_abilityCooldown;
 }
 
-void CUnit::newAbilityCoolDown(const int CD)
+void CUnit::newAbilityCoolDown(const uint32_t CD)
 {
 	m_abilityCooldown=CD;
 }

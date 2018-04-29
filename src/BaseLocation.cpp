@@ -105,7 +105,7 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 		}
 		for (const auto & pos : m_distanceMap.getSortedTiles())
 		{
-			if (m_bot.Map().isValid(pos.x, pos.y) && m_bot.Map().canBuildTypeAtPosition(pos.x, pos.y, sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER))
+			if (m_bot.Map().isValid(static_cast<int>(pos.x), static_cast<int>(pos.y)) && m_bot.Map().canBuildTypeAtPosition(static_cast<int>(pos.x), static_cast<int>(pos.y), sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER))
 			{
 				m_centerOfBase = pos;
 				break;

@@ -142,7 +142,7 @@ void pathPlaning::updateNode(std::shared_ptr<node> updateNode, std::shared_ptr<n
 
 const bool pathPlaning::reachedEndPos(sc2::Point2D currentPos) const
 {
-	return Util::DistSq(currentPos, m_endPos) < 0.5*m_stepSize*m_stepSize;
+	return Util::DistSq(currentPos, m_endPos) <= 0.5*m_stepSize*m_stepSize;
 }
 
 void pathPlaning::expandFrontNode(std::shared_ptr<node> frontNode)

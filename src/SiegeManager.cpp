@@ -38,7 +38,7 @@ void SiegeManager::assignTargets(const CUnits & targets)
 			int a = 1;
 		}
 		// if the order is to attack or defend
-		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend)
+		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend || order.getType() == SquadOrderTypes::GuardDuty)
 		{
 			// if there are targets
 			if (!SiegeUnitTargets.empty())

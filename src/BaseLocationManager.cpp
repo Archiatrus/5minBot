@@ -156,7 +156,8 @@ void BaseLocationManager::onFrame()
 			baseLocation->setPlayerOccupying(Players::Enemy, true);
 		}
 	}
-	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
+	//We only really occupy a base when there is a CC
+	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self,Util::getTownHallTypes()))
 	{
 		// we only care about buildings on the ground
 		if (!unit->isBuilding() || unit->isFlying()|| !unit->isAlive())

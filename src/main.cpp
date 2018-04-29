@@ -17,12 +17,12 @@
 
 #ifdef LADDEREXE
 bool useDebug = false;
-bool useAutoObserver = false;
+bool useAutoObserver = true;
 #elif VSHUMAN
 bool useDebug = false;
 bool useAutoObserver = false;
 #else
-bool useDebug = false;
+bool useDebug = true;
 bool useAutoObserver = false;
 #endif
 
@@ -75,14 +75,14 @@ static void ParseArguments(int argc, char *argv[], ConnectionOptions &connect_op
 	}
 	else
 	{
-		std::cout << std::endl << "Could not read race option. Please provide it via --HumanRace \"Zerg/Protoss/Terran\". Using default: Terran" << std::endl << std::endl;
-		connect_options.HumanRace = sc2::Terran;
+		std::cout << std::endl << "Could not read race option. Please provide it via --HumanRace \"Zerg/Protoss/Terran\". Using default: Zerg" << std::endl << std::endl;
+		connect_options.HumanRace = sc2::Zerg;
 	}
 
 	if (!arg_parser.Get("Map", connect_options.map))
 	{
-		std::cout << "Could not read map option. Please provide it via --Map \"InterloperLE.SC2Map\". Using default: InterloperLE.SC2Map" << std::endl << std::endl;
-		connect_options.map = "InterloperLE.SC2Map";
+		std::cout << "Could not read map option. Please provide it via --Map \"InterloperLE.SC2Map\". Using default: BelShirVestigeLE.SC2Map" << std::endl << std::endl;
+		connect_options.map = "BelShirVestigeLE.SC2Map";
 	}
 }
 
@@ -127,8 +127,8 @@ int main(int argc, char* argv[])
 #else //DEBUG
 int main(int argc, char* argv[])
 {
-	std::vector<std::string> maps = { "OdysseyLE.SC2Map","ProximaStationLE.SC2Map","AscensiontoAiurLE.SC2Map","BelShirVestigeLE.SC2Map","MechDepotLE.SC2Map","NewkirkPrecinctTE.SC2Map" };
-	std::vector<sc2::Race> opponents = { sc2::Race::Protoss,sc2::Race::Terran,sc2::Race::Zerg };
+	std::vector<std::string> maps = { "BelShirVestigeLE.SC2Map","OdysseyLE.SC2Map","ProximaStationLE.SC2Map","AscensiontoAiurLE.SC2Map","MechDepotLE.SC2Map","NewkirkPrecinctTE.SC2Map" };
+	std::vector<sc2::Race> opponents = { sc2::Race::Terran, sc2::Race::Zerg, sc2::Race::Protoss};
 	std::map<std::string, sc2::Point2D> mapScore;
 	std::map<sc2::Race, sc2::Point2D> raceScore;
 	
