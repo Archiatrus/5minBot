@@ -256,7 +256,7 @@ void RangedManager::assignTargets(const CUnits & targets)
 					if (order.getType() == SquadOrderTypes::Defend)
 					{
 						CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
-						if (Bunker.size() > 0)
+						if (Bunker.size() > 0 && Bunker.front()->isCompleted())
 						{
 							if (Bunker.front()->getCargoSpaceTaken() != Bunker.front()->getCargoSpaceMax())
 							{
