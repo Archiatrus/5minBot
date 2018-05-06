@@ -194,7 +194,10 @@ bool Hitsquad::harass(const BaseLocation * target)
 			}
 			else
 			{
-				m_status = HarassStatus::OnMyWay;
+				if (m_medivac->isIdle())
+				{
+					m_status = HarassStatus::OnMyWay;
+				}
 			}
 		}
 		break;
@@ -376,7 +379,7 @@ bool Hitsquad::harass(const BaseLocation * target)
 				return true;
 			}
 		}
-		if (m_medivac->getOrders().size() > 0 && m_medivac->getOrders().front().ability_id == sc2::ABILITY_ID::UNLOADALLAT)
+		if (m_medivac->getOrders().size() > 0)
 		{
 			Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::STOP,m_bot);
 		}

@@ -167,21 +167,45 @@ const CUnits & MicroManager::getUnits() const
 
 void MicroManager::regroup(const sc2::Point2D & regroupPosition) const
 {
-	CUnits regroupUnits;
+	CUnits regroupUnitsMove;
+	CUnits regroupUnitsShoot;
 	for (const auto & unit : m_units)
 	{
 		if (Util::Dist(unit->getPos(), regroupPosition) > 8.0f)
 		{
-			regroupUnits.push_back(unit);
 			if (unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC))
 			{
 				Micro::SmartCDAbility(unit, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
+				regroupUnitsMove.push_back(unit);
+			}
+			else if (unit->isType(sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED))
+			{
+				Micro::SmartAbility(unit, sc2::ABILITY_ID::MORPH_UNSIEGE, m_bot);
+			}
+			else
+			{
+				if (unit->getWeaponCooldown())
+				{
+					regroupUnitsShoot.push_back(unit);
+				}
+				else
+				{
+					regroupUnitsMove.push_back(unit);
+				}
 			}
 		}
 
 	}
+	if (regroupUnitsMove.size() > 0)
+	{
+		Micro::SmartMove(regroupUnitsShoot, regroupPosition, m_bot);
+	}
+	if (regroupUnitsShoot.size() > 0)
+	{
+		Micro::SmartAttackMove(regroupUnitsShoot, regroupPosition, m_bot);
+	}
+
 	
-	Micro::SmartAttackMove(regroupUnits, regroupPosition, m_bot);
 }
 
 void MicroManager::trainSubUnits(CUnit_ptr unit) const

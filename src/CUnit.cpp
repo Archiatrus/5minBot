@@ -228,6 +228,7 @@ void CUnit::update()
 {	
 	if (isVisible())
 	{
+		/*
 		if (getOwner() == Players::Self)
 		{
 			const auto target = getTarget();
@@ -236,7 +237,7 @@ void CUnit::update()
 				Drawing::drawLine(*m_bot, m_pos, target->getPos(),sc2::Colors::Red);
 			}
 		}
-
+		*/
 		//DT detection
 		if (getOwner() == Players::Self && m_bot->GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
 		{

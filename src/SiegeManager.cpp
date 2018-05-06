@@ -208,8 +208,13 @@ float SiegeManager::getAttackPriority(const CUnit_ptr attacker, const CUnit_ptr 
 	{
 		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_BANELING)
 		{
+			return 12.0f;
+		}
+		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_LURKERMPBURROWED)
+		{
 			return 11.0f;
 		}
+
 		return 10.0f;
 	}
 	if (unit->getUnitType() == sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON || unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPINECRAWLER)
