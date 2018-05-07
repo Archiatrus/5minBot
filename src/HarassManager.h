@@ -28,6 +28,7 @@ class Hitsquad
 	std::queue<sc2::Point2D> m_wayPoints;
 	int m_pathPlanCounter;
 	const BaseLocation *m_target;
+	sc2::Point2D m_stalemateCheck;
 
 	void checkForCasualties();
 	CUnit_ptr getTargetMarines(CUnits targets) const;

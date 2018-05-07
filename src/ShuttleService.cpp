@@ -9,7 +9,8 @@ shuttle::shuttle(CCBot * const bot, CUnits passengers, sc2::Point2D targetPos) :
 	m_shuttle(nullptr),
 	m_passengers(passengers),
 	m_targetPos(targetPos),
-	m_status(ShuttleStatus::lookingForShuttle)
+	m_status(ShuttleStatus::lookingForShuttle),
+	m_stalemateCheck(sc2::Point2D())
 {
 
 }
@@ -68,6 +69,15 @@ void shuttle::travelToDestination()
 	}
 	else
 	{
+		//Airblocker on waypoint -> medivac gets stuck
+		if (m_bot->Observation()->GetGameLoop() % 23 == 0)
+		{
+			if (Util::Dist(m_shuttle->getPos(), m_stalemateCheck) < 0.1f)
+			{
+				m_wayPoints.pop();
+			}
+			m_stalemateCheck = m_shuttle->getPos();
+		}
 		Micro::SmartCDAbility(m_shuttle, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, *m_bot);
 		Micro::SmartMove(m_shuttle, m_wayPoints.front(), *m_bot);
 	}

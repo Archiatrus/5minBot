@@ -8,7 +8,7 @@
 const int updateRatePathplaning = 10;
 
 
-Hitsquad::Hitsquad(CCBot & bot, CUnit_ptr medivac) : m_bot(bot), m_status(HarassStatus::Idle), m_medivac(medivac),m_pathPlanCounter(updateRatePathplaning+1), m_target(nullptr)
+Hitsquad::Hitsquad(CCBot & bot, CUnit_ptr medivac) : m_bot(bot), m_status(HarassStatus::Idle), m_medivac(medivac),m_pathPlanCounter(updateRatePathplaning+1), m_target(nullptr),m_stalemateCheck(sc2::Point2D())
 {
 }
 
@@ -231,9 +231,17 @@ bool Hitsquad::harass(const BaseLocation * target)
 		}
 		if (m_medivac->getCargoSpaceTaken() > 0)
 		{
+			bool dangerZone = false;
+			for (const auto & t : targetUnits)
+			{
+				if (t->isCombatUnit())
+				{
+					dangerZone = true;
+				}
+			}
 			for (const auto & passanger : m_medivac->getPassengers())
 			{
-				if (passanger.health == passanger.health_max)
+				if (!dangerZone || passanger.health == passanger.health_max)
 				{
 					Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::UNLOADALLAT, m_medivac, m_bot);
 					break;
@@ -518,7 +526,7 @@ CUnit_ptr Hitsquad::getTargetMarines(CUnits targets) const
 		{
 			if (t->isVisible())
 			{
-				prio = 10;
+				prio = 8;
 			}
 			else
 			{
@@ -529,7 +537,7 @@ CUnit_ptr Hitsquad::getTargetMarines(CUnits targets) const
 		{
 			if (t->isVisible())
 			{
-				prio = 9;
+				prio = 8;
 			}
 			else
 			{
@@ -573,9 +581,17 @@ const bool Hitsquad::manhattenMove(const BaseLocation * newTarget)
 	{
 		return false;
 	}
-	//If we get a new target
+	//Airblocker on waypoint -> medivac gets stuck
+	if (m_bot.Observation()->GetGameLoop() % 23 == 0)
+	{
+		if (Util::Dist(m_medivac->getPos(), m_stalemateCheck) < 0.1f)
+		{
+			m_wayPoints.pop();
+		}
+		m_stalemateCheck = m_medivac->getPos();
+	}
 
-	
+	//If we get a new target
 
 	sc2::Point2D posEnd = newTarget->getCenterOfRessources() + 1.2f*(newTarget->getCenterOfRessources() - newTarget->getCenterOfBase());
 	posEnd = m_bot.Map().findLandingZone(posEnd);
