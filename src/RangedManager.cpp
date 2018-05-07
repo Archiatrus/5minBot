@@ -356,6 +356,9 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 						}
 						else
 						{
+							targetsAttackedBy[targets[0].second].push_back(rangedUnit);
+							//Good idea... does not work
+							/*
 							if (rangedUnit->getWeaponCooldown())
 							{
 								targetsMovedTo[targets[1].second].push_back(rangedUnit);
@@ -364,6 +367,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 							{
 								targetsAttackedBy[targets[0].second].push_back(rangedUnit);
 							}
+							*/
 						}
 					}
 					else if (targets[1].second)
@@ -490,7 +494,7 @@ int RangedManager::getAttackPriority(const CUnit_ptr & unit)
 		}
 		return 7;
 	}
-	if (unit->getUnitType() == sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON || unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPINECRAWLER || unit->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER))
+	if (unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS || unit->getUnitType() == sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON || unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPINECRAWLER || unit->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER))
 	{
 		return 7;
 	}

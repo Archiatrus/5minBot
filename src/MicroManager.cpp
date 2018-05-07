@@ -198,7 +198,7 @@ void MicroManager::regroup(const sc2::Point2D & regroupPosition) const
 	}
 	if (regroupUnitsMove.size() > 0)
 	{
-		Micro::SmartMove(regroupUnitsShoot, regroupPosition, m_bot);
+		Micro::SmartMove(regroupUnitsMove, regroupPosition, m_bot);
 	}
 	if (regroupUnitsShoot.size() > 0)
 	{
