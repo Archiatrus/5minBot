@@ -35,4 +35,5 @@ public:
 	const bool needShuttleUnit() const;
 	void assignShuttleUnit(CUnit_ptr unit);
 	int getShuttleStatus() const;
+	sc2::Point2D getPos() const;
 };

@@ -715,9 +715,12 @@ void WMHarass::harass(const sc2::Point2D pos)
 			}
 			else if (m_wayPoints.back() != pos)
 			{
-				m_wayPoints.pop();
-				m_wayPoints.push(pos);
-				m_shuttle->updateTargetPos(pos);
+				if (Util::Dist(m_shuttle->getPos(), m_wayPoints.back()) > 15.0f)
+				{
+					m_wayPoints.pop();
+					m_wayPoints.push(pos);
+					m_shuttle->updateTargetPos(pos);
+				}
 			}
 			break;
 		}
@@ -743,7 +746,7 @@ void WMHarass::harass(const sc2::Point2D pos)
 			//If enemies nearby, better burrow
 			for (const auto & enemy : enemies)
 			{
-				if (enemy->isCombatUnit() || (enemy->isWorker() && Util::Dist(m_widowmine->getPos(), enemy->getPos()) < 2.0f))
+				if (enemy->isCombatUnit() || (enemy->isWorker() && Util::Dist(m_widowmine->getPos(), enemy->getPos()) < 5.0f))
 				{
 					if (m_widowmine->getUnitType().ToType() != sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
 					{

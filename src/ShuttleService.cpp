@@ -171,3 +171,8 @@ int shuttle::getShuttleStatus() const
 {
 	return m_status;
 }
+
+sc2::Point2D shuttle::getPos() const
+{
+	return m_shuttle->getPos();
+}
