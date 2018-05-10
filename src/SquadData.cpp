@@ -181,11 +181,6 @@ bool SquadData::canAssignUnitToSquad(const CUnit_ptr unit, const Squad & squad) 
 {
 
 	const Squad * unitSquad = getUnitSquad(unit);
-	//It really should not happen, that the harass medivac reaches here. No idea how this happens
-	if (unit->getCargoSpaceTaken() > 0)
-	{
-		return false;
-	}
 	// make sure strictly less than so we don't reassign to the same squad etc
 	return !unitSquad || (unitSquad->getPriority() < squad.getPriority());
 }

@@ -28,10 +28,9 @@ class shuttle
 
 public:
 	shuttle(CCBot * const bot, CUnits passengers, sc2::Point2D targetPos);
-
+	~shuttle();
 	//Really bad at naming things rn
 	void hereItGoes();
-	const bool isShuttle(CUnit_ptr unit) const;
 	void updateTargetPos(const sc2::Point2D newTargetPos);
 	const bool needShuttleUnit() const;
 	void assignShuttleUnit(CUnit_ptr unit);

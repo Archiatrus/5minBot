@@ -30,8 +30,6 @@ class GameCommander
 
 	CUnits    m_validUnits;
 	CUnits    m_combatUnits;
-	CUnits    m_scoutUnits;
-	CUnits    m_harassUnits;
 	std::vector<std::shared_ptr<shuttle>>	m_shuttles;
 
 	std::vector<timePlace> m_needDetections;
@@ -42,6 +40,8 @@ class GameCommander
 	bool isAssigned(CUnit_ptr unit) const;
 
 	bool isShuttle(CUnit_ptr unit) const;
+	bool isScout(CUnit_ptr unit) const;
+	bool isHarassUnit(CUnit_ptr unit) const;
 
 	void handleShuttleService();
 

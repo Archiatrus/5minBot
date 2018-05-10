@@ -2,14 +2,18 @@
 #include "Util.h"
 #include "CCBot.h"
 
+uint32_t counter;
+uint32_t speedFactor = 10;
+
 RangedManager::RangedManager(CCBot & bot)
 	: MicroManager(bot)
 {
-
+	counter = 0;
 }
 
 void RangedManager::executeMicro(const CUnits & targets)
 {
+	++counter;
 	assignTargets(targets);
 }
 
@@ -21,8 +25,9 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 	for (const auto & target : targetsRaw)
 	{
 		if (!target) { continue; }
-		if (target->getUnitType() == sc2::UNIT_TYPEID::ZERG_EGG) { continue; }
-		if (target->getUnitType() == sc2::UNIT_TYPEID::ZERG_LARVA) { continue; }
+		if (!target->isVisible() && !target->isTownHall()) { continue; }
+		if (target->isType(sc2::UNIT_TYPEID::ZERG_EGG)) { continue; }
+		if (target->isType(sc2::UNIT_TYPEID::ZERG_LARVA)) { continue; }
 		if (target->getPos()==sc2::Point3D()) { continue; }
 		rangedUnitTargets.push_back(target);
 	}
@@ -174,7 +179,10 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 			}
 		}
 
+		if (rangedUnit->getTag() % speedFactor == counter%speedFactor)
+		{
 
+		}
 		// if the order is to attack or defend
 		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend || order.getType() == SquadOrderTypes::GuardDuty)
 		{
@@ -473,46 +481,46 @@ const CUnit_ptr RangedManager::getTarget(const CUnit_ptr rangedUnit, const CUnit
 int RangedManager::getAttackPriority(const CUnit_ptr & unit)
 {
 	BOT_ASSERT(unit, "null unit in getAttackPriority");
-
+	if (unit->isTownHall())
+	{
+		return 3;
+	}
+	if (!unit->isVisible())
+	{
+		return 1;
+	}
 	if (unit->isCombatUnit())
 	{
-		if (!unit->isVisible())
-		{
-			return 3;
-		}
 		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_BANELING)
 		{
 			return 9;
 		}
-		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_LURKERMPBURROWED)
+		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_LURKERMPBURROWED || unit->isType(sc2::UNIT_TYPEID::PROTOSS_SENTRY))
 		{
 			return 8;
 		}
 		if (unit->isType(sc2::UNIT_TYPEID::ZERG_INFESTEDTERRANSEGG) || unit->isType(sc2::UNIT_TYPEID::ZERG_BROODLING) || unit->isType(sc2::UNIT_TYPEID::ZERG_INFESTORTERRAN) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_INTERCEPTOR))
 		{
-			return 6;
+			return 5;
 		}
-		return 7;
+		return 6;
 	}
 	if (unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS || unit->getUnitType() == sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON || unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPINECRAWLER || unit->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER))
 	{
-		return 7;
+		return 6;
 	}
 	if (unit->isWorker())
 	{
-		return 7;
-	}
-	if (unit->getUnitType() == sc2::UNIT_TYPEID::PROTOSS_PYLON || unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
-	{
 		return 5;
 	}
-	if (unit->isTownHall())
+	if (unit->getUnitType() == sc2::UNIT_TYPEID::PROTOSS_PYLON || unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
 	{
 		return 4;
 	}
 	return 1;
 }
 
+float maxDist = 0.0f;
 std::map<float, CUnits, std::greater<float>> RangedManager::getAttackPriority(const CUnits & enemies)
 {
 	std::map<float, CUnits, std::greater<float>> sortedEnemies;

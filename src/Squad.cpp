@@ -97,7 +97,10 @@ void Squad::setAllUnits()
 		if (unit->getHealth() <= 0) { continue; }
 		if (unit->getLastSeenGameLoop() != m_bot.Observation()->GetGameLoop()) { continue; }
 		if (m_order.getType() == SquadOrderTypes::Attack  && unit->isWorker()) { continue; }
-		if (unit->getCargoSpaceTaken()>0) { continue; } //This really should not happen. No idea, why the harass medivac gets here
+		if (unit->getOccupation().first == CUnit::Occupation::Harass) { continue; } 
+		if (unit->getOccupation().first == CUnit::Occupation::Shuttle) { continue; }
+		if (unit->getOccupation().first == CUnit::Occupation::Scout) { continue; }
+		if (unit->getOccupation().first == CUnit::Occupation::Worker && unit->getOccupation().second != WorkerJobs::Combat) { continue; }
 		goodUnits.push_back(unit);
 	}
 

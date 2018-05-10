@@ -15,6 +15,14 @@ shuttle::shuttle(CCBot * const bot, CUnits passengers, sc2::Point2D targetPos) :
 
 }
 
+shuttle::~shuttle()
+{
+	if (m_shuttle)
+	{
+		m_shuttle->setOccupation({ CUnit::Occupation::Combat,0 });
+	}
+}
+
 void shuttle::hereItGoes()
 {
 	//What happens if shuttle dies?
@@ -70,7 +78,7 @@ void shuttle::travelToDestination()
 	else
 	{
 		//Airblocker on waypoint -> medivac gets stuck
-		if (m_bot->Observation()->GetGameLoop() % 23 == 0)
+		if ((m_status==ShuttleStatus::OnMyWay || m_status == ShuttleStatus::OnMyWayBack) && m_bot->Observation()->GetGameLoop() % 23 == 0)
 		{
 			if (Util::Dist(m_shuttle->getPos(), m_stalemateCheck) < 0.1f)
 			{
@@ -78,8 +86,11 @@ void shuttle::travelToDestination()
 			}
 			m_stalemateCheck = m_shuttle->getPos();
 		}
-		Micro::SmartCDAbility(m_shuttle, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, *m_bot);
-		Micro::SmartMove(m_shuttle, m_wayPoints.front(), *m_bot);
+		else
+		{
+			Micro::SmartCDAbility(m_shuttle, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, *m_bot);
+			Micro::SmartMove(m_shuttle, m_wayPoints.front(), *m_bot);
+		}
 	}
 }
 
@@ -109,8 +120,20 @@ void shuttle::travelBack()
 	}
 	else
 	{
-		Micro::SmartCDAbility(m_shuttle, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, *m_bot);
-		Micro::SmartMove(m_shuttle, m_wayPoints.front(), *m_bot);
+		//Airblocker on waypoint -> medivac gets stuck
+		if ((m_status == ShuttleStatus::OnMyWay || m_status == ShuttleStatus::OnMyWayBack) && m_bot->Observation()->GetGameLoop() % 23 == 0)
+		{
+			if (Util::Dist(m_shuttle->getPos(), m_stalemateCheck) < 0.1f)
+			{
+				m_wayPoints.pop();
+			}
+			m_stalemateCheck = m_shuttle->getPos();
+		}
+		else
+		{
+			Micro::SmartCDAbility(m_shuttle, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, *m_bot);
+			Micro::SmartMove(m_shuttle, m_wayPoints.front(), *m_bot);
+		}
 	}
 }
 
@@ -132,11 +155,6 @@ void shuttle::updateTargetPos(const sc2::Point2D newTargetPos)
 	m_targetPos = newTargetPos;
 }
 
-const bool shuttle::isShuttle(CUnit_ptr unit) const
-{
-	return m_shuttle && unit->getTag() == m_shuttle->getTag();
-}
-
 const bool shuttle::needShuttleUnit() const
 {
 	return m_status == ShuttleStatus::lookingForShuttle;
@@ -146,6 +164,7 @@ void shuttle::assignShuttleUnit(CUnit_ptr unit)
 {
 	m_shuttle = unit;
 	m_status = ShuttleStatus::Loading;
+	unit->setOccupation({ CUnit::Occupation::Shuttle, 0 });
 }
 
 int shuttle::getShuttleStatus() const

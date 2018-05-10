@@ -64,7 +64,6 @@ void GameCommander::handleUnitAssignments()
 {
 	m_validUnits.clear();
 	m_combatUnits.clear();
-	m_harassUnits.clear();
 	// filter our units for those which are valid and usable
 	setValidUnits();
 
@@ -77,26 +76,25 @@ void GameCommander::handleUnitAssignments()
 
 bool GameCommander::isAssigned(CUnit_ptr unit) const
 {
-	return     (std::find_if(m_combatUnits.begin(), m_combatUnits.end(), [unit](auto & newUnit) {return unit->getTag() == newUnit->getTag(); }) != m_combatUnits.end())
-		|| (std::find_if(m_scoutUnits.begin(), m_scoutUnits.end(), [unit](auto & newUnit) {return unit->getTag() == newUnit->getTag(); }) != m_scoutUnits.end())
-		|| (std::find_if(m_harassUnits.begin(), m_harassUnits.end(), [unit](auto & newUnit) {return unit->getTag() == newUnit->getTag(); }) != m_harassUnits.end())
+	return     (std::find_if(m_combatUnits.begin(), m_combatUnits.end(), [&](auto & newUnit) {return unit->getTag() == newUnit->getTag(); }) != m_combatUnits.end())
+		|| isScout(unit)
+		|| isHarassUnit(unit)
 		|| isShuttle(unit);
 }
 
 bool GameCommander::isShuttle(CUnit_ptr unit) const
 {
-	if (unit->getUnitType().ToType() != sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
-	{
-		return false;
-	}
-	for (const auto & s : m_shuttles)
-	{
-		if (s->isShuttle(unit))
-		{
-			return true;
-		}
-	}
-	return false;
+	return unit->getOccupation().first == CUnit::Occupation::Shuttle;
+}
+
+bool GameCommander::isScout(CUnit_ptr unit) const
+{
+	return unit->getOccupation().first == CUnit::Occupation::Scout || (unit->getOccupation().first == CUnit::Occupation::Worker && unit->getOccupation().second == WorkerJobs::Scout);
+}
+
+bool GameCommander::isHarassUnit(CUnit_ptr unit) const
+{
+	return unit->getOccupation().first == CUnit::Occupation::Harass;
 }
 
 void GameCommander::handleShuttleService()
@@ -115,7 +113,7 @@ void GameCommander::setValidUnits()
 	// make sure the unit is completed and alive and usable
 	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self))
 	{
-		if (m_bot.GetUnit(unit->getTag()) && unit->isAlive() && !unit->isWorker() && !unit->isBuilding() && unit->getLastSeenGameLoop() == m_bot.Observation()->GetGameLoop() && unit->getUnitType().ToType()!=sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
+		if (m_bot.GetUnit(unit->getTag()) && unit->isAlive() && !unit->isWorker() && !unit->isBuilding() && unit->getLastSeenGameLoop() == m_bot.Observation()->GetGameLoop() && !unit->isType(sc2::UNIT_TYPEID::TERRAN_KD8CHARGE))
 		{
 			m_validUnits.push_back(unit);
 		}
@@ -130,7 +128,7 @@ void GameCommander::setShuttles()
 		{
 			for (const auto & unit : m_validUnits)
 			{
-				if (unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC && unit->getHealth() == unit->getHealthMax())
+				if (unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC) && unit->getHealth() == unit->getHealthMax())
 				{
 					if (!isAssigned(unit))
 					{
@@ -146,18 +144,11 @@ void GameCommander::setShuttles()
 void GameCommander::setScoutUnits()
 {
 	// if we haven't set a scout unit, do it
-	if (!m_initialScoutSet && m_scoutUnits.empty())
+	if (!m_initialScoutSet)
 	{
 		// if it exists
 		if (shouldSendInitialScout())
 		{
-			//We only need the worker scout for pocket bases
-			//...or maybe not
-			//if (!m_bot.Map().hasPocketBase())
-			//{
-			//	m_initialScoutSet = true;
-			//	return;
-			//}
 			// grab the closest worker to the supply provider to send to scout
 			CUnit_ptr workerScout = m_bot.Workers().getClosestMineralWorkerTo(m_bot.GetStartLocation());
 
@@ -165,7 +156,6 @@ void GameCommander::setScoutUnits()
 			if (workerScout)
 			{
 				m_scoutManager.setWorkerScout(workerScout);
-				assignUnit(workerScout, m_scoutUnits);
 				m_initialScoutSet = true;
 				return;
 			}
@@ -186,8 +176,6 @@ void GameCommander::setScoutUnits()
 			if (!isAssigned(unit) && unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_REAPER)
 			{
 				m_scoutManager.setScout(unit);
-				m_scoutUnits.clear();
-				assignUnit(unit, m_scoutUnits);
 				return;
 			}
 		}
@@ -207,82 +195,47 @@ bool GameCommander::shouldSendInitialScout()
 
 void GameCommander::setHarassUnits()
 {
-	//Re-assign the ones already in the harass manager
-	CUnits medivacs = m_harassManager.getMedivacs();
-	if (medivacs.size()>0)
-	{
-		for (const auto & medivac : medivacs)
-		{
-			assignUnit(medivac, m_harassUnits);
-		}
-	}
-	CUnits marines = m_harassManager.getMarines();
-	if (marines.size()>0)
-	{
-		for (const auto & m : marines)
-		{
-			assignUnit(m, m_harassUnits);
-		}
-	}
-	CUnit_ptr liberator = m_harassManager.getLiberator();
-	if (liberator)
-	{
-		assignUnit(liberator, m_harassUnits);
-	}
-	CUnit_ptr widowMine = m_harassManager.getWidowMine();
-	if (widowMine)
-	{
-		assignUnit(widowMine, m_harassUnits);
-	}
-	
 	//We only start harassing after we saw two bases. Otherwise it might be a 1 base allin
 	//We should only can add units, if we are not under attack or if we have many units already
 	if (m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size()>1 || ( !m_combatCommander.underAttack() || m_validUnits.size() > manyUnits))
 	{
 		CUnits enemies = m_bot.UnitInfo().getUnits(Players::Enemy);
+		CUnits medivacs = m_harassManager.getMedivacs();
 		for (const auto & unit : m_validUnits)
 		{
 			BOT_ASSERT(unit, "Have a null unit in our valid units\n");
 
 			if (!isAssigned(unit))
 			{
-				if (unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC && m_harassManager.needMedivac())
+				if (unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC) && m_harassManager.needMedivac())
 				{
-					if (m_harassManager.setMedivac(unit))
-					{
-						assignUnit(unit, m_harassUnits);
-					}
+					m_harassManager.setMedivac(unit);
 				}
 				//We only assign marines, after we have a medivac
-				else if (medivacs.size()>0 && unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MARINE && unit->getHealth() == unit->getHealthMax() && m_harassManager.needMarine())
+				else if (medivacs.size()>0 && unit->isType(sc2::UNIT_TYPEID::TERRAN_MARINE) && unit->getHealth() == unit->getHealthMax() && m_harassManager.needMarine())
 				{
 					//If the marine is currently close to an anti air enemy, the medivac does not know what to do
 					bool tooClose = false;
-					for (auto & e : enemies)
+					for (const auto & e : enemies)
 					{
 						if (Util::Dist(e->getPos(), unit->getPos()) < unit->getSightRange())
 						{
 							tooClose = true;
+							break;
 						}
 					}
-					if (!tooClose && m_harassManager.setMarine(unit))
+					if (!tooClose)
 					{
-						assignUnit(unit, m_harassUnits);
+						m_harassManager.setMarine(unit);
 					}
 				}
-				else if (unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_LIBERATOR && m_harassManager.needLiberator())
+				else if (unit->isType(sc2::UNIT_TYPEID::TERRAN_LIBERATOR) && m_harassManager.needLiberator())
 				{
-					if (m_harassManager.setLiberator(unit))
-					{
-						assignUnit(unit, m_harassUnits);
-					}
+					m_harassManager.setLiberator(unit);
 				}
-				else if (unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_WIDOWMINE && m_harassManager.needWidowMine())
+				else if (unit->isType(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE) && m_harassManager.needWidowMine())
 				{
-					if (m_harassManager.setWidowMine(unit))
-					{
-						assignUnit(unit, m_harassUnits);
-					}
+					m_harassManager.setWidowMine(unit);
 				}
 			}
 		}
@@ -367,17 +320,9 @@ void GameCommander::OnDetectedNeeded(const sc2::Point2D pos)
 
 void GameCommander::assignUnit(CUnit_ptr unit, CUnits & units)
 {
-	if (std::find(m_scoutUnits.begin(), m_scoutUnits.end(), unit) != m_scoutUnits.end())
-	{
-		m_scoutUnits.erase(std::remove(m_scoutUnits.begin(), m_scoutUnits.end(), unit), m_scoutUnits.end());
-	}
-	else if (std::find(m_combatUnits.begin(), m_combatUnits.end(), unit) != m_combatUnits.end())
+	if (std::find(m_combatUnits.begin(), m_combatUnits.end(), unit) != m_combatUnits.end())
 	{
 		m_combatUnits.erase(std::remove(m_combatUnits.begin(), m_combatUnits.end(), unit), m_combatUnits.end());
-	}
-	else if (std::find(m_harassUnits.begin(), m_harassUnits.end(), unit) != m_harassUnits.end())
-	{
-		m_harassUnits.erase(std::remove(m_harassUnits.begin(), m_harassUnits.end(), unit), m_harassUnits.end());
 	}
 
 	units.push_back(unit);

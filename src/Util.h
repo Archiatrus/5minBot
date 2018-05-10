@@ -66,6 +66,8 @@ namespace Util
 
 	void swapBuildings(const CUnit_ptr a, const CUnit_ptr b, CCBot & bot);
 
+	float fastsqrt(const float S);
+
 	float Dist(const sc2::Point2D & p1, const sc2::Point2D & p2);
 	float Dist(const sc2::Point2D & p1);
 	float DistSq(const sc2::Point2D & p1, const sc2::Point2D & p2);

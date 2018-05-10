@@ -54,12 +54,12 @@ void WorkerData::updateAllWorkerData()
 void WorkerData::workerDestroyed(const CUnit_ptr unit)
 {
     clearPreviousJob(unit);
-	m_workers.erase(std::remove_if(m_workers.begin(), m_workers.end(), [unit](CUnit_ptr & newUnit) {return unit->getTag() == newUnit->getTag(); }),m_workers.end());
+	m_workers.erase(std::remove_if(m_workers.begin(), m_workers.end(), [&](CUnit_ptr & newUnit) {return unit->getTag() == newUnit->getTag(); }),m_workers.end());
 }
 
 void WorkerData::updateWorker(const CUnit_ptr unit)
 {
-    if (std::find_if(m_workers.begin(), m_workers.end(), [unit](CUnit_ptr & newUnit) {return unit->getTag() == newUnit->getTag(); }) == m_workers.end() && unit->isAlive())
+    if (std::find_if(m_workers.begin(), m_workers.end(), [&](CUnit_ptr & newUnit) {return unit->getTag() == newUnit->getTag(); }) == m_workers.end() && unit->isAlive())
     {
         m_workers.push_back(unit);
         m_workerJobMap[unit] = WorkerJobs::None;
@@ -71,6 +71,8 @@ void WorkerData::setWorkerJob(const CUnit_ptr unit, int job, const CUnit_ptr job
     clearPreviousJob(unit);
     m_workerJobMap[unit] = job;
     m_workerJobCount[job]++;
+
+	unit->setOccupation({ CUnit::Occupation::Worker,job });
 
     if (job == WorkerJobs::Minerals)
     {

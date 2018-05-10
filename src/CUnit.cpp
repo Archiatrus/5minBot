@@ -4,6 +4,8 @@
 #include "CCBot.h"
 #include "Util.h"
 
+const uint32_t distanceUpdateFrequency = 5;
+
 CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 	m_bot(bot),
 	m_unit(unit),
@@ -24,8 +26,9 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 	m_isBurrowed(unit->is_burrowed),
 	m_weaponCooldown(unit->weapon_cooldown),
 	m_abilityCooldown(bot->Observation()->GetGameLoop()),
-	m_AAWeapons(sc2::Weapon()),
-	m_groundWeapons(sc2::Weapon())
+	m_AAWeapons(sc2::Weapon{}),
+	m_groundWeapons(sc2::Weapon{}),
+	m_occupation([&]() -> std::pair<CUnit::Occupation, int>{ if (this->isWorker()) { return { Occupation::Building,0 }; } if (m_isBuilding) { return { Occupation::Building,0 }; } if (m_isCombatUnit) { return { Occupation::Combat,0 }; } return { Occupation::None,0 }; }())
 {
 	//The default constructor is not setting the values...
 	m_AAWeapons.type = sc2::Weapon::TargetType::Air;
@@ -517,6 +520,16 @@ const uint32_t CUnit::getAbilityCoolDown() const
 void CUnit::newAbilityCoolDown(const uint32_t CD)
 {
 	m_abilityCooldown=CD;
+}
+
+const std::pair<CUnit::Occupation,int> CUnit::getOccupation() const
+{
+	return m_occupation;
+}
+
+void CUnit::setOccupation(std::pair<CUnit::Occupation, int> occupation)
+{
+	m_occupation = occupation;
 }
 ///////////////////////////////////////////////////////////////////
 

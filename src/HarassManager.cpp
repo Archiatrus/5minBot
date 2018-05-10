@@ -48,6 +48,7 @@ const bool Hitsquad::addMedivac(CUnit_ptr medivac)
 	{
 		m_medivac=medivac;
 		m_status = HarassStatus::Idle;
+		medivac->setOccupation({ CUnit::Occupation::Harass,0 });
 		return true;
 	}
 	return false;
@@ -58,6 +59,7 @@ const bool Hitsquad::addMarine(CUnit_ptr marine)
 	if (m_marines.size() < 8)
 	{
 		m_marines.push_back(marine);
+		marine->setOccupation({ CUnit::Occupation::Harass,0 });
 		return true;
 	}
 	return false;
@@ -807,6 +809,7 @@ const bool WMHarass::addWidowMine(CUnit_ptr widowMine)
 	}
 	m_widowmine = widowMine;
 	m_status = WMStatus::NewWM;
+	widowMine->setOccupation({ CUnit::Occupation::Harass,0 });
 	return true;
 }
 

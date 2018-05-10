@@ -367,15 +367,31 @@ void Util::swapBuildings(const CUnit_ptr a, const CUnit_ptr b, CCBot & bot)
 	return;
 }
 
+//Babylonian method
+float Util::fastsqrt(const float S)
+{
+	//Guess x0
+	float x = 1.0f;
+	while (x*x < S)
+	{
+		x += 0.5f;
+	}
+	for (int j = 0; j < 5; ++j)
+	{
+		x = 0.5f*(x + S / x);
+	}
+	return x;
+}
 
 float Util::Dist(const sc2::Point2D & p1, const sc2::Point2D & p2)
 {
-	return sqrtf(Util::DistSq(p1,p2));
+	return fastsqrt(Util::DistSq(p1, p2));
+	//return sqrtf(Util::DistSq(p1,p2));
 }
 
 float Util::Dist(const sc2::Point2D & p1)
 {
-	return sqrtf(Util::DistSq(p1));
+	return fastsqrt(Util::DistSq(p1));
 }
 
 float Util::DistSq(const sc2::Point2D & p1, const sc2::Point2D & p2)

@@ -6,6 +6,20 @@ class CCBot;
 
 class CUnit
 {
+public:
+
+	enum class Occupation
+	{
+		None = 0,
+		Worker = 1,
+		Combat = 2,
+		Harass = 3,
+		Shuttle = 4,
+		Scout = 5,
+		Building = 6
+	};
+
+private:
 	CCBot * m_bot;
 	const sc2::Unit * m_unit;
 	
@@ -30,6 +44,9 @@ class CUnit
 
 	sc2::Weapon m_groundWeapons;
 	sc2::Weapon m_AAWeapons;
+
+	std::pair<Occupation, int> m_occupation;
+
 public:
 
 	CUnit(const sc2::Unit * unit,CCBot * bot);
@@ -110,6 +127,8 @@ public:
 	void drawSphere() const;
 	const uint32_t getAbilityCoolDown() const;
 	void newAbilityCoolDown(const uint32_t CD);
+	const std::pair<CUnit::Occupation, int> getOccupation() const;
+	void setOccupation(std::pair<CUnit::Occupation, int> occupation);
 };
 
 class CUnitsData

@@ -155,14 +155,15 @@ void ScoutManager::setWorkerScout(CUnit_ptr tag)
 	m_bot.Workers().setScoutWorker(m_scoutUnit);
 }
 
-void ScoutManager::setScout(CUnit_ptr tag)
+void ScoutManager::setScout(CUnit_ptr unit)
 {
 	if (m_scoutUnit && m_scoutUnit->isWorker())
 	{
 		m_bot.Workers().finishedWithWorker(m_scoutUnit);
 	}
 	m_numScouts=1;
-	m_scoutUnit = tag;
+	m_scoutUnit = unit;
+	unit->setOccupation({ CUnit::Occupation::Scout,0 });
 }
 
 void ScoutManager::drawScoutInformation()

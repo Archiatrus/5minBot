@@ -4,12 +4,12 @@
 #include "Micro.h"
 #include "CUnit.h"
 
-const size_t IdlePriority = 0;
-const size_t GuardDutyPriority = 1;
-const size_t AttackPriority = 2;
-const size_t BaseDefensePriority = 3;
-const size_t ScoutDefensePriority = 4;
-const size_t DropPriority = 5;
+const size_t IdlePriority = 1;
+const size_t GuardDutyPriority = 2;
+const size_t AttackPriority = 3;
+const size_t BaseDefensePriority = 4;
+const size_t ScoutDefensePriority = 5;
+const size_t DropPriority = 6;
 
 CombatCommander::CombatCommander(CCBot & bot)
 	: m_bot(bot)
@@ -85,6 +85,7 @@ bool CombatCommander::shouldWeStartAttacking()
 void CombatCommander::updateIdleSquad()
 {
 	Squad & idleSquad = m_squadData.getSquad("Idle");
+
 	for (const auto & unit : m_combatUnits)
 	{
 		// if it hasn't been assigned to a squad yet, put it in the low priority idle squad
