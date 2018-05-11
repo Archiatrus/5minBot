@@ -420,6 +420,11 @@ void ProductionManager::defaultMacro()
 						std::cout << "Weapon ++" << std::endl;
 						return;
 					}
+					else
+					{
+						//Block gas for upgrades
+						gas = 0;
+					}
 				}
 			}
 			//Then armor
@@ -437,7 +442,52 @@ void ProductionManager::defaultMacro()
 						std::cout << "Armor ++" << std::endl;
 						return;
 					}
+					else
+					{
+						//Block gas for upgrades
+						gas = 0;
+					}
 				}
+			}
+		}
+	}
+
+	//Armory
+	//Needed for upgrades after +1
+	if (weapon >= 1 && armor >= 0 && numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ARMORY) == 0)
+	{
+		//A armory needs 1040 frames to build.
+		//+1 weapons needs 2560 frames.
+		//So only after (2560-1040)/2560 seconds we need to build the armory
+		//Since it always takes a while we do it 100 frames earlier
+		float maxProgress = 0.0f;
+		for (const auto & engi : Engibays)
+		{
+			if (engi->getOrders().empty())
+			{
+				maxProgress = 1.0f;
+				break;
+			}
+			const float progress = engi->getOrders().front().progress;
+			if (maxProgress < progress)
+			{
+				maxProgress = progress;
+			}
+		}
+		if (maxProgress >= 1420.0f / 2560.0f)
+		{
+			if (gas >= 100)
+			{
+				if (minerals >= 150)
+				{
+					m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_ARMORY), BUILDING, false));
+				}
+				return;
+			}
+			else
+			{
+				//Gas block for upgrades
+				gas = 0;
 			}
 		}
 	}
@@ -651,37 +701,7 @@ void ProductionManager::defaultMacro()
 		return;
 	}
 
-	//Armory
-	//Needed for upgrades after +1
-	if (weapon >= 1 && armor >= 0 && gas >= 100 && numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ARMORY) == 0)
-	{
-		//A armory needs 46 seconds to build.
-		//+1 weapons needs 114 seconds.
-		//So only after 68/114 seconds we need to build the armory
-		//Since it always takes a while we do it 10sec earlier
-		float maxProgress = 0.0f;
-		for (const auto & engi : Engibays)
-		{
-			if (engi->getOrders().empty())
-			{
-				maxProgress = 1.0f;
-				break;
-			}
-			const float progress = engi->getOrders().front().progress;
-			if (maxProgress < progress)
-			{
-				maxProgress = progress;
-			}
-		}
-		if (maxProgress >= 58.0f / 114.0f)
-		{
-			if (minerals >= 150)
-			{
-				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_ARMORY), BUILDING, false));
-			}
-			return;
-		}
-	}
+	
 
 	//Factories. For now just one.
 	if (numBases> 1 && minerals >= 150 && gas >= 100 && numFactory + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_FACTORY) == 0 && bReactor.size()>0)
