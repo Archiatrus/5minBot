@@ -662,9 +662,9 @@ sc2::Point2D MapTools::findLandingZone(sc2::Point2D pos) const
 	return pos;
 }
 
-const sc2::Point2D MapTools::getForbiddenCorner(int margin) const
+const sc2::Point2D MapTools::getForbiddenCorner(const int margin, const int player) const
 {
-	const BaseLocation * enemyBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
+	const BaseLocation * enemyBase = m_bot.Bases().getPlayerStartingBaseLocation(player);
 	if (!enemyBase)
 	{
 		return sc2::Point2D(-1.0f, -1.0f);

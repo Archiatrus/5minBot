@@ -20,7 +20,7 @@ void Drawing::drawLine(CCBot & bot, const sc2::Point2D & min, const sc2::Point2D
 	{
 		return;
 	}
-	const float maxZ = bot.Map().getHeight(min);
+	const float maxZ = std::max(bot.Map().getHeight(min), bot.Map().getHeight(max));
 	bot.Debug()->DebugLineOut(sc2::Point3D(min.x, min.y, maxZ + 0.2f), sc2::Point3D(max.x, max.y, maxZ + 0.2f), color);
 }
 

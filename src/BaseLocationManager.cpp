@@ -267,7 +267,7 @@ BaseLocation * BaseLocationManager::getBaseLocation(const sc2::Point2D & pos) co
 
 void BaseLocationManager::drawBaseLocations()
 {
-	if (!m_bot.Config().DrawBaseLocationInfo)
+	if (false)//!m_bot.Config().DrawBaseLocationInfo)
 	{
 		return;
 	}

@@ -41,6 +41,7 @@ class Hitsquad
 
 public:
 	Hitsquad(CCBot & bot, CUnit_ptr medivac);
+	~Hitsquad();
 
 	const bool	addMedivac(CUnit_ptr medivac);
 	const bool	addMarine(CUnit_ptr marine);

@@ -76,7 +76,7 @@ public:
 	const std::vector<sc2::Point2D> & getClosestTilesTo(const sc2::Point2D & pos) const;
 	const sc2::Point2D getClosestWalkableTo(const sc2::Point2D & pos) const;
 	const sc2::Point2D getClosestBorderPoint(sc2::Point2D pos,int margin) const;
-	const sc2::Point2D getForbiddenCorner(int margin) const;
+	const sc2::Point2D getForbiddenCorner(const int margin,const int player=Players::Enemy) const;
 	const bool hasPocketBase() const;
 	const CUnit_ptr workerSlideMineral(const sc2::Point2D workerPos, const sc2::Point2D enemyPos) const;
 	const float getHeight(const sc2::Point2D pos) const;

@@ -41,7 +41,6 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 	m_groundWeapons.attacks = 0;
 	m_groundWeapons.range = 0.0f;
 	m_groundWeapons.speed = 1.0f;//For dps I divide dmg/speed
-
 	for (const auto & weapon : bot->Observation()->GetUnitTypeData()[unit->unit_type].weapons)
 	{
 		if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)

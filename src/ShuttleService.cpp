@@ -80,7 +80,7 @@ void shuttle::travelToDestination()
 		//Airblocker on waypoint -> medivac gets stuck
 		if ((m_status==ShuttleStatus::OnMyWay || m_status == ShuttleStatus::OnMyWayBack) && m_bot->Observation()->GetGameLoop() % 23 == 0)
 		{
-			if (Util::Dist(m_shuttle->getPos(), m_stalemateCheck) < 0.1f)
+			if (m_wayPoints.size()>0 && Util::Dist(m_shuttle->getPos(), m_stalemateCheck) < 0.1f)
 			{
 				m_wayPoints.pop();
 			}
@@ -123,7 +123,7 @@ void shuttle::travelBack()
 		//Airblocker on waypoint -> medivac gets stuck
 		if ((m_status == ShuttleStatus::OnMyWay || m_status == ShuttleStatus::OnMyWayBack) && m_bot->Observation()->GetGameLoop() % 23 == 0)
 		{
-			if (Util::Dist(m_shuttle->getPos(), m_stalemateCheck) < 0.1f)
+			if (m_wayPoints.size()>0 && Util::Dist(m_shuttle->getPos(), m_stalemateCheck) < 0.1f)
 			{
 				m_wayPoints.pop();
 			}

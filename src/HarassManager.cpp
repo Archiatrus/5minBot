@@ -12,6 +12,17 @@ Hitsquad::Hitsquad(CCBot & bot, CUnit_ptr medivac) : m_bot(bot), m_status(Harass
 {
 }
 
+Hitsquad::~Hitsquad()
+{
+	if (m_medivac)
+	{
+		m_medivac->setOccupation({ CUnit::Occupation::Combat,0 });
+		for (const auto & m : m_marines)
+		{
+			m->setOccupation({ CUnit::Occupation::Combat,0 });
+		}
+	}
+}
 void Hitsquad::escapePathPlaning()
 {
 	const BaseLocation * saveBase = getSavePosition();
@@ -118,8 +129,13 @@ void Hitsquad::checkForCasualties()
 	{
 		m_medivac = nullptr;
 		m_status = HarassStatus::Doomed;
+		for (const auto & m : m_marines)
+		{
+			m->setOccupation({ CUnit::Occupation::Combat,0 });
+		}
 		std::copy(m_marines.begin(), m_marines.end(), std::back_inserter(m_doomedMarines));
 		m_marines.erase(m_marines.begin(), m_marines.end());
+		
 	}
 }
 
@@ -586,7 +602,7 @@ const bool Hitsquad::manhattenMove(const BaseLocation * newTarget)
 	//Airblocker on waypoint -> medivac gets stuck
 	if (m_bot.Observation()->GetGameLoop() % 23 == 0)
 	{
-		if (Util::Dist(m_medivac->getPos(), m_stalemateCheck) < 0.1f)
+		if (m_wayPoints.size()>0 && Util::Dist(m_medivac->getPos(), m_stalemateCheck) < 0.1f)
 		{
 			m_wayPoints.pop();
 		}
@@ -897,28 +913,32 @@ std::vector<const BaseLocation *> HarassManager::getPotentialTargets() const
 	}
 	const BaseLocation * enemyHomeBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
 	sc2::Point2D enemyHomePos;
+	sc2::Point2D homePos;
 	if (enemyHomeBase)
 	{
-		enemyHomePos = enemyHomeBase->getCenterOfBase();
+		enemyHomePos=m_bot.Map().getForbiddenCorner(0,Players::Enemy);
+		homePos = m_bot.Observation()->GetGameInfo().playable_min + m_bot.Observation()->GetGameInfo().playable_max - enemyHomePos;
 	}
 	else
 	{
-		enemyHomePos = (*(bases.begin()))->getCenterOfBase();
+		homePos = m_bot.Map().getForbiddenCorner(0, Players::Self);
+		enemyHomePos = m_bot.Observation()->GetGameInfo().playable_min + m_bot.Observation()->GetGameInfo().playable_max - homePos;
 	}
-	
-	const sc2::Point2D homePos = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase();//We always know our location
+	Drawing::drawLine(m_bot, homePos, enemyHomePos, sc2::Colors::Blue);
 	const sc2::Point2D diff = enemyHomePos - homePos;
 	targetBases = { nullptr,nullptr };
 	std::vector<int> maxDist = { 0,0 };
 	for (const auto & base : bases)
 	{
 		const sc2::Point2D targetPos = base->getCenterOfBase();
-		const float side = (targetPos.x - homePos.x)*diff.y - (targetPos.y - homePos.y)*diff.x;
+		const sc2::Point2D targetVector = targetPos - homePos;
+		const float side = targetVector.x*diff.y - targetVector.y*diff.x;
 		const int dist = base->getGroundDistance(enemyHomePos);
-		if (!(targetBases[side>=0]) || maxDist[side >= 0] < dist)
+		const float testDist = 1 - (targetVector.x*diff.x + targetVector.y*diff.y) / Util::DistSq(diff);
+		if (!(targetBases[side>=0]) || maxDist[side >= 0] < testDist)
 		{
 			targetBases[side >= 0] = base;
-			maxDist[side >= 0] = dist;
+			maxDist[side >= 0] = testDist;
 		}
 	}
 	return targetBases;
