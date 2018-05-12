@@ -927,13 +927,13 @@ std::vector<const BaseLocation *> HarassManager::getPotentialTargets() const
 	Drawing::drawLine(m_bot, homePos, enemyHomePos, sc2::Colors::Blue);
 	const sc2::Point2D diff = enemyHomePos - homePos;
 	targetBases = { nullptr,nullptr };
-	std::vector<int> maxDist = { 0,0 };
+	std::vector<float> maxDist = { 0,0 };
 	for (const auto & base : bases)
 	{
 		const sc2::Point2D targetPos = base->getCenterOfBase();
 		const sc2::Point2D targetVector = targetPos - homePos;
 		const float side = targetVector.x*diff.y - targetVector.y*diff.x;
-		const int dist = base->getGroundDistance(enemyHomePos);
+		//const int dist = base->getGroundDistance(enemyHomePos);
 		const float testDist = 1 - (targetVector.x*diff.x + targetVector.y*diff.y) / Util::DistSq(diff);
 		if (!(targetBases[side>=0]) || maxDist[side >= 0] < testDist)
 		{

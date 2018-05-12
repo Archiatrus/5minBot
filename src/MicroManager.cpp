@@ -80,19 +80,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 	// Discover enemies within region of interest
 	CUnits nearbyEnemies;
 
-	// if the order is to defend, we only care about units in the radius of the defense
-	if (order.getType() == SquadOrderTypes::Defend || inputOrder.getType() == SquadOrderTypes::GuardDuty)
-	{
-		for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
-		{
-			if (Util::Dist(enemyUnit->getPos(), order.getPosition()) < order.getRadius())
-			{
-				nearbyEnemies.push_back(enemyUnit);
-			}
-		}
-
-	} // otherwise we want to see everything on the way as well
-	else if (order.getType() == SquadOrderTypes::Attack)
+	if (order.getType() == SquadOrderTypes::Defend || inputOrder.getType() == SquadOrderTypes::GuardDuty || order.getType() == SquadOrderTypes::Attack)
 	{
 		for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
 		{
@@ -105,12 +93,17 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 		for (const auto & unit : m_units)
 		{
 			BOT_ASSERT(unit, "null unit in attack");
-
 			for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
 			{
-				if (Util::Dist(enemyUnit->getPos(), unit->getPos()) < order.getRadius())
+				const float dist = Util::Dist(enemyUnit->getPos(), unit->getPos());
+				cachedDistMap[{unit->getTag(), enemyUnit->getTag()}] = dist;
+				// we only care about all untis if we attack
+				if (order.getType() == SquadOrderTypes::Attack)
 				{
-					nearbyEnemies.push_back(enemyUnit);
+					if (dist < order.getRadius())
+					{
+						nearbyEnemies.push_back(enemyUnit);
+					}
 				}
 			}
 		}

@@ -28,10 +28,12 @@ void UnitInfoManager::onFrame()
 
 void UnitInfoManager::updateUnitInfo()
 {
+	//Insert new units
 	for (const auto & unit : m_bot.Observation()->GetUnits(Util::IsNoSnapShot()))
 	{
 		m_unitDataBase[unit->alliance][unit->unit_type].insert(unit, m_bot);
 	}
+	//remove dead
 	for (auto & playerData : m_unitDataBase)
 	{
 		for (auto & units : playerData.second)

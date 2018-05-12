@@ -307,7 +307,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 						{
 							if (Bunker.front()->getCargoSpaceTaken() != Bunker.front()->getCargoSpaceMax())
 							{
-								if (!targets[0].second || Util::Dist(rangedUnit->getPos(), Bunker.front()->getPos()) < Util::Dist(rangedUnit->getPos(), targets[0].second->getPos()))
+								if (!targets[0].second || Util::Dist(rangedUnit->getPos(), Bunker.front()->getPos()) < cachedDistMap[{rangedUnit->getTag(), targets[0].second->getTag()}]) //Util::Dist(rangedUnit->getPos(), targets[0].second->getPos()))
 								{
 									Micro::SmartRightClick(rangedUnit, Bunker.front(), m_bot);
 									Micro::SmartAbility(Bunker.front(), sc2::ABILITY_ID::LOAD, rangedUnit, m_bot);
@@ -320,7 +320,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 								{
 									if (targets[1].second && Util::Dist(targets[1].second->getPos(), Bunker.front()->getPos()) > 5.5f)
 									{
-										if (Util::Dist(targets[1].second->getPos(),rangedUnit->getPos())<=targets[1].second->getAttackRange(rangedUnit))
+										if (cachedDistMap[{rangedUnit->getTag(), targets[1].second->getTag()}]<=targets[1].second->getAttackRange(rangedUnit))//Util::Dist(targets[1].second->getPos(),rangedUnit->getPos())
 										{
 											if (targets[0].second && rangedUnit->getWeaponCooldown())
 											{
@@ -419,7 +419,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 // get a target for the ranged unit to attack
 const CUnit_ptr RangedManager::getTarget(const CUnit_ptr rangedUnit, const CUnits & targets)
 {
-	BOT_ASSERT(rangedUnit, "null melee unit in getTarget");
+	BOT_ASSERT(true, "decapricated");
 	int highPriorityFar = 0;
 	int highPriorityNear = 0;
 	double closestDist = std::numeric_limits<double>::max();
@@ -520,7 +520,6 @@ int RangedManager::getAttackPriority(const CUnit_ptr & unit)
 	return 1;
 }
 
-float maxDist = 0.0f;
 std::map<float, CUnits, std::greater<float>> RangedManager::getAttackPriority(const CUnits & enemies)
 {
 	std::map<float, CUnits, std::greater<float>> sortedEnemies;
@@ -533,7 +532,7 @@ std::map<float, CUnits, std::greater<float>> RangedManager::getAttackPriority(co
 		{
 			if (enemy->canHitMe(unit))
 			{
-				const float dist = Util::Dist(unit->getPos(), enemy->getPos());
+				const float dist = cachedDistMap[{unit->getTag(), enemy->getTag()}];//Util::Dist(unit->getPos(), enemy->getPos());
 				if (dist <= unit->getAttackRange())
 				{
 					//One point for being in range
@@ -566,13 +565,13 @@ std::vector<std::pair<float, CUnit_ptr>> RangedManager::getTarget(const CUnit_pt
 		{
 			if (enemy->canHitMe(unit))
 			{
-				const float dist = Util::Dist(enemy->getPos(), unit->getPos());
+				const float dist = cachedDistMap[{unit->getTag(), enemy->getTag()}];//Util::Dist(enemy->getPos(), unit->getPos());
 
 				if (targets[2].first <= priority)
 				{
 					if (targets[2].second)
 					{
-						const float distOld = Util::Dist(targets[2].second->getPos(), unit->getPos());
+						const float distOld = cachedDistMap[{unit->getTag(), targets[2].second->getTag()}]; //Util::Dist(targets[2].second->getPos(), unit->getPos());
 						if (distOld > dist)
 						{
 							targets[2].second = enemy;
@@ -587,7 +586,7 @@ std::vector<std::pair<float, CUnit_ptr>> RangedManager::getTarget(const CUnit_pt
 				{
 					if (targets[1].second)
 					{
-						const float distOld = Util::Dist(targets[1].second->getPos(), unit->getPos());
+						const float distOld = cachedDistMap[{unit->getTag(), targets[1].second->getTag()}]; //Util::Dist(targets[1].second->getPos(), unit->getPos());
 						if (distOld > dist)
 						{
 							targets[1].second = enemy;
@@ -602,7 +601,7 @@ std::vector<std::pair<float, CUnit_ptr>> RangedManager::getTarget(const CUnit_pt
 				{
 					if (targets[0].second)
 					{
-						const float distOld = Util::Dist(targets[0].second->getPos(), unit->getPos());
+						const float distOld = cachedDistMap[{unit->getTag(), targets[0].second->getTag()}]; //Util::Dist(targets[0].second->getPos(), unit->getPos());
 						if (distOld > dist)
 						{
 							targets[0].second = enemy;

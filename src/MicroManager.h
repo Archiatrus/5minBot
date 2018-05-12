@@ -26,6 +26,7 @@ protected:
 
 	CCBot & m_bot;
 	SquadOrder order;
+	std::map<std::pair<sc2::Tag, sc2::Tag>, float> cachedDistMap;
 
 	virtual void executeMicro(const CUnits & targets) = 0;
 	void trainSubUnits(CUnit_ptr unit) const;
