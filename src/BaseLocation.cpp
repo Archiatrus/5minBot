@@ -292,7 +292,8 @@ void BaseLocation::draw()
 
 	Drawing::drawBox(m_bot,boxtl.x, boxtl.y, boxbr.x, boxbr.y, sc2::Colors::Red);
 
-	Drawing::drawLine(m_bot, m_bot.Map().getClosestBorderPoint(m_centerOfBase,0), m_centerOfBase);
+	sc2::Point2D posEnd = getCenterOfRessources() + 1.2f*(getCenterOfRessources() - getCenterOfBase());
+	Drawing::drawLine(m_bot, m_bot.Map().getClosestBorderPoint(posEnd,0), posEnd);
 	//m_distanceMap.draw(m_bot);
 }
 

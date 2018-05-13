@@ -610,7 +610,6 @@ const bool Hitsquad::manhattenMove(const BaseLocation * newTarget)
 	}
 
 	//If we get a new target
-
 	sc2::Point2D posEnd = newTarget->getCenterOfRessources() + 1.2f*(newTarget->getCenterOfRessources() - newTarget->getCenterOfBase());
 	posEnd = m_bot.Map().findLandingZone(posEnd);
 	float dist;

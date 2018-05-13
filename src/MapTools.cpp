@@ -707,9 +707,9 @@ const sc2::Point2D MapTools::getClosestBorderPoint(sc2::Point2D pos,int margin) 
 	const float y_max = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_max.y - margin);
 	if (pos.x - x_min < x_max - pos.x)
 	{
-		if (pos.y  - y_min < y_max - pos.y)
+		if (pos.y - y_min < y_max - pos.y)
 		{
-			if (pos.x < pos.y)
+			if (pos.x - x_min < pos.y - y_min)
 			{
 				return sc2::Point2D(x_min, pos.y);
 			}
@@ -720,7 +720,7 @@ const sc2::Point2D MapTools::getClosestBorderPoint(sc2::Point2D pos,int margin) 
 		}
 		else
 		{
-			if (pos.x < y_max - pos.y)
+			if (pos.x - x_min < y_max - pos.y)
 			{
 				return sc2::Point2D(x_min, pos.y);
 			}
@@ -734,7 +734,7 @@ const sc2::Point2D MapTools::getClosestBorderPoint(sc2::Point2D pos,int margin) 
 	{
 		if (pos.y - y_min < y_max - pos.y)
 		{
-			if (x_max - pos.x < pos.y)
+			if (x_max - pos.x < pos.y - y_min)
 			{
 				return sc2::Point2D(x_max, pos.y);
 			}
