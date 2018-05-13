@@ -142,10 +142,24 @@ void Micro::SmartAttackMove(CUnits & attacker, const sc2::Point2D & targetPositi
 	}
 }
 
+void Micro::SmartMove(const CUnits attackers,const CUnit_ptr target, CCBot & bot,const bool queue)
+{
+	sc2::Units attackersThatNeedToMove;
+	for (const auto & attacker : attackers)
+	{
+		if (!attacker->getOrders().empty() && attacker->getOrders().back().ability_id == sc2::ABILITY_ID::MOVE && attacker->getOrders().back().target_unit_tag == target->getTag())
+		{
+			continue;
+		}
+		attackersThatNeedToMove.push_back(attacker->getUnit_ptr());
+	}
+	bot.Actions()->UnitCommand(attackersThatNeedToMove, sc2::ABILITY_ID::MOVE, target->getUnit_ptr(), queue);
+}
+
 void Micro::SmartMove(CUnit_ptr attacker, CUnit_ptr target, CCBot & bot, bool queue)
 {
 	//SmartMove(attacker, target->getPos(), bot, queue);
-	if (!attacker->getOrders().empty() && attacker->getOrders().back().ability_id == sc2::ABILITY_ID::MOVE && attacker->getOrders().back().target_unit_tag==target->getTag())
+	if (!attacker->getOrders().empty() && attacker->getOrders().back().ability_id == sc2::ABILITY_ID::MOVE && attacker->getOrders().back().target_unit_tag == target->getTag())
 	{
 		return;
 	}

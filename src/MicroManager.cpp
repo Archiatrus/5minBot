@@ -26,7 +26,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 		CUnits attackMoveUnits;
 		for (const auto & unit : m_units)
 		{
-			if (Util::Dist(unit->getPos(), pos) > 5.0f)
+			if (Util::DistSq(unit->getPos(), pos) > 25.0f)
 			{
 				if (unit->isCombatUnit())
 				{
@@ -84,23 +84,15 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 	{
 		for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
 		{
-			if (Util::Dist(enemyUnit->getPos(), order.getPosition()) < order.getRadius())
+			if (Util::DistSq(enemyUnit->getPos(), order.getPosition()) < std::powf(order.getRadius(),2))
 			{
 				nearbyEnemies.push_back(enemyUnit);
 			}
-		}
-
-		for (const auto & unit : m_units)
-		{
-			BOT_ASSERT(unit, "null unit in attack");
-			for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
+			else if (order.getType() == SquadOrderTypes::Attack)
 			{
-				const float dist = Util::Dist(enemyUnit->getPos(), unit->getPos());
-				cachedDistMap[{unit->getTag(), enemyUnit->getTag()}] = dist;
-				// we only care about all untis if we attack
-				if (order.getType() == SquadOrderTypes::Attack)
+				for (const auto & unit : m_units)
 				{
-					if (dist < order.getRadius())
+					if (Util::DistSq(enemyUnit->getPos(), unit->getPos()) < std::pow(order.getRadius(), 2))
 					{
 						nearbyEnemies.push_back(enemyUnit);
 					}
@@ -164,7 +156,7 @@ void MicroManager::regroup(const sc2::Point2D & regroupPosition) const
 	CUnits regroupUnitsShoot;
 	for (const auto & unit : m_units)
 	{
-		if (Util::Dist(unit->getPos(), regroupPosition) > 8.0f)
+		if (Util::DistSq(unit->getPos(), regroupPosition) > 56.0f)
 		{
 			if (unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC))
 			{

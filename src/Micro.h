@@ -13,6 +13,7 @@ namespace Micro
 	void SmartAttackUnit	(const CUnits & attacker, const  CUnit_ptr target, CCBot & bot, bool queue=false);
     void SmartAttackMove    (CUnit_ptr attacker,  const sc2::Point2D & targetPosition, CCBot & bot);
 	void SmartAttackMove    (CUnits & attacker, const sc2::Point2D & targetPosition, CCBot & bot);
+	void SmartMove(const CUnits attackers, const CUnit_ptr target, CCBot & bot, const bool queue = false);
 	void SmartAttackMoveToUnit(CUnits & attacker, const CUnit_ptr target, CCBot & bot);
 	void SmartMove(CUnit_ptr attacker, CUnit_ptr target, CCBot & bot, bool queue = false);
     void SmartMove          (CUnit_ptr attacker,  const sc2::Point2D & targetPosition, CCBot & bot, bool queue = false);

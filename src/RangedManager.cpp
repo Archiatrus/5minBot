@@ -115,8 +115,8 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 				for (const auto & pos : effect.positions)
 				{
 					Drawing::drawSphere(m_bot, pos, radius, sc2::Colors::Purple);
-					const float dist = Util::Dist(rangedUnit->getPos(), pos);
-					if (dist<radius + 2.0f)
+					const float dist = Util::DistSq(rangedUnit->getPos(), pos);
+					if (dist<std::powf(radius + 2.0f,2))
 					{
 						sc2::Point2D fleeingPos;
 						if (effect.positions.size() == 1)
@@ -127,7 +127,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 							}
 							else
 							{
-								fleeingPos = pos + sc2::Point2D(0.1f,0.1f);
+								fleeingPos = pos + sc2::Point2D(1.0f,1.0f);
 							}
 						}
 						else
@@ -197,18 +197,18 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 				{
 					if (target->isAlive() && rangedUnit->canHitMe(target))
 					{
-						float dist = Util::Dist(rangedUnit->getPos(), target->getPos());
-						if (dist<target->getAttackRange() && minDistTarget > dist)
+						float distSq = Util::DistSq(rangedUnit->getPos(), target->getPos());
+						if (distSq<std::powf(target->getAttackRange(),2) && minDistTarget > distSq)
 						{
 							nearestEnemy = target;
-							minDistTarget = dist;
+							minDistTarget = distSq;
 						}
 					}
 				}
 				if (injuredUnits.size()>0)
 				{
 					CUnit_ptr mostInjured = (injuredUnits.rbegin())->second;
-					if (nearestEnemy && Util::Dist(rangedUnit->getPos(), nearestEnemy->getPos()) < Util::Dist(mostInjured->getPos(), nearestEnemy->getPos()))
+					if (nearestEnemy && Util::DistSq(rangedUnit->getPos(), nearestEnemy->getPos()) < Util::DistSq(mostInjured->getPos(), nearestEnemy->getPos()))
 					{
 						Micro::SmartCDAbility(rangedUnit, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS,m_bot);
 						sc2::Point2D targetPos = rangedUnit->getPos();
@@ -218,7 +218,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 					}
 					else if (rangedUnit->getOrders().empty() || rangedUnit->getOrders()[0].ability_id != sc2::ABILITY_ID::EFFECT_HEAL)
 					{
-						if (Util::Dist(rangedUnit->getPos(), mostInjured->getPos()) > 4.0f)
+						if (Util::DistSq(rangedUnit->getPos(), mostInjured->getPos()) > 16.0f)
 						{
 							Micro::SmartCDAbility(rangedUnit, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
 							Micro::SmartMove(rangedUnit, mostInjured, m_bot);
@@ -248,18 +248,18 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 					bool fleeYouFoolsPart2 = false;
 					for (const auto & shot : disruptorShots)
 					{
-						const float dist = Util::Dist(rangedUnit->getPos(), shot->getPos());
-						if (dist < 5.0f)
+						const float distSq = Util::DistSq(rangedUnit->getPos(), shot->getPos());
+						if (distSq < 25.0f)
 						{
 							sc2::Point2D fleeingPos;
 							const sc2::Point2D pos = rangedUnit->getPos();
-							if (dist > 0)
+							if (distSq > 0)
 							{
 								fleeingPos = pos + Util::normalizeVector(pos - shot->getPos());
 							}
 							else
 							{
-								fleeingPos = pos + sc2::Point2D(0.1f, 0.1f);
+								fleeingPos = pos + sc2::Point2D(1.0f, 1.0f);
 							}
 							Micro::SmartMove(rangedUnit, fleeingPos, m_bot);
 							fleeYouFoolsPart2 = true;
@@ -273,7 +273,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 				}
 				
 				//Search for target
-				if (!rangedUnitTargets.empty() || (order.getType() == SquadOrderTypes::Defend && Util::Dist(rangedUnit->getPos(), order.getPosition()) > 7))
+				if (!rangedUnitTargets.empty() || (order.getType() == SquadOrderTypes::Defend && Util::DistSq(rangedUnit->getPos(), order.getPosition()) > 42.0f))
 				{
 					//CUnit_ptr target = getTarget(rangedUnit, rangedUnitTargets);
 					//Highest prio in range target, in sight target, visible target
@@ -307,7 +307,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 						{
 							if (Bunker.front()->getCargoSpaceTaken() != Bunker.front()->getCargoSpaceMax())
 							{
-								if (!targets[0].second || Util::Dist(rangedUnit->getPos(), Bunker.front()->getPos()) < cachedDistMap[{rangedUnit->getTag(), targets[0].second->getTag()}]) //Util::Dist(rangedUnit->getPos(), targets[0].second->getPos()))
+								if (!targets[0].second || Util::DistSq(rangedUnit->getPos(), Bunker.front()->getPos()) < Util::DistSq(rangedUnit->getPos(), targets[0].second->getPos()))
 								{
 									Micro::SmartRightClick(rangedUnit, Bunker.front(), m_bot);
 									Micro::SmartAbility(Bunker.front(), sc2::ABILITY_ID::LOAD, rangedUnit, m_bot);
@@ -318,9 +318,9 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 							{
 								if (!breach)
 								{
-									if (targets[1].second && Util::Dist(targets[1].second->getPos(), Bunker.front()->getPos()) > 5.5f)
+									if (targets[1].second && Util::DistSq(targets[1].second->getPos(), Bunker.front()->getPos()) > 30.25f)
 									{
-										if (cachedDistMap[{rangedUnit->getTag(), targets[1].second->getTag()}]<=targets[1].second->getAttackRange(rangedUnit))//Util::Dist(targets[1].second->getPos(),rangedUnit->getPos())
+										if (Util::DistSq(targets[1].second->getPos(), rangedUnit->getPos()) <= std::powf(targets[1].second->getAttackRange(rangedUnit),2))
 										{
 											if (targets[0].second && rangedUnit->getWeaponCooldown())
 											{
@@ -391,7 +391,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 				else
 				{
 					// if we're not near the order position
-					if (Util::Dist(rangedUnit->getPos(), order.getPosition()) > 4.0f)
+					if (Util::DistSq(rangedUnit->getPos(), order.getPosition()) > 16.0f)
 					{
 						// move to it
 						moveToPosition.push_back(rangedUnit);
@@ -407,7 +407,14 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 	}
 	for (auto & t : targetsMovedTo)
 	{
-		Micro::SmartMove(t.second, t.first->getPos(), m_bot);
+		if (t.first->isVisible())
+		{
+			Micro::SmartMove(t.second, t.first, m_bot);
+		}
+		else
+		{
+			Micro::SmartMove(t.second, t.first->getPos(), m_bot);
+		}
 	}
 	//Grouped by  position Move command
 	if (moveToPosition.size() > 0)
@@ -416,66 +423,6 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 	}
 }
 
-// get a target for the ranged unit to attack
-const CUnit_ptr RangedManager::getTarget(const CUnit_ptr rangedUnit, const CUnits & targets)
-{
-	BOT_ASSERT(true, "decapricated");
-	int highPriorityFar = 0;
-	int highPriorityNear = 0;
-	double closestDist = std::numeric_limits<double>::max();
-	double lowestHealth = std::numeric_limits<double>::max();
-	CUnit_ptr closestTargetOutsideRange = nullptr;
-	CUnit_ptr weakestTargetInsideRange = nullptr;
-	// for each target possiblity
-	// We have three levels: in range, in sight, somewhere.
-	// We want to attack the weakest/highest prio target in range
-	// If there is no in range, we want to attack one in sight,
-	// else the one with highest prio.
-	for (const auto & targetUnit : targets)
-	{
-		BOT_ASSERT(targetUnit, "null target unit in getTarget");
-		//Ignore dead units or ones we can not hit
-		if (!targetUnit->isAlive())
-		{
-			continue;
-		}
-		const float range = rangedUnit->getAttackRange(targetUnit);
-		int priority = getAttackPriority(targetUnit);
-		const float distance = Util::Dist(rangedUnit->getPos(), targetUnit->getPos());
-		if (distance > range)
-		{
-			// If in sight we just add 20 to prio. This should make sure that a unit in sight has higher priority than any unit outside of range
-			if (distance <= rangedUnit->getSightRange())
-			{
-				priority += 20;
-			}
-			// if it's a higher priority, or it's closer, set it
-			if (!closestTargetOutsideRange || (priority > highPriorityFar) || (priority == highPriorityFar && distance < closestDist))
-			{
-				if (targetUnit->canHitMe(rangedUnit)) //Costly call
-				{
-					closestDist = distance;
-					highPriorityFar = priority;
-					closestTargetOutsideRange = targetUnit;
-				}
-			}
-		}
-		else
-		{
-			if (!weakestTargetInsideRange || (priority > highPriorityNear) || (priority == highPriorityNear && targetUnit->getHealth() < lowestHealth))
-			{
-				if (targetUnit->canHitMe(rangedUnit)) //Costly call
-				{
-					lowestHealth = targetUnit->getHealth();
-					highPriorityNear = priority;
-					weakestTargetInsideRange = targetUnit;
-				}
-			}
-		}
-
-	}
-	return weakestTargetInsideRange&&highPriorityNear>1 ? weakestTargetInsideRange: closestTargetOutsideRange;
-}
 
 // get the attack priority of a type in relation to a zergling
 int RangedManager::getAttackPriority(const CUnit_ptr & unit)
@@ -532,8 +479,8 @@ std::map<float, CUnits, std::greater<float>> RangedManager::getAttackPriority(co
 		{
 			if (enemy->canHitMe(unit))
 			{
-				const float dist = cachedDistMap[{unit->getTag(), enemy->getTag()}];//Util::Dist(unit->getPos(), enemy->getPos());
-				if (dist <= unit->getAttackRange())
+				const float distSq = Util::DistSq(unit->getPos(), enemy->getPos());
+				if (distSq <= std::powf(unit->getAttackRange(),2))
 				{
 					//One point for being in range
 					++OpportunityLevel;
@@ -565,14 +512,14 @@ std::vector<std::pair<float, CUnit_ptr>> RangedManager::getTarget(const CUnit_pt
 		{
 			if (enemy->canHitMe(unit))
 			{
-				const float dist = cachedDistMap[{unit->getTag(), enemy->getTag()}];//Util::Dist(enemy->getPos(), unit->getPos());
+				const float distSq = Util::DistSq(enemy->getPos(), unit->getPos());
 
 				if (targets[2].first <= priority)
 				{
 					if (targets[2].second)
 					{
-						const float distOld = cachedDistMap[{unit->getTag(), targets[2].second->getTag()}]; //Util::Dist(targets[2].second->getPos(), unit->getPos());
-						if (distOld > dist)
+						const float distSqOld = Util::DistSq(targets[2].second->getPos(), unit->getPos());
+						if (distSqOld > distSq)
 						{
 							targets[2].second = enemy;
 						}
@@ -582,12 +529,12 @@ std::vector<std::pair<float, CUnit_ptr>> RangedManager::getTarget(const CUnit_pt
 						targets[2] = { enemies.first,enemy };
 					}
 				}
-				if (targets[1].first <= priority && dist < unitSightRange) // < because sometime just on the edge they are still invisible
+				if (targets[1].first <= priority && distSq < std::pow(unitSightRange,2)) // < because sometime just on the edge they are still invisible
 				{
 					if (targets[1].second)
 					{
-						const float distOld = cachedDistMap[{unit->getTag(), targets[1].second->getTag()}]; //Util::Dist(targets[1].second->getPos(), unit->getPos());
-						if (distOld > dist)
+						const float distSqOld = Util::DistSq(targets[1].second->getPos(), unit->getPos());
+						if (distSqOld > distSq)
 						{
 							targets[1].second = enemy;
 						}
@@ -597,12 +544,12 @@ std::vector<std::pair<float, CUnit_ptr>> RangedManager::getTarget(const CUnit_pt
 						targets[1] = { enemies.first,enemy };
 					}
 				}
-				if (targets[0].first <= priority && dist <= unitAttackRange)
+				if (targets[0].first <= priority && distSq <= std::pow(unitAttackRange,2))
 				{
 					if (targets[0].second)
 					{
-						const float distOld = cachedDistMap[{unit->getTag(), targets[0].second->getTag()}]; //Util::Dist(targets[0].second->getPos(), unit->getPos());
-						if (distOld > dist)
+						const float distSqOld = Util::DistSq(targets[0].second->getPos(), unit->getPos());
+						if (distSqOld > distSq)
 						{
 							targets[0].second = enemy;
 						}

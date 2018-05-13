@@ -540,7 +540,18 @@ CUnit_ptr Hitsquad::getTargetMarines(CUnits targets) const
 	for (const auto & t : targets)
 	{
 		int prio = 0;
-		if (t->getUnitType().ToType() == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || t->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
+		if (t->isType(sc2::UNIT_TYPEID::ZERG_BANELING))
+		{
+			if (t->isVisible())
+			{
+				prio = 9;
+			}
+			else
+			{
+				prio = 2;
+			}
+		}
+		else if (t->getUnitType().ToType() == sc2::UNIT_TYPEID::ZERG_SPORECRAWLER || t->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
 		{
 			if (t->isVisible())
 			{
