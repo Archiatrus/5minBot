@@ -154,7 +154,7 @@ const CUnit_ptr SiegeManager::getTarget(const CUnit_ptr siegeUnit, const CUnits 
 	{
 		BOT_ASSERT(targetUnit, "null target unit in getTarget");
 		//Ignore dead units or ones we can not hit
-		if (!targetUnit->isAlive() || !targetUnit->canHitMe(siegeUnit))
+		if (!targetUnit->isAlive() || !targetUnit->canHitMe(siegeUnit)|| !targetUnit->isVisible() )
 		{
 			continue;
 		}

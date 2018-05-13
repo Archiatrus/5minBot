@@ -182,7 +182,18 @@ bool SquadData::canAssignUnitToSquad(const CUnit_ptr unit, const Squad & squad) 
 
 	const Squad * unitSquad = getUnitSquad(unit);
 	// make sure strictly less than so we don't reassign to the same squad etc
-	return !unitSquad || (unitSquad->getPriority() < squad.getPriority());
+	if (!unitSquad || (unitSquad->getPriority() < squad.getPriority()))
+	{
+		return true;
+	}
+	if (unitSquad->getPriority() == squad.getPriority() && squad.getSquadOrder().getType() == SquadOrderTypes::Defend)
+	{
+		if (Util::DistSq(unit->getPos(), squad.getSquadOrder().getPosition()) < Util::DistSq(unit->getPos(), unitSquad->getSquadOrder().getPosition()))
+		{
+			return true;
+		}
+	}
+	return false ;
 }
 
 Squad & SquadData::getSquad(const std::string & squadName)

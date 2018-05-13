@@ -101,6 +101,7 @@ void Squad::setAllUnits()
 		if (unit->getOccupation().first == CUnit::Occupation::Shuttle) { continue; }
 		if (unit->getOccupation().first == CUnit::Occupation::Scout) { continue; }
 		if (unit->getOccupation().first == CUnit::Occupation::Worker && unit->getOccupation().second != WorkerJobs::Combat) { continue; }
+		if (unit->changedUnitType()) { continue; }
 		goodUnits.push_back(unit);
 	}
 
