@@ -397,8 +397,8 @@ void ProductionManager::defaultMacro()
 	const int numArmories = static_cast<int>(Armories.size());
 	const int numArmoriesFinished = buildingsFinished(Armories);
 
-	const int weapon = m_bot.getWeapon();
-	const int armor = m_bot.getArmor();
+	const int weaponBio = m_bot.getWeaponBio();
+	const int armorBio = m_bot.getArmorBio();
 	for (const auto & unit : Engibays)
 	{
 		if (unit->isCompleted() && unit->isIdle())
@@ -410,10 +410,9 @@ void ProductionManager::defaultMacro()
 			{
 				if (ability.ability_id == sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONS)
 				{
-					const sc2::UpgradeID upgradeID = Util::abilityIDToUpgradeID(ability.ability_id);
-					if ((weapon == 0 && gas >= 100) || (weapon == 1 && gas >= 175) || (weapon == 2 && gas >= 250))
+					if ((weaponBio == 0 && gas >= 100) || (weaponBio == 1 && gas >= 175) || (weaponBio == 2 && gas >= 250))
 					{
-						if ((weapon == 0 && minerals >= 100) || (weapon == 1 && minerals >= 175) || (weapon == 2 && minerals >= 250))
+						if ((weaponBio == 0 && minerals >= 100) || (weaponBio == 1 && minerals >= 175) || (weaponBio == 2 && minerals >= 250))
 						{
 							Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONS, m_bot);
 						}
@@ -432,10 +431,9 @@ void ProductionManager::defaultMacro()
 			{
 				if (ability.ability_id == sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMOR)
 				{
-					const sc2::UpgradeID upgradeID = Util::abilityIDToUpgradeID(ability.ability_id);
-					if ((armor == 0 && gas >= 100) || (armor == 1 && gas >= 175) || (armor == 2 && gas >= 250))
+					if ((armorBio == 0 && gas >= 100) || (armorBio == 1 && gas >= 175) || (armorBio == 2 && gas >= 250))
 					{
-						if ((armor == 0 && minerals >= 100) || (armor == 1 && minerals >= 175) || (armor == 2 && minerals >= 250))
+						if ((armorBio == 0 && minerals >= 100) || (armorBio == 1 && minerals >= 175) || (armorBio == 2 && minerals >= 250))
 						{
 							Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMOR, m_bot);
 						}
@@ -454,7 +452,7 @@ void ProductionManager::defaultMacro()
 
 	//Armory
 	//Needed for upgrades after +1
-	if (weapon >= 1 && armor >= 0 && numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ARMORY) == 0)
+	if (weaponBio >= 1 && armorBio >= 0 && numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ARMORY) == 0)
 	{
 		//A armory needs 1040 frames to build.
 		//+1 weapons needs 2560 frames.
@@ -488,6 +486,35 @@ void ProductionManager::defaultMacro()
 			{
 				//Gas block for upgrades
 				gas = 0;
+			}
+		}
+	}
+	if (supply == 200)
+	{
+		for (const auto & unit : Armories)
+		{
+			if (unit->isCompleted() && unit->isIdle())
+			{
+				std::vector<sc2::AvailableAbility> abilities = m_bot.Query()->GetAbilitiesForUnit(unit->getUnit_ptr(), true).abilities;
+				// Weapons and armor research has consecutive numbers
+				//First weapons
+				for (sc2::AvailableAbility & ability : abilities)
+				{
+					if (ability.ability_id == sc2::ABILITY_ID::RESEARCH_TERRANVEHICLEWEAPONS)
+					{
+
+						const int weaponMech = m_bot.getWeaponMech();
+						if ((weaponMech == 0 && gas >= 100) || (weaponMech == 1 && gas >= 175) || (weaponMech == 2 && gas >= 250))
+						{
+							if ((weaponMech == 0 && minerals >= 100) || (weaponMech == 1 && minerals >= 175) || (weaponMech == 2 && minerals >= 250))
+							{
+								Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_TERRANVEHICLEWEAPONS, m_bot);
+							}
+							std::cout << "Weapon ++" << std::endl;
+							return;
+						}
+					}
+				}
 			}
 		}
 	}

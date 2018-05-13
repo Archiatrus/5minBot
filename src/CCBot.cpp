@@ -23,8 +23,9 @@ CCBot::CCBot()
 	, m_strategy(*this)
 	, m_techTree(*this)
 	, m_cameraModule(this)
-	, m_armor(0)
-	, m_weapons(0)
+	, m_armorBio(0)
+	, m_weaponsBio(0)
+	, m_weaponsMech(0)
 {
 	
 }
@@ -174,28 +175,41 @@ void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 {
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL3)
 	{
-		m_armor = 3;
+		m_armorBio = 3;
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL2)
 	{
-		m_armor = 2;
+		m_armorBio = 2;
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL1)
 	{
-		m_armor = 1;
+		m_armorBio = 1;
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL3)
 	{
-		m_weapons = 3;
+		m_weaponsBio = 3;
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL2)
 	{
-		m_weapons = 2;
+		m_weaponsBio = 2;
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL1)
 	{
-		m_weapons = 1;
+		m_weaponsBio = 1;
 	}
+	if (upgrade == sc2::UPGRADE_ID::TERRANVEHICLEWEAPONSLEVEL3)
+	{
+		m_weaponsMech = 3;
+	}
+	if (upgrade == sc2::UPGRADE_ID::TERRANVEHICLEWEAPONSLEVEL2)
+	{
+		m_weaponsMech = 2;
+	}
+	if (upgrade == sc2::UPGRADE_ID::TERRANVEHICLEWEAPONSLEVEL1)
+	{
+		m_weaponsMech = 1;
+	}
+
 }
 // TODO: Figure out my race
 const sc2::Race & CCBot::GetPlayerRace(const int player) const
@@ -280,14 +294,19 @@ std::shared_ptr<shuttle> CCBot::requestShuttleService(const CUnits passengers, c
 	return m_gameCommander.requestShuttleService(passengers,targetPos);
 }
 
-const int CCBot::getArmor() const
+const int CCBot::getArmorBio() const
 {
-	return m_armor;
+	return m_armorBio;
 }
 
-const int CCBot::getWeapon() const
+const int CCBot::getWeaponBio() const
 {
-	return m_weapons;
+	return m_weaponsBio;
+}
+
+const int CCBot::getWeaponMech() const
+{
+	return m_weaponsMech;
 }
 
 const bool CCBot::underAttack() const

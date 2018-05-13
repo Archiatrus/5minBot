@@ -244,7 +244,7 @@ void CUnit::update()
 		if (getOwner() == Players::Self && m_bot->GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
 		{
 			const float lostHealth = m_healthPoints - m_unit->health;
-			const int armor = m_bot->getArmor();
+			const int armor = m_bot->getArmorBio();
 			//Immortal against Marauder gives false alarm...
 			if (lostHealth == 45.0f - armor || lostHealth == 50.0f - armor || lostHealth == 55.0f - armor || lostHealth == 60.0f - armor)
 			{

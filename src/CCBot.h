@@ -30,8 +30,9 @@ class CCBot : public sc2::Agent
 	GameCommander           m_gameCommander;
 	CameraModuleAgent		m_cameraModule;
 
-	int m_armor;
-	int m_weapons;
+	int m_armorBio;
+	int m_weaponsBio;
+	int m_weaponsMech;
 
 	std::map<size_t, std::map<int,double>> m_time;
 
@@ -71,8 +72,9 @@ public:
 	void requestGuards(const bool req);
 	std::shared_ptr<shuttle> requestShuttleService(const CUnits passengers, const sc2::Point2D targetPos);
 
-	const int getArmor() const;
-	const int getWeapon() const;
+	const int getArmorBio() const;
+	const int getWeaponBio() const;
+	const int getWeaponMech() const;
 	const bool underAttack() const;
 };
 
