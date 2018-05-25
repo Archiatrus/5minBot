@@ -38,7 +38,7 @@ void UnitInfoManager::updateUnitInfo()
 	{
 		for (auto & units : playerData.second)
 		{
-			units.second.removeDead();
+			units.second.removeDead(m_bot);
 		}
 	}
 }

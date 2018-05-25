@@ -36,7 +36,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 					{
 						for (const auto & b : Bunker)
 						{
-							if (b->getCargoSpaceTaken() != b->getCargoSpaceMax())
+							if (b->getCargoSpaceTaken() != b->getCargoSpaceMax() && b->isCompleted())
 							{
 								Micro::SmartRightClick(unit, b, m_bot);
 								Micro::SmartAbility(b, sc2::ABILITY_ID::LOAD, unit,m_bot);

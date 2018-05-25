@@ -183,8 +183,16 @@ std::vector<sc2::Point2D> pathPlaning::constructPath(std::shared_ptr<const node>
 	std::shared_ptr<const node> currentNode = frontNode;
 	while (currentNode->m_parent)
 	{
-		//If next, this and last are on a line drop this
-		if (0.5f*(currentNode->m_parent->m_pos+path.back()) != currentNode->m_pos)
+		if (currentNode->m_parent->m_parent)
+		{
+			const sc2::Point2D directionNext = currentNode->m_parent->m_pos - path.back();
+			const sc2::Point2D directionNextNext = currentNode->m_parent->m_parent->m_pos - path.back();
+			if (directionNext.x*directionNextNext.y != directionNext.y*directionNextNext.x)
+			{
+				path.push_back(currentNode->m_pos);
+			}
+		}
+		else
 		{
 			path.push_back(currentNode->m_pos);
 		}

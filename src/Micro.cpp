@@ -46,16 +46,16 @@ void Micro::SmartAttackUnit(const CUnits & attacker, const CUnit_ptr target, CCB
 			continue;
 		}
 		//Distance to target
-		float dist = Util::Dist(a->getPos(), target->getPos());
+		//float dist = Util::Dist(a->getPos(), target->getPos());
 		//Our range
-		float range = a->getAttackRange(target);
-		if (a->getWeaponCooldown() == 0.0f && dist>range + 0.5f)
+		//float range = a->getAttackRange(target);
+		if(target->isVisible())//if (a->getWeaponCooldown() == 0.0f && dist>range + 0.5f)
 		{
-			attackerThatNeedToAttackMove.push_back(a->getUnit_ptr());
+			attackerThatNeedToAttack.push_back(a->getUnit_ptr());
 		}
 		else
 		{
-			attackerThatNeedToAttack.push_back(a->getUnit_ptr());
+			attackerThatNeedToAttackMove.push_back(a->getUnit_ptr());
 		}
 	}
 	if (attackerThatNeedToAttack.size() > 0)

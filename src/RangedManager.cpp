@@ -164,7 +164,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 		if (order.getType() == SquadOrderTypes::Defend && m_bot.Bases().getOccupiedBaseLocations(Players::Self).size() <= 2)
 		{
 			CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
-			if (Bunker.size() > 0)
+			if (Bunker.size() > 0 && Bunker.front()->isCompleted())
 			{
 				const BaseLocation * base = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
 				const int dist = base->getGroundDistance(Bunker.front()->getPos());
@@ -364,18 +364,21 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 						}
 						else
 						{
-							targetsAttackedBy[targets[0].second].push_back(rangedUnit);
-							//Good idea... does not work
-							/*
-							if (rangedUnit->getWeaponCooldown())
+							if (targets[0].second->isBuilding())
 							{
-								targetsMovedTo[targets[1].second].push_back(rangedUnit);
+								if (rangedUnit->getWeaponCooldown())
+								{
+									targetsMovedTo[targets[1].second].push_back(rangedUnit);
+								}
+								else
+								{
+									targetsAttackedBy[targets[0].second].push_back(rangedUnit);
+								}
 							}
 							else
 							{
 								targetsAttackedBy[targets[0].second].push_back(rangedUnit);
 							}
-							*/
 						}
 					}
 					else if (targets[1].second)

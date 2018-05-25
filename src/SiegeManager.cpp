@@ -58,7 +58,7 @@ void SiegeManager::assignTargets(const CUnits & targets)
 						}
 						else
 						{
-							Micro::SmartMove(siegeUnit, target->getPos(), m_bot);
+							Micro::SmartMove(siegeUnit, target, m_bot);
 						}
 					}
 					//if we are stationary
