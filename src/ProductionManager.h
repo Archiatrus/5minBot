@@ -16,6 +16,7 @@ class ProductionManager
 
 	bool m_scoutRequested;
 	bool m_vikingRequested;
+	bool m_liberatorRequested;
 	int m_scansRequested;
 
 	bool    detectBuildOrderDeadlock();
@@ -39,6 +40,7 @@ public:
 
 	void requestScout();
 	void requestVikings();
+	void requestLiberator();
 	void requestScan();
 	void usedScan(const int i=1);
 	int buildingsFinished(const CUnits units) const;

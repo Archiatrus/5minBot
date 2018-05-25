@@ -160,6 +160,11 @@ float MapTools::terrainHeight(float x, float y) const
 	return m_terrainHeight[(int)x][(int)y];
 }
 
+float MapTools::terrainHeight(sc2::Point2D pos) const
+{
+	return m_terrainHeight[static_cast<int>(pos.x)][static_cast<int>(pos.y)];
+}
+
 //int MapTools::getGroundDistance(const sc2::Point2D & src, const sc2::Point2D & dest) const
 //{
 //	return (int)Util::Dist(src, dest);

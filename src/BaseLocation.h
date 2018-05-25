@@ -11,6 +11,7 @@ class BaseLocation
 	DistanceMap				 m_distanceMap;
 
 	sc2::Point2D				m_centerOfResources;
+	sc2::Point2D				m_centerOfMinerals;
 	sc2::Point2D				m_centerOfBase;
 	CUnit_ptr					m_townhall;
 	CUnits						m_geysers;
@@ -40,10 +41,12 @@ public:
 	void resetNumEnemyCombatUnits();
 	void incrementNumEnemyCombatUnits();
 	const int getNumEnemyCombatUnits() const;
+	const int getNumEnemyStaticD() const;
 	const int getBaseID() const;
 	bool containsPosition(const sc2::Point2D & pos) const;
 	//const sc2::Point2D & getDepotPosition() const;
 	const sc2::Point2D & getCenterOfRessources() const;
+	const sc2::Point2D & getCenterOfMinerals() const;
 	const sc2::Point2D & getCenterOfBase() const;
 	const CUnits & getGeysers() const;
 	const CUnits & getMinerals() const;

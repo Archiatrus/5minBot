@@ -19,6 +19,7 @@ ProductionManager::ProductionManager(CCBot & bot)
 	, m_buildingManager(bot)
 	, m_scoutRequested(false)
 	, m_vikingRequested(false)
+	, m_liberatorRequested(false)
 	, m_scansRequested(0)
 {
 
@@ -557,27 +558,51 @@ void ProductionManager::defaultMacro()
 				}
 				else
 				{
-					const size_t numMedivacs = m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, sc2::UNIT_TYPEID::TERRAN_MEDIVAC);
-					const size_t numVikings = m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, { sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER,sc2::UNIT_TYPEID::TERRAN_VIKINGASSAULT });
-					if ((!m_vikingRequested && numMedivacs < 12) || (m_vikingRequested && numMedivacs <= numVikings))
+					if (m_liberatorRequested)
 					{
-						if (gas >= 100 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
+						if (gas >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_LIBERATOR).gasCost && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_LIBERATOR).supplyCost)
 						{
-							if (minerals >= 100)
+							if (minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_LIBERATOR).mineralCost)
 							{
-								m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_MEDIVAC);
+								m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_LIBERATOR);
+								m_liberatorRequested = false;
+								std::cout << "Liberator" << std::endl;
 							}
-							std::cout << "Medivac" << std::endl;
+							else
+							{
+								std::cout << "Saving for Liberator" << std::endl;
+							}
 							return;
 						}
 					}
 					else
 					{
-						if (minerals >= 150 && gas >= 75 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER).supplyCost)
+						const size_t numMedivacs = m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, sc2::UNIT_TYPEID::TERRAN_MEDIVAC);
+						const size_t numVikings = m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, { sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER,sc2::UNIT_TYPEID::TERRAN_VIKINGASSAULT });
+						if ((!m_vikingRequested && numMedivacs < 12) || (m_vikingRequested && numMedivacs <= numVikings))
 						{
-							m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_VIKINGFIGHTER);
-							std::cout << "Viking" << std::endl;
-							return;
+							if (gas >= 100 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
+							{
+								if (minerals >= 100)
+								{
+									m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_MEDIVAC);
+									std::cout << "Medivac" << std::endl;
+								}
+								else
+								{
+									std::cout << "Saving for Medivac" << std::endl;
+								}
+								return;
+							}
+						}
+						else
+						{
+							if (minerals >= 150 && gas >= 75 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER).supplyCost)
+							{
+								m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_VIKINGFIGHTER);
+								std::cout << "Viking" << std::endl;
+								return;
+							}
 						}
 					}
 				}
@@ -799,6 +824,11 @@ void ProductionManager::requestScout()
 void ProductionManager::requestVikings()
 {
 	m_vikingRequested = true;
+}
+
+void ProductionManager::requestLiberator()
+{
+	m_liberatorRequested = true;
 }
 
 void ProductionManager::requestScan()

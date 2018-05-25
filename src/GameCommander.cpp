@@ -229,7 +229,7 @@ void GameCommander::setHarassUnits()
 						m_harassManager.setMarine(unit);
 					}
 				}
-				else if (unit->isType(sc2::UNIT_TYPEID::TERRAN_LIBERATOR) && m_harassManager.needLiberator())
+				else if (unit->isType(sc2::UNIT_TYPEID::TERRAN_LIBERATOR))
 				{
 					m_harassManager.setLiberator(unit);
 				}
@@ -238,6 +238,10 @@ void GameCommander::setHarassUnits()
 					m_harassManager.setWidowMine(unit);
 				}
 			}
+		}
+		if (m_harassManager.needLiberator())
+		{
+			m_productionManager.requestLiberator();
 		}
 	}
 }

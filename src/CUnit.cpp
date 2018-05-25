@@ -349,7 +349,7 @@ bool CUnit::isWorker() const
 
 bool CUnit::canHitMe(const std::shared_ptr<CUnit> & enemy) const
 {
-	if (!enemy->isCompleted()||(isBurrowed()&&!isVisible()))
+	if (!enemy || !enemy->isAlive() || !enemy->isCompleted()||(isBurrowed()&&!isVisible()))
 	{
 		return false;
 	}
@@ -557,9 +557,9 @@ const std::shared_ptr<CUnit> CUnitsData::insert(const sc2::Unit * unit, CCBot & 
 	return m_units.back();
 }
 
-void CUnitsData::removeDead()
+void CUnitsData::removeDead(CCBot & bot)
 {
-	m_units.erase(std::remove_if(m_units.begin(), m_units.end(), [](std::shared_ptr<CUnit> & unit) {
+	m_units.erase(std::remove_if(m_units.begin(), m_units.end(), [&](std::shared_ptr<CUnit> & unit) {
 		if (!unit)
 		{
 			return true;
@@ -569,8 +569,14 @@ void CUnitsData::removeDead()
 		{
 			return false;
 		}
-		if (!unit->isAlive() || unit->changedUnitType())
+		if (!unit->isAlive())
 		{
+			return true;
+		}
+		if (unit->changedUnitType())
+		{
+			const CUnit_ptr newUnit = bot.UnitInfo().getUnit(unit->getTag());
+			newUnit->setOccupation(unit->getOccupation());
 			return true;
 		}
 		if (!unit->isVisible())

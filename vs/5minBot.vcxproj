@@ -443,7 +443,8 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)..\bin\5minBot.exe" "C:\Ladder\ExeDirectory\5minBot.exe"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">
@@ -612,6 +613,7 @@
     <ClCompile Include="..\src\DistanceMap.cpp" />
     <ClCompile Include="..\src\Drawing.cpp" />
     <ClCompile Include="..\src\GameCommander.cpp" />
+    <ClCompile Include="..\src\HarassLiberator.cpp" />
     <ClCompile Include="..\src\HarassManager.cpp" />
     <ClCompile Include="..\src\JSONTools.cpp" />
     <ClCompile Include="..\src\main.cpp" />
@@ -663,6 +665,7 @@
     <ClInclude Include="..\src\DistanceMap.h" />
     <ClInclude Include="..\src\Drawing.h" />
     <ClInclude Include="..\src\GameCommander.h" />
+    <ClInclude Include="..\src\HarassLiberator.h" />
     <ClInclude Include="..\src\HarassManager.h" />
     <ClInclude Include="..\src\JSONTools.h" />
     <ClInclude Include="..\src\LadderInterface.h" />

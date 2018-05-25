@@ -3,6 +3,7 @@
 #include "Common.h"
 #include "BaseLocation.h"
 #include "ShuttleService.h"
+#include "HarassLiberator.h"
 #include <queue>
 class CCBot;
 
@@ -77,15 +78,16 @@ class HarassManager
 	CCBot &   m_bot;
 
 	std::map<bool,Hitsquad>	m_hitSquads;
-	CUnit_ptr m_liberator;
+	HarassLiberator m_liberatorHarass;
 	WMHarass m_WMHarass;
 	int	m_numHitSquads = 1;
 
-	std::vector<const BaseLocation *> getPotentialTargets() const;
+	std::vector<const BaseLocation *> getHitSquadTargets() const;
 	//Medivac hit squad
 	void handleHitSquads();
 	//Liberator harass
 	void handleLiberator();
+	const BaseLocation * getLiberatorTarget();
 	//Widow mine harass
 	void handleWMHarass();
 
@@ -100,17 +102,16 @@ public:
 
 	const bool needMedivac() const;
 	const bool needMarine() const;
-	const bool needLiberator() const;
+	const bool needLiberator();
 	const bool needWidowMine() const;
 
 	const bool setMedivac(CUnit_ptr medivac);
 	const bool setMarine(CUnit_ptr marine);
-	const bool setLiberator(CUnit_ptr liberator);
+	const bool setLiberator(const CUnit_ptr liberator);
 	const bool setWidowMine(CUnit_ptr widowMine);
 
 	CUnits getMedivacs();
 	CUnits getMarines();
-	CUnit_ptr getLiberator();
 	CUnit_ptr getWidowMine();
 
 };

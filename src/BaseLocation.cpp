@@ -64,6 +64,7 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 	// calculate the center of the resources
 	size_t numResources = m_minerals.size() + m_geysers.size();
 	sc2::Point2D centerMinerals(mineralsCenterX / m_minerals.size(), mineralsCenterY / m_minerals.size());
+	m_centerOfMinerals = centerMinerals;
 	m_centerOfResources = sc2::Point2D(m_left + (m_right-m_left)*0.5f, m_top + (m_bottom-m_top)*0.5f);
 	// compute this BaseLocation's DistanceMap, which will compute the ground distance
 	// from the center of its recourses to every other tile on the map
@@ -121,6 +122,11 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 //	return getCenterOfRessources();
 //}
 
+const sc2::Point2D & BaseLocation::getCenterOfMinerals() const
+{
+	return m_centerOfMinerals;
+}
+
 const sc2::Point2D & BaseLocation::getCenterOfBase() const
 {
 	return m_centerOfBase;
@@ -163,8 +169,7 @@ bool BaseLocation::containsPosition(const sc2::Point2D & pos) const
 	{
 		return false;
 	}
-
-	return getGroundDistance(pos) < NearBaseLocationTileDistance;
+	return getGroundDistance(pos) < NearBaseLocationTileDistance && m_bot.Map().terrainHeight(m_centerOfResources) == m_bot.Map().terrainHeight(pos);
 }
 
 const CUnits & BaseLocation::getGeysers() const
@@ -315,6 +320,28 @@ void BaseLocation::incrementNumEnemyCombatUnits()
 const int BaseLocation::getNumEnemyCombatUnits() const
 {
 	return m_numEnemyCombatUnits;
+}
+
+const int BaseLocation::getNumEnemyStaticD() const
+{
+	int threadLvl = 0;
+	CUnits pfs = m_bot.UnitInfo().getUnits(Players::Enemy, sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS);
+	for (const auto & pf : pfs)
+	{
+		if (pf->isCompleted() && containsPosition(pf->getPos()))
+		{
+			threadLvl+=3;
+		}
+	}
+	CUnits staticD = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON,sc2::UNIT_TYPEID::ZERG_SPORECRAWLER,sc2::UNIT_TYPEID::TERRAN_MISSILETURRET }));
+	for (const auto & d : staticD)
+	{
+		if (d->isCompleted() && containsPosition(d->getPos()))
+		{
+			++threadLvl;
+		}
+	}
+	return threadLvl;
 }
 
 const int BaseLocation::getBaseID() const

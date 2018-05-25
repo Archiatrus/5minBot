@@ -48,6 +48,7 @@ public:
 	int	 width() const;
 	int	 height() const;
 	float   terrainHeight(float x, float y) const;
+	float terrainHeight(sc2::Point2D pos) const;
 
 	
 	

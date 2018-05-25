@@ -255,7 +255,6 @@ void BaseLocationManager::onFrame()
 			baseLocation->incrementNumEnemyCombatUnits();
 		}
 	}
-	
 }
 
 BaseLocation * BaseLocationManager::getBaseLocation(const sc2::Point2D & pos) const
@@ -267,7 +266,7 @@ BaseLocation * BaseLocationManager::getBaseLocation(const sc2::Point2D & pos) co
 
 void BaseLocationManager::drawBaseLocations()
 {
-	if (false)//!m_bot.Config().DrawBaseLocationInfo)
+	if (!m_bot.Config().DrawBaseLocationInfo)
 	{
 		return;
 	}
