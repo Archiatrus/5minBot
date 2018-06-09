@@ -311,6 +311,38 @@ const bool BaseLocationManager::isOccupiedBy(int player, sc2::Point2D pos) const
 
 const sc2::Point2D BaseLocationManager::getBuildingLocation() const
 {
+	//First guess
+	const BaseLocation * home = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
+	if (home && home->isOccupiedByPlayer(Players::Self))
+	{
+		return home->getCenterOfBase();
+	}
+	//uh oh
+	else
+	{
+		float maxDist = 0.0f;
+		const BaseLocation * newHome = nullptr;
+		for (const auto & base : m_bot.Bases().getOccupiedBaseLocations(Players::Self))
+		{
+			for (const auto & enemy : m_bot.UnitInfo().getUnits(Players::Enemy))
+			{
+				const float dist = Util::DistSq(base->getCenterOfBase(), enemy->getPos());
+				if (!newHome || maxDist < dist)
+				{
+					newHome = base;
+					maxDist = dist;
+				}
+			}
+		}
+		if (newHome)
+		{
+			return newHome->getCenterOfBase();
+		}
+		else
+		{
+			return m_bot.GetStartLocation();
+		}
+	}
 	return m_bot.GetStartLocation();
 }
 const sc2::Point2D BaseLocationManager::getRallyPoint() const
@@ -386,8 +418,20 @@ sc2::Point2D BaseLocationManager::getNextExpansion(int player) const
 
 		if (!closestBase || distanceFromHome < minDistance)
 		{
-			closestBase = base;
-			minDistance = distanceFromHome;
+			bool tooDangerous = false;
+			for (const auto & enemy : m_bot.UnitInfo().getUnits(Players::Enemy))
+			{
+				if (enemy->isVisible() && enemy->isCombatUnit() && Util::DistSq(enemy->getPos(), base->getCenterOfBase()) < 100.0f)
+				{
+					tooDangerous = true;
+					break;
+				}
+			}
+			if (!tooDangerous)
+			{
+				closestBase = base;
+				minDistance = distanceFromHome;
+			}
 		}
 	}
 

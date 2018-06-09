@@ -334,7 +334,7 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)..\bin\5minBot.exe" "C:\Ladder\ExeDirectory\5minBot.exe"</Command>
+      <Command>copy "$(SolutionDir)..\bin\5minBot.exe" "C:\Ladder\Bots\5minBot\5minBot.exe"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='VsHuman|x64'">

@@ -33,6 +33,7 @@ class Hitsquad
 
 	void checkForCasualties();
 	CUnit_ptr getTargetMarines(CUnits targets) const;
+	void stalemateCheck();
 	const bool manhattenMove(const BaseLocation * target);
 	CUnits getNearbyEnemyUnits() const;
 	const BaseLocation * getSavePosition() const;

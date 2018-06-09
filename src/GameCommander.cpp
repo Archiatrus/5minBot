@@ -186,8 +186,8 @@ bool GameCommander::shouldSendInitialScout()
 {
 	switch (m_bot.GetPlayerRace(Players::Enemy))
 	{
-	case sc2::Race::Terran:  return false;
-	case sc2::Race::Protoss: return m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKS, true) == 1;
+	case sc2::Race::Terran:  return m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOTLOWERED, true) == 1;
+	case sc2::Race::Protoss: return m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOTLOWERED, true) == 1;
 	case sc2::Race::Zerg:	return false;
 	default: return false;
 	}
@@ -269,7 +269,7 @@ void GameCommander::onUnitCreate(CUnit_ptr unit)
 		{
 			if (unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 			{
-				Micro::SmartMove(unit, m_bot.Bases().getRallyPoint(), m_bot);
+				Micro::SmartMove(unit, pos, m_bot);
 				return;
 			}
 			else
@@ -284,7 +284,7 @@ void GameCommander::onUnitCreate(CUnit_ptr unit)
 						return;
 					}
 				}
-				Micro::SmartAttackMove(unit, m_bot.Bases().getRallyPoint(), m_bot);
+				Micro::SmartAttackMove(unit, pos, m_bot);
 				return;
 			}
 		}

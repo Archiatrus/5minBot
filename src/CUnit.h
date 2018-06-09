@@ -108,6 +108,7 @@ public:
 	bool isCombatUnit() const;
 	bool isWorker() const;
 	bool canHitMe(const std::shared_ptr<CUnit> & enemy) const;
+	float hasBonusDmgAgainst(const std::shared_ptr<CUnit>& enemy) const;
 	std::vector<std::shared_ptr<CUnit>> getEnemyUnitsInSight() const;
 	const float getSightRange() const;
 	const sc2::Weapon & getWeapon(sc2::Weapon::TargetType type = sc2::Weapon::TargetType::Any) const;

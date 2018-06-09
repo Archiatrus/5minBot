@@ -17,6 +17,7 @@ CombatCommander::CombatCommander(CCBot & bot)
 	, m_initialized(false)
 	, m_attackStarted(false)
 	, m_needGuards(false)
+	, m_underAttack(false)
 {
 
 }
@@ -63,7 +64,7 @@ void CombatCommander::onFrame(const CUnits & combatUnits)
 		updateAttackSquads();
 		updateGuardSquads();
 	}
-
+	checkForProxyOrCheese();
 	m_squadData.onFrame();
 }
 
@@ -74,7 +75,7 @@ bool CombatCommander::shouldWeStartAttacking()
 	auto upgrades = m_bot.Observation()->GetUpgrades();
 	for (auto & upgrade : upgrades)
 	{
-		if (upgrade.ToType() == sc2::UPGRADE_ID::STIMPACK && m_combatUnits.size() >= m_bot.Config().CombatUnitsForAttack)
+		if (upgrade.ToType() == sc2::UPGRADE_ID::STIMPACK && m_combatUnits.size() >= m_bot.Config().CombatUnitsForAttack && (m_bot.Observation()->GetFoodUsed()>198 || m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER) >= m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_COLOSSUS)))
 		{
 			return true;
 		}
@@ -440,7 +441,7 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
 		{
 			m_bot.Workers().setCombatWorker(workerDefender);
 			m_squadData.assignUnitToSquad(workerDefender, defenseSquad);
-			defendersAdded++;
+			++defendersAdded;
 			--workerCounter;
 		}
 		else
@@ -605,4 +606,50 @@ const bool CombatCommander::underAttack() const
 void CombatCommander::requestGuards(const bool req)
 {
 	m_needGuards = req;
+}
+
+void CombatCommander::checkForProxyOrCheese()
+{
+	//const size_t numReactor = m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR,false);
+	//if (numReactor == 1)
+	//{
+	if (m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Terran || m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
+	{
+		const uint32_t time = m_bot.Observation()->GetGameLoop();
+		if (time >= 2240)
+		{
+			const size_t bases = m_bot.UnitInfo().getUnitTypeCount(Players::Self, Util::getTownHallTypes());
+			if (bases <= 1)
+			{
+				const CUnits enemyProduction = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UnitTypeID>({ sc2::UNIT_TYPEID::TERRAN_BARRACKS,sc2::UNIT_TYPEID::PROTOSS_GATEWAY }));
+				if (enemyProduction.empty())
+				{
+					m_underAttack = true;
+					return;
+				}
+				if (enemyProduction.size() > 3)
+				{
+					const size_t numBunker = m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
+					if (numBunker == 0)
+					{
+						m_underAttack = true;
+						return;
+					}
+				}
+				const sc2::Point2D home = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase();
+				const std::vector<const BaseLocation *> enemyBases = m_bot.Bases().getStartingBaseLocations();
+				for (const auto & enemy : enemyProduction)
+				{
+					for (const auto & enemyBase : enemyBases)
+					{
+						if (Util::DistSq(enemy->getPos(), home) < Util::DistSq(enemy->getPos(), enemyBase->getCenterOfBase()))
+						{
+							m_underAttack = true;
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
 }

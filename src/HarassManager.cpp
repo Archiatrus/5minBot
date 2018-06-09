@@ -353,12 +353,14 @@ bool Hitsquad::harass(const BaseLocation * target)
 			}
 		}
 		m_pathPlanCounter++;
-		if (Util::Dist(m_medivac->getPos(), m_wayPoints.front()) < 0.95f)
+		stalemateCheck();
+		if (m_wayPoints.size()>0 && Util::Dist(m_medivac->getPos(), m_wayPoints.front()) < 0.95f)
 		{
 			m_wayPoints.pop();
 		}
 		else
 		{
+
 			//Micro::SmartMove(m_medivac, m_wayPoints.front(), m_bot);
 			Micro::SmartCDAbility(m_medivac, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
 			Micro::SmartMove(m_medivac, m_wayPoints.front(), m_bot);
@@ -616,14 +618,8 @@ CUnit_ptr Hitsquad::getTargetMarines(CUnits targets) const
 	return target;
 }
 
-//target = proposed target.
-const bool Hitsquad::manhattenMove(const BaseLocation * newTarget)
+void Hitsquad::stalemateCheck()
 {
-	if (!newTarget || m_bot.Workers().isBeingRepairedNum(m_medivac)>0)
-	{
-		return false;
-	}
-	//Airblocker on waypoint -> medivac gets stuck
 	if (m_bot.Observation()->GetGameLoop() % 23 == 0)
 	{
 		if (m_wayPoints.size()>0 && Util::Dist(m_medivac->getPos(), m_stalemateCheck) < 0.1f)
@@ -632,6 +628,17 @@ const bool Hitsquad::manhattenMove(const BaseLocation * newTarget)
 		}
 		m_stalemateCheck = m_medivac->getPos();
 	}
+}
+
+//target = proposed target.
+const bool Hitsquad::manhattenMove(const BaseLocation * newTarget)
+{
+	if (!newTarget || m_bot.Workers().isBeingRepairedNum(m_medivac)>0)
+	{
+		return false;
+	}
+	//Airblocker on waypoint -> medivac gets stuck
+	stalemateCheck();
 
 	//If we get a new target
 	sc2::Point2D posEnd = newTarget->getCenterOfRessources() + 1.2f*(newTarget->getCenterOfRessources() - newTarget->getCenterOfBase());

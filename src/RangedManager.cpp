@@ -522,7 +522,8 @@ std::vector<std::pair<float, CUnit_ptr>> RangedManager::getTarget(const CUnit_pt
 					if (targets[2].second)
 					{
 						const float distSqOld = Util::DistSq(targets[2].second->getPos(), unit->getPos());
-						if (distSqOld > distSq)
+						const float bonusOld = unit->hasBonusDmgAgainst(targets[0].second);
+						if (distSqOld > distSq || unit->hasBonusDmgAgainst(enemy) < bonusOld)
 						{
 							targets[2].second = enemy;
 						}
@@ -537,7 +538,8 @@ std::vector<std::pair<float, CUnit_ptr>> RangedManager::getTarget(const CUnit_pt
 					if (targets[1].second)
 					{
 						const float distSqOld = Util::DistSq(targets[1].second->getPos(), unit->getPos());
-						if (distSqOld > distSq)
+						const float bonusOld = unit->hasBonusDmgAgainst(targets[0].second);
+						if (distSqOld > distSq || unit->hasBonusDmgAgainst(enemy) < bonusOld)
 						{
 							targets[1].second = enemy;
 						}
@@ -552,7 +554,8 @@ std::vector<std::pair<float, CUnit_ptr>> RangedManager::getTarget(const CUnit_pt
 					if (targets[0].second)
 					{
 						const float distSqOld = Util::DistSq(targets[0].second->getPos(), unit->getPos());
-						if (distSqOld > distSq)
+						const float bonusOld = unit->hasBonusDmgAgainst(targets[0].second);
+						if (distSqOld > distSq || unit->hasBonusDmgAgainst(enemy) < bonusOld)
 						{
 							targets[0].second = enemy;
 						}

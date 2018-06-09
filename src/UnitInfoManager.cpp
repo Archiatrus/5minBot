@@ -233,6 +233,16 @@ const size_t UnitInfoManager::getUnitTypeCount(int player, std::vector<sc2::Unit
 	return count;
 }
 
+const size_t UnitInfoManager::getUnitTypeCount(int player, std::vector<sc2::UNIT_TYPEID> types, bool completed) const
+{
+	size_t count = 0;
+	for (const auto & type : types)
+	{
+		count += getUnitTypeCount(player, type, completed);
+	}
+	return count;
+}
+
 // is the unit valid?
 bool UnitInfoManager::isValidUnit(const sc2::Unit * unit)
 {

@@ -123,7 +123,14 @@ void WorkerData::setWorkerJob(const CUnit_ptr unit, int job, const CUnit_ptr job
     else if (job == WorkerJobs::Repair)
     {
 		m_repair_map[jobUnit->getTag()].push_back(unit);
-        Micro::SmartRepair(unit, jobUnit, m_bot);
+		if (unit->getHealth() == unit->getHealthMax())
+		{
+			Micro::SmartMove(unit, jobUnit->getPos(), m_bot);
+		}
+		else
+		{
+			Micro::SmartRepair(unit, jobUnit, m_bot);
+		}
     }
     else if (job == WorkerJobs::Scout)
     {
@@ -331,14 +338,21 @@ void WorkerData::checkRepairedBuildings()
 	for (auto & m : m_repair_map)
 	{
 		CUnit_ptr target = m_bot.UnitInfo().getUnit(m.first);
-		if (!target || !target->isAlive() || target->getHealth() == target->getHealthMax())
+		if (!target || !target->isAlive() || (target->getHealth() == target->getHealthMax()))
 		{
-			targetsToDelete.push_back(m.first);
-			for (const auto & worker : m.second)
+			if (target->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER) && m_bot.underAttack())
 			{
-				clearPreviousJob(worker);
+				//std::cout << "better keep workers repairing!" << std::endl;
 			}
-			continue;
+			else
+			{
+				targetsToDelete.push_back(m.first);
+				for (const auto & worker : m.second)
+				{
+					clearPreviousJob(worker);
+				}
+				continue;
+			}
 		}
 		CUnits & workers = m.second;
 		CUnits deadWorker;

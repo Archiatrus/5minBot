@@ -40,7 +40,7 @@ void MeleeManager::assignTargets(const CUnits & targets)
 			// run away if we meet the retreat critereon
 			if (meleeUnitShouldRetreat(meleeUnit, targets))
 			{
-				sc2::Point2D fleeTo(m_bot.GetStartLocation());
+				sc2::Point2D fleeTo(m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfMinerals());
 
 				Micro::SmartMove(meleeUnit, fleeTo, m_bot);
 			}
@@ -141,12 +141,20 @@ int MeleeManager::getAttackPriority(const CUnit_ptr attacker,const CUnit_ptr uni
 
 bool MeleeManager::meleeUnitShouldRetreat(const CUnit_ptr meleeUnit,const CUnits & targets)
 {
-	for (const auto & target : targets)
+	if (std::find_if(targets.begin(), targets.end(), [](const CUnit_ptr enemy) {return enemy->isCombatUnit() && !enemy->isBuilding(); }) != targets.end())
 	{
-		//It would be better if we have one sacrifice.
-		if (target->getUnitType().ToType() == sc2::UNIT_TYPEID::ZERG_BANELING && Util::Dist(meleeUnit->getPos(), target->getPos()) <= 5.2f)
+		const auto numUnits = m_bot.UnitInfo().getNumCombatUnits(Players::Self);
+		if (numUnits < 1)
 		{
 			return true;
+		}
+		for (const auto & target : targets)
+		{
+			//It would be better if we have one sacrifice.
+			if (target->getUnitType().ToType() == sc2::UNIT_TYPEID::ZERG_BANELING && Util::Dist(meleeUnit->getPos(), target->getPos()) <= 5.2f)
+			{
+				return true;
+			}
 		}
 	}
 	return false;

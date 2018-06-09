@@ -234,7 +234,7 @@ void WorkerManager::handleIdleWorkers()
         if (!worker) { continue; }
 
         // if it's a scout or combat, don't handle it here
-        if (m_workerData.getWorkerJob(worker) == WorkerJobs::Scout || m_workerData.getWorkerJob(worker) == WorkerJobs::Combat)
+        if (m_workerData.getWorkerJob(worker) == WorkerJobs::Scout || m_workerData.getWorkerJob(worker) == WorkerJobs::Combat || m_workerData.getWorkerJob(worker) == WorkerJobs::Repair)
         {
             continue;
         }
@@ -254,13 +254,22 @@ void WorkerManager::handleRepairWorkers()
 	{
 		if (b->isCompleted() && b->getHealth() < b->getHealthMax())
 		{
-			if (b->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_BUNKER)
+			if (b->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER))
 			{
 				setRepairWorker(b, 6);
 			}
 			else
 			{
 				setRepairWorker(b);
+			}
+		}
+		else if (b->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER) && m_bot.underAttack())
+		{
+			const size_t bases = m_bot.UnitInfo().getUnitTypeCount(Players::Self, Util::getTownHallTypes());
+			if (bases <= 1)
+			{
+				//std::cout << "We are under attack so prepair repair workers!" << std::endl;
+				setRepairWorker(b, 3);
 			}
 		}
 	}

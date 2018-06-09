@@ -161,14 +161,31 @@ void BuildingManager::constructAssignedBuildings()
 			continue;
 		}
 
-		// TODO: not sure if this is the correct way to tell if the building is constructing
+		
 		sc2::AbilityID buildAbility = m_bot.Data(b.m_type).buildAbility;
 		std::shared_ptr<CUnit> builderUnit = b.builderUnit;
-
+		// If the builder died on its way remove this building
 		if (builderUnit && !builderUnit->isAlive())
 		{
 			toRemove.push_back(b);
 			continue;
+		}
+		//if we are under attack don't start buildings
+		if (m_bot.underAttack())
+		{
+			if (b.m_type == sc2::UNIT_TYPEID::TERRAN_BUNKER || b.m_type == sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT)
+			{
+				//We still want to build bunker and supply depots
+			}
+			else if (m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER))
+			{
+				//We can take an exe if the bunker is finished.
+			}
+			else
+			{
+				toRemove.push_back(b);
+				continue;
+			}
 		}
 		bool isConstructing = false;
 
@@ -344,18 +361,21 @@ void BuildingManager::checkForDeadTerranBuilders()
 	{
 		if (b.status == BuildingStatus::UnderConstruction)
 		{
-			if (!b.builderUnit || !b.builderUnit->isAlive())
+			if (!m_bot.underAttack() || b.m_type == sc2::UNIT_TYPEID::TERRAN_BUNKER || b.m_type == sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT)
 			{
-				const CUnit_ptr builderUnit = m_bot.Workers().getBuilder(b);
-				if (builderUnit)
+				if (!b.builderUnit || !b.builderUnit->isAlive())
 				{
-					b.builderUnit = builderUnit;
-					Micro::SmartRightClick(builderUnit, b.buildingUnit, m_bot);
+					const CUnit_ptr builderUnit = m_bot.Workers().getBuilder(b);
+					if (builderUnit)
+					{
+						b.builderUnit = builderUnit;
+						Micro::SmartRightClick(builderUnit, b.buildingUnit, m_bot);
+					}
 				}
-			}
-			if (b.builderUnit && (b.builderUnit->getOrders().empty() || b.builderUnit->getOrders().front().ability_id == sc2::ABILITY_ID::HARVEST_GATHER))
-			{
-				Micro::SmartRightClick(b.builderUnit, b.buildingUnit, m_bot);
+				else if (b.builderUnit && (b.builderUnit->getOrders().empty() || b.builderUnit->getOrders().front().ability_id == sc2::ABILITY_ID::HARVEST_GATHER))
+				{
+					Micro::SmartRightClick(b.builderUnit, b.buildingUnit, m_bot);
+				}
 			}
 		}
 		if (b.status == BuildingStatus::Assigned)

@@ -33,7 +33,10 @@ void Squad::onFrame()
 {
 	// update all necessary unit information within this squad
 	updateUnits();
-
+	if (m_units.size() == 0)
+	{
+		return;
+	}
 	// determine whether or not we should regroup
 	bool needToRegroup = needsToRegroup();
 	
@@ -161,48 +164,80 @@ void Squad::addUnitsToMicroManagers()
 
 const bool Squad::needsToRegroup()
 {
-	if (m_order.getType() != SquadOrderTypes::Attack || m_units.size()==0 || m_bot.Observation()->GetFoodUsed()>=180)
+	if (m_order.getType() == SquadOrderTypes::Attack)
 	{
-		return false;
-	}
-	if (m_units.size() < 100 && m_units.size()<m_bot.UnitInfo().getNumCombatUnits(Players::Enemy))
-	{
-		m_lastRetreatSwitchVal = true;
-		return m_lastRetreatSwitchVal;
-	}
-	float n = 0.0f;
-	sc2::Point2D mean(0.0f, 0.0f);
-	sc2::Point2D variance(0.0f, 0.0f);
-	for (const auto & unit : m_units)
-	{
-		if (!unit->isAlive() || unit->getUnitType().ToType()==sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
+		if (m_bot.Observation()->GetFoodUsed() >= 180)
 		{
-			continue;
+			return false;
 		}
-		++n;
-		sc2::Point2D delta = unit->getPos() - mean;
-		mean += delta / n;
-		sc2::Point2D delta2 = unit->getPos() - mean;
-		variance += sc2::Point2D(delta.x*delta2.x, delta.y*delta2.y);
-	}
-	//std::cout << "std x = " << std::sqrt(variance.x / (n - 1)) << ", std y = " << std::sqrt(variance.y / (n - 1)) << std::endl;
-	//std::cout << "std = " << std::sqrt((variance.x/m_bot.Map().width() + variance.y / m_bot.Map().height()) / (n - 1)) << std::endl;
-	//Lets see if this is good. Actually, you should look this up. 
-	const float scattering = std::sqrt((variance.x / m_bot.Map().width() + variance.y / m_bot.Map().height()) / (n - 1));
-	//if we are retreating, we want to do it for a while
-	if (m_lastRetreatSwitchVal)
-	{
-		if (scattering < 1)
+		if (m_units.size() < 100 && m_units.size() < m_bot.UnitInfo().getNumCombatUnits(Players::Enemy))
 		{
-			m_lastRetreatSwitchVal = false;
+			m_lastRetreatSwitchVal = true;
+			return m_lastRetreatSwitchVal;
+		}
+		float n = 0.0f;
+		sc2::Point2D mean(0.0f, 0.0f);
+		sc2::Point2D variance(0.0f, 0.0f);
+		for (const auto & unit : m_units)
+		{
+			if (!unit->isAlive() || unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
+			{
+				continue;
+			}
+			++n;
+			sc2::Point2D delta = unit->getPos() - mean;
+			mean += delta / n;
+			sc2::Point2D delta2 = unit->getPos() - mean;
+			variance += sc2::Point2D(delta.x*delta2.x, delta.y*delta2.y);
+		}
+		//std::cout << "std x = " << std::sqrt(variance.x / (n - 1)) << ", std y = " << std::sqrt(variance.y / (n - 1)) << std::endl;
+		//std::cout << "std = " << std::sqrt((variance.x/m_bot.Map().width() + variance.y / m_bot.Map().height()) / (n - 1)) << std::endl;
+		//Lets see if this is good. Actually, you should look this up. 
+		const float scattering = std::sqrt((variance.x / m_bot.Map().width() + variance.y / m_bot.Map().height()) / (n - 1));
+		//if we are retreating, we want to do it for a while
+		if (m_lastRetreatSwitchVal)
+		{
+			if (scattering < 1)
+			{
+				m_lastRetreatSwitchVal = false;
+			}
+		}
+		else
+		{
+			if (scattering > 4.0f)
+			{
+				m_lastRetreatSwitchVal = true;
+			}
+		}
+	}
+	else if (m_order.getType() == SquadOrderTypes::Defend)
+	{
+		const sc2::Point2D test = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase();
+		if (m_order.getPosition().x == test.x && m_order.getPosition().y == test.y)
+		{
+			return false;
+		}
+		CUnits nearbyEnemies;
+		const sc2::Point2D regroup = calcRegroupPosition();
+		for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
+		{
+			if (Util::DistSq(enemyUnit->getPos(), m_order.getPosition()) < std::powf(m_order.getRadius(), 2))
+			{
+				nearbyEnemies.push_back(enemyUnit);
+			}
+			if (Util::DistSq(enemyUnit->getPos(), regroup) < 100.0f)
+			{
+				return false;
+			}
+		}
+		if (nearbyEnemies.size() > m_units.size())
+		{
+			return true;
 		}
 	}
 	else
 	{
-		if (scattering > 4.0f)
-		{
-			m_lastRetreatSwitchVal = true;
-		}
+		return false;
 	}
 	return m_lastRetreatSwitchVal;
 }

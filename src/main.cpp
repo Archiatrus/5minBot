@@ -17,12 +17,12 @@
 
 #ifdef LADDEREXE
 bool useDebug = false;
-bool useAutoObserver = true;
+bool useAutoObserver = false;
 #elif VSHUMAN
 bool useDebug = false;
 bool useAutoObserver = false;
 #else
-bool useDebug = true;
+bool useDebug = false;
 bool useAutoObserver = false;
 #endif
 
@@ -48,6 +48,7 @@ struct ConnectionOptions
 {
 	sc2::Race HumanRace;
 	std::string map;
+	bool rt;
 };
 
 static void ParseArguments(int argc, char *argv[], ConnectionOptions &connect_options)
@@ -55,7 +56,8 @@ static void ParseArguments(int argc, char *argv[], ConnectionOptions &connect_op
 	sc2::ArgParser arg_parser(argv[0]);
 	arg_parser.AddOptions({
 		{ "-h", "--HumanRace", "Race of the human player"},
-		{ "-m", "--Map", "MapName.SC2Map"}
+		{ "-m", "--Map", "MapName.SC2Map" },
+		{ "-t", "--WithRealtime", "Play with realtime on (1) or off (0)" }
 	});
 	arg_parser.Parse(argc, argv);
 
@@ -84,6 +86,24 @@ static void ParseArguments(int argc, char *argv[], ConnectionOptions &connect_op
 		std::cout << "Could not read map option. Please provide it via --Map \"InterloperLE.SC2Map\". Using default: InterloperLE.SC2Map" << std::endl << std::endl;
 		connect_options.map = "InterloperLE.SC2Map";
 	}
+	std::string realTime;
+	if (arg_parser.Get("WithRealtime", realTime))
+	{
+		if (realTime == "true" || realTime == "True" || realTime == "1")
+		{
+
+			std::cout << "Real time on. Not extensively tested." << std::endl << std::endl;
+			connect_options.rt = true;
+		}
+		else
+		{
+			connect_options.rt = false;
+		}
+	}
+	else
+	{
+		connect_options.rt = false;
+	}
 }
 
 
@@ -106,7 +126,7 @@ int main(int argc, char* argv[])
 	//		  Setting this = N means the bot's onFrame gets called once every N frames
 	//		  The bot may crash or do unexpected things if its logic is not called every frame
 	coordinator.SetStepSize(stepSize);
-	coordinator.SetRealtime(false);
+	coordinator.SetRealtime(Options.rt);
 	coordinator.SetMultithreaded(true);
 	coordinator.SetParticipants({
 		CreateParticipant(Options.HumanRace, &human),
@@ -127,8 +147,8 @@ int main(int argc, char* argv[])
 #else //DEBUG
 int main(int argc, char* argv[])
 {
-	std::vector<std::string> maps = { "OdysseyLE.SC2Map","ProximaStationLE.SC2Map","BelShirVestigeLE.SC2Map","AscensiontoAiurLE.SC2Map","MechDepotLE.SC2Map","NewkirkPrecinctTE.SC2Map" };
-	std::vector<sc2::Race> opponents = { sc2::Race::Zerg, sc2::Race::Protoss, sc2::Race::Terran};
+	std::vector<std::string> maps = { "BelShirVestigeLE.SC2Map","ProximaStationLE.SC2Map","OdysseyLE.SC2Map","AscensiontoAiurLE.SC2Map","MechDepotLE.SC2Map","NewkirkPrecinctTE.SC2Map" };
+	std::vector<sc2::Race> opponents = { sc2::Race::Terran, sc2::Race::Zerg, sc2::Race::Protoss};
 	std::map<std::string, sc2::Point2D> mapScore;
 	std::map<sc2::Race, sc2::Point2D> raceScore;
 	
@@ -138,7 +158,6 @@ int main(int argc, char* argv[])
 		{
 			for (const auto & opponent : opponents)
 			{
-
 				// Add the custom bot, it will control the players.
 				CCBot bot;
 				//CCBot bot2;
@@ -166,7 +185,7 @@ int main(int argc, char* argv[])
 				while (coordinator.Update())
 				{
 				}
-				if (bot.Observation()->GetResults().front().result == sc2::GameResult::Win)
+				if (bot.Observation() && bot.Observation()->GetResults().front().result == sc2::GameResult::Win)
 				{
 					mapScore[map] += sc2::Point2D(1, 0);
 					raceScore[opponent] += sc2::Point2D(1, 0);

@@ -36,7 +36,7 @@ void ScoutManager::onFrame()
 	}
 	else
 	{
-		if (m_scoutUnit && m_scoutUnit->isWorker())
+		if (m_scoutUnit && m_scoutUnit->isWorker() && m_targetBasesPositions.empty())
 		{
 			m_bot.Workers().finishedWithWorker(m_scoutUnit);
 			m_scoutUnit = nullptr;
@@ -139,6 +139,14 @@ void ScoutManager::checkOurBases()
 	if (m_targetBasesPositions.empty())
 	{
 		firstCheckOurBases = false;
+		if (m_scoutUnit->isWorker())
+		{
+			const BaseLocation * enemyBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
+			if (enemyBase)
+			{
+				m_targetBasesPositions.push(enemyBase->getCenterOfBase());
+			}
+		}
 	}
 
 }
@@ -163,6 +171,11 @@ void ScoutManager::setScout(CUnit_ptr unit)
 	}
 	m_numScouts=1;
 	m_scoutUnit = unit;
+	firstCheckOurBases = true;
+	while (m_targetBasesPositions.size() > 0)
+	{
+		m_targetBasesPositions.pop();
+	}
 	unit->setOccupation({ CUnit::Occupation::Scout,0 });
 }
 
@@ -210,9 +223,13 @@ void ScoutManager::moveScouts()
 		return;
 	}
 	//Do not annoy the reaper when he tries to jump
-	if (scout->getOrders().size()>0&&scout->getOrders()[0].ability_id == sc2::ABILITY_ID::MOVE && m_bot.Map().terrainHeight(scout->getPos().x, scout->getPos().y) != m_bot.Map().terrainHeight(scout->getPos().x+2*std::cos(scout->getFacing()), scout->getPos().y+2*std::sin(scout->getFacing())))
+	if (scout->getOrders().size() > 0 && scout->getOrders()[0].ability_id == sc2::ABILITY_ID::MOVE)
 	{
-		return;
+		const sc2::Point2D jumpPosition = { scout->getPos().x + 2 * std::cos(scout->getFacing()), scout->getPos().y + 2 * std::sin(scout->getFacing()) };
+		if (m_bot.Map().terrainHeight(scout->getPos().x, scout->getPos().y) != m_bot.Map().terrainHeight(jumpPosition.x, jumpPosition.y) && m_bot.Map().isWalkable(jumpPosition))
+		{
+			return;
+		}
 	}
 
 	float scoutHP = scout->getHealth();
@@ -222,7 +239,19 @@ void ScoutManager::moveScouts()
 		scoutDamaged();
 		return;
 	}
-	
+
+	if (m_scoutUnit->isWorker())
+	{
+		if (Util::DistSq(m_scoutUnit->getPos(), m_targetBasesPositions.front()) > 25.0f)
+		{
+			Micro::SmartMove(m_scoutUnit, m_targetBasesPositions.front(), m_bot);
+		}
+		else
+		{
+			Micro::SmartAttackMove(m_scoutUnit, m_targetBasesPositions.front(), m_bot);
+		}
+		return;
+	}
 	// get the enemy base location, if we have one
 	const BaseLocation * enemyBaseLocation = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
 
@@ -251,8 +280,11 @@ void ScoutManager::moveScouts()
 		{
 			if (m_targetBasesPositions.size() > 0 && Util::Dist(scout->getPos(), m_targetBasesPositions.front()) < 20)
 			{
-				gotAttackedInEnemyRegion = true;
-				m_targetBasesPositions.pop();
+				if (std::find_if(enemyUnitsInSight.begin(), enemyUnitsInSight.end(), [](const CUnit_ptr & enemy) {return enemy->isCombatUnit(); }) != enemyUnitsInSight.end())
+				{
+					gotAttackedInEnemyRegion = true;
+					m_targetBasesPositions.pop();
+				}
 			}
 
 		}
@@ -359,14 +391,21 @@ bool ScoutManager::enemyTooClose(CUnits enemyUnitsInSight)
 {
 	bool tooClose = false;
 	CUnits enemyPositions;
+	CUnit_ptr closestEnemy = nullptr;
+	float minDist = 30.0f;
 	//First gather all units that can shoot at the scout
-	for (const auto &m_unit : enemyUnitsInSight)
+	for (const auto &enemy : enemyUnitsInSight)
 	{
-		const float dist = Util::Dist(m_unit->getPos(), m_scoutUnit->getPos());
-		if (dist < m_unit->getAttackRange(m_scoutUnit) + 2.0f) //+2 to be on the save side
+		const float dist = Util::Dist(enemy->getPos(), m_scoutUnit->getPos());
+		if (dist < enemy->getAttackRange(m_scoutUnit) + 2.0f) //+2 to be on the save side
 		{
-			enemyPositions.push_back(m_unit);
+			enemyPositions.push_back(enemy);
 			tooClose = true;
+			if (minDist > dist)
+			{
+				closestEnemy = enemy;
+				minDist = dist;
+			}
 		}
 	}
 	//If there were any calculate the cluster center and flee in the other direction.
@@ -378,7 +417,7 @@ bool ScoutManager::enemyTooClose(CUnits enemyUnitsInSight)
 		{
 			if (ability.ability_id == sc2::ABILITY_ID::EFFECT_KD8CHARGE)
 			{
-				Micro::SmartAbility(m_scoutUnit, sc2::ABILITY_ID::EFFECT_KD8CHARGE,enemyPositions.front(),m_bot);
+				Micro::SmartAbility(m_scoutUnit, sc2::ABILITY_ID::EFFECT_KD8CHARGE,closestEnemy,m_bot);
 				return tooClose;
 			}
 		}
@@ -519,6 +558,7 @@ void ScoutManager::scoutDamaged()
 	{
 		m_scoutStatus = "Too damaged. Retreating to base.";
 		m_bot.Workers().finishedWithWorker(scout);
+		m_scoutUnit = nullptr;
 		m_numScouts = -1;
 	}
 	else

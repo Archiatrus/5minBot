@@ -108,7 +108,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 		// if this is a defense squad then we care about all units in the area
 		if (order.getType() == SquadOrderTypes::Defend || order.getType() == SquadOrderTypes::GuardDuty)
 		{
-			executeMicro(nearbyEnemies);
+				executeMicro(nearbyEnemies);
 		}
 		// otherwise we only care about workers if they are in their own region
 		// this is because their scout can run around and drag our units around the map
@@ -177,6 +177,13 @@ void MicroManager::regroup(const sc2::Point2D & regroupPosition) const
 				{
 					regroupUnitsMove.push_back(unit);
 				}
+			}
+		}
+		else
+		{
+			if (unit->isType(sc2::UNIT_TYPEID::TERRAN_SIEGETANK))
+			{
+				Micro::SmartAbility(unit, sc2::ABILITY_ID::MORPH_SIEGEMODE, m_bot);
 			}
 		}
 

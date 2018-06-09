@@ -33,6 +33,7 @@ class CombatCommander
 
 	void			updateDefenseSquadUnits(Squad & defenseSquad, const size_t & flyingDefendersNeeded, const size_t & groundDefendersNeeded);
 	bool			shouldWeStartAttacking();
+	void			checkForProxyOrCheese();
 
 public:
 

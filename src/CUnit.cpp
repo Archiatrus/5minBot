@@ -364,6 +364,21 @@ bool CUnit::canHitMe(const std::shared_ptr<CUnit> & enemy) const
 	return enemy->getWeapon(sc2::Weapon::TargetType::Ground).damage_ > 0.0f;
 }
 
+float CUnit::hasBonusDmgAgainst(const std::shared_ptr<CUnit> & enemy) const
+{
+	if (!enemy || !enemy->isAlive() || !enemy->isCompleted() || (isBurrowed() && !isVisible()))
+	{
+		return false;
+	}
+	for (const auto & bonus : getWeapon(sc2::Weapon::TargetType::Air).damage_bonus)
+	{
+		if (enemy->hasAttribute(bonus.attribute))
+		{
+			return bonus.bonus;
+		}
+	}
+}
+
 std::vector<std::shared_ptr<CUnit>> CUnit::getEnemyUnitsInSight() const
 {
 	std::vector<std::shared_ptr<CUnit>> enemyUnitsInSight;

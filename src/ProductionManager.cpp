@@ -141,7 +141,24 @@ void ProductionManager::create(BuildOrderItem item)
 		}
 		else
 		{
-			bPoint = m_bot.Bases().getRallyPoint();
+			if (m_bot.UnitInfo().getUnits(Players::Self, Util::getTownHallTypes()).size() == 1)
+			{
+				sc2::Point2D fixpoint = m_bot.Bases().getNextExpansion(Players::Self);
+
+				std::vector<const BaseLocation *> startingBases = m_bot.Bases().getStartingBaseLocations();
+				sc2::Point2D targetPos(0.0f, 0.0f);
+				for (const auto & base : startingBases)
+				{
+					targetPos += base->getCenterOfBase();
+				}
+				targetPos /= static_cast<float>(startingBases.size());
+
+				bPoint = fixpoint + Util::normalizeVector(targetPos - fixpoint, 5.0f);
+			}
+			else
+			{
+				bPoint = m_bot.Bases().getRallyPoint();
+			}
 		}
 		m_buildingManager.addBuildingTask(item.m_type.getUnitTypeID(), bPoint);
 	}
@@ -272,6 +289,13 @@ void ProductionManager::defaultMacro()
 				}
 			}
 		}
+		const CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
+		if (Bunker.size() + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BUNKER) < 1)
+		{
+			m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BUNKER), BUILDING, false));
+			std::cout << "Bunker" << std::endl;
+			return;
+		}
 	}
 	const float mineralRate = m_bot.Observation()->GetScore().score_details.collection_rate_minerals;
 	const int reactorsFinished = buildingsFinished(m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR));
@@ -337,7 +361,7 @@ void ProductionManager::defaultMacro()
 	}
 	//Refinaries
 	int numOfRefinaries = static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_REFINERY, false) + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_REFINERY));
-	if (gas <= 500 && numRax > 0 && minerals >= 75 && ((m_bot.Observation()->GetFoodWorkers() >= 15 && numOfRefinaries == 0) || (m_bot.Observation()->GetFoodWorkers() >= 21 && numOfRefinaries == 1) || (m_bot.Observation()->GetFoodWorkers() >= 40 && numOfRefinaries <= 3)))
+	if (gas <= 500 && numRax > 0 && minerals >= 75 && ((m_bot.Observation()->GetFoodWorkers() >= 15 && numOfRefinaries == 0) || (m_bot.Observation()->GetFoodWorkers() >= 21 && !m_bot.underAttack() && numOfRefinaries == 1) || (m_bot.Observation()->GetFoodWorkers() >= 40 && numOfRefinaries <= 3)))
 	{
 		m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_REFINERY), BUILDING, false));
 		std::cout << "Refinary" << std::endl;
@@ -578,7 +602,7 @@ void ProductionManager::defaultMacro()
 					else
 					{
 						const size_t numMedivacs = m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, sc2::UNIT_TYPEID::TERRAN_MEDIVAC);
-						const size_t numVikings = m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, { sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER,sc2::UNIT_TYPEID::TERRAN_VIKINGASSAULT });
+						const size_t numVikings = m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, std::vector<sc2::UNIT_TYPEID>{ sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER,sc2::UNIT_TYPEID::TERRAN_VIKINGASSAULT });
 						if ((!m_vikingRequested && numMedivacs < 12) || (m_vikingRequested && numMedivacs <= numVikings))
 						{
 							if (gas >= 100 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
@@ -716,8 +740,9 @@ void ProductionManager::defaultMacro()
 				}
 				else if (m_bot.UnitInfo().getUnit(unit->getAddOnTag())->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORYTECHLAB)
 				{
-					const int numWidowMines = static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(Players::Self, { sc2::UNIT_TYPEID::TERRAN_WIDOWMINE,sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED }));
-					if (numWidowMines==0 && minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).mineralCost && gas >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).gasCost && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).supplyCost)
+					const int numWidowMines = static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(Players::Self, std::vector<sc2::UNIT_TYPEID>{ sc2::UNIT_TYPEID::TERRAN_WIDOWMINE,sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED }));
+					const int numTanks = static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(Players::Self, std::vector<sc2::UNIT_TYPEID>{ sc2::UNIT_TYPEID::TERRAN_SIEGETANK,sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED }));
+					if (numTanks>0 && numWidowMines==0 && minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).mineralCost && gas >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).gasCost && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).supplyCost)
 					{
 						Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_WIDOWMINE,m_bot);
 						std::cout << "WM" << std::endl;
@@ -739,6 +764,8 @@ void ProductionManager::defaultMacro()
 		if (Bunker.size() + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BUNKER) < 1)
 		{
 			m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BUNKER), BUILDING, false));
+			std::cout << "Bunker" << std::endl;
+			return;
 		}
 	}
 

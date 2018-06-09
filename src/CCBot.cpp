@@ -123,6 +123,11 @@ void CCBot::OnStep()
 	while (timer.getElapsedTimeInMilliSec() - oldTime < 1000.0 / 22.4) {};
 	oldTime = timer.getElapsedTimeInMilliSec();
 	#endif // VSHUMAN
+	auto test = Observation()->GetRawObservation()->alerts();
+	if (test.size() > 0)
+	{
+		int a = 1;
+	}
 }
 
 void CCBot::OnUnitCreated(const sc2::Unit * unit)
