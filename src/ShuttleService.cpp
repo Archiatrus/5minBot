@@ -26,6 +26,7 @@ shuttle::~shuttle()
 void shuttle::hereItGoes()
 {
 	//What happens if shuttle dies?
+	BOT_ASSERT(!m_shuttle || m_shuttle->getOccupation().first==CUnit::Occupation::Shuttle, "Unit is not shuttle");
 	switch (m_status)
 	{
 	case(ShuttleStatus::lookingForShuttle):break;

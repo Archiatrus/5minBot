@@ -213,7 +213,7 @@ const bool Squad::needsToRegroup()
 	else if (m_order.getType() == SquadOrderTypes::Defend)
 	{
 		const sc2::Point2D test = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase();
-		if (m_order.getPosition().x == test.x && m_order.getPosition().y == test.y)
+		if (m_order.getPosition().x == test.x && m_order.getPosition().y == test.y || m_bot.Observation()->GetFoodUsed()>=180)
 		{
 			return false;
 		}
@@ -221,7 +221,7 @@ const bool Squad::needsToRegroup()
 		const sc2::Point2D regroup = calcRegroupPosition();
 		for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
 		{
-			if (Util::DistSq(enemyUnit->getPos(), m_order.getPosition()) < std::powf(m_order.getRadius(), 2))
+			if (enemyUnit->isVisible() && Util::DistSq(enemyUnit->getPos(), m_order.getPosition()) < std::powf(m_order.getRadius(), 2))
 			{
 				nearbyEnemies.push_back(enemyUnit);
 			}
@@ -230,10 +230,8 @@ const bool Squad::needsToRegroup()
 				return false;
 			}
 		}
-		if (nearbyEnemies.size() > m_units.size())
-		{
-			return true;
-		}
+		return nearbyEnemies.size() > m_units.size();
+		
 	}
 	else
 	{
@@ -261,6 +259,10 @@ void Squad::clear()
 		if (unit->isWorker())
 		{
 			m_bot.Workers().finishedWithWorker(unit);
+		}
+		else
+		{
+			unit->setOccupation({ unit->getOccupation().first,0 });
 		}
 	}
 
@@ -365,6 +367,7 @@ const SquadOrder & Squad::getSquadOrder()	const
 void Squad::addUnit(const CUnit_ptr unit)
 {
 	m_units.push_back(unit);
+	unit->setOccupation({ CUnit::Occupation::Combat,getPriority() });
 }
 
 void Squad::removeUnit(const CUnit_ptr unit)

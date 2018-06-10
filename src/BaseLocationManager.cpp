@@ -338,10 +338,6 @@ const sc2::Point2D BaseLocationManager::getBuildingLocation() const
 		{
 			return newHome->getCenterOfBase();
 		}
-		else
-		{
-			return m_bot.GetStartLocation();
-		}
 	}
 	return m_bot.GetStartLocation();
 }

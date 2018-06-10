@@ -7,7 +7,6 @@ const int manyUnits = 25;
 
 timePlace::timePlace(uint32_t time, sc2::Point2D place) : m_time(time), m_place(place)
 {
-
 }
 
 GameCommander::GameCommander(CCBot & bot)
@@ -18,7 +17,6 @@ GameCommander::GameCommander(CCBot & bot)
 	, m_combatCommander	 (bot)
 	, m_initialScoutSet	 (false)
 {
-
 }
 
 void GameCommander::onStart()
@@ -207,9 +205,20 @@ void GameCommander::setHarassUnits()
 
 			if (!isAssigned(unit))
 			{
-				if (unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC) && m_harassManager.needMedivac())
+				if (unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC) && m_harassManager.needMedivac() && unit->getCargoSpaceTaken()==0)
 				{
-					m_harassManager.setMedivac(unit);
+					int freeMarines = 0;
+					for (const auto & marine : m_validUnits)
+					{
+						if (marine->isType(sc2::UNIT_TYPEID::TERRAN_MARINE) && marine->getOccupation().first == CUnit::Occupation::Combat)
+						{
+							++freeMarines;
+						}
+					}
+					if (freeMarines >= 16)
+					{
+						m_harassManager.setMedivac(unit);
+					}
 				}
 				//We only assign marines, after we have a medivac
 				else if (medivacs.size()>0 && unit->isType(sc2::UNIT_TYPEID::TERRAN_MARINE) && unit->getHealth() == unit->getHealthMax() && m_harassManager.needMarine())
@@ -354,6 +363,10 @@ void GameCommander::handleScans()
 		else
 		{
 			scanPos=m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy)->getCenterOfBase();
+			if (m_bot.Observation()->GetVisibility(scanPos) != sc2::Visibility::Hidden)
+			{
+				return;
+			}
 		}
 		CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND);
 		for (const auto & unit : CommandCenters)

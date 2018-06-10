@@ -107,7 +107,7 @@ void CombatCommander::updateAttackSquads()
 	Squad & mainAttackSquad = m_squadData.getSquad("MainAttack");
 
 	//We reassign every frame. Otherwise we can not change the jobs aka Harass, scout etc
-	mainAttackSquad.clear();
+	//mainAttackSquad.clear();
 
 	for (const auto & unit : m_combatUnits)
 	{   
@@ -130,14 +130,19 @@ void CombatCommander::updateGuardSquads()
 {
 	Squad & guardSquad = m_squadData.getSquad("GuardDuty");
 
-	//We reassign every frame. Otherwise we can not change the jobs aka Harass, scout etc
-	guardSquad.clear();
-	if (m_attackStarted || !m_needGuards)
+	if (!m_needGuards)
 	{
+		if (!guardSquad.isEmpty())
+		{
+			guardSquad.clear();
+		}
 		return;
 	}
 
-	
+	if (m_attackStarted || m_bot.underAttack())
+	{
+		return;
+	}
 
 	for (const auto & unit : m_combatUnits)
 	{

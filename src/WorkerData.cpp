@@ -338,21 +338,14 @@ void WorkerData::checkRepairedBuildings()
 	for (auto & m : m_repair_map)
 	{
 		CUnit_ptr target = m_bot.UnitInfo().getUnit(m.first);
-		if (!target || !target->isAlive() || (target->getHealth() == target->getHealthMax()))
+		if (!target || !target->isAlive() || (target->getHealth() == target->getHealthMax() && !(target->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER) && m_bot.underAttack())))
 		{
-			if (target->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER) && m_bot.underAttack())
+			targetsToDelete.push_back(m.first);
+			for (const auto & worker : m.second)
 			{
-				//std::cout << "better keep workers repairing!" << std::endl;
+				clearPreviousJob(worker);
 			}
-			else
-			{
-				targetsToDelete.push_back(m.first);
-				for (const auto & worker : m.second)
-				{
-					clearPreviousJob(worker);
-				}
-				continue;
-			}
+			continue;
 		}
 		CUnits & workers = m.second;
 		CUnits deadWorker;

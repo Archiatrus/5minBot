@@ -377,6 +377,7 @@ float CUnit::hasBonusDmgAgainst(const std::shared_ptr<CUnit> & enemy) const
 			return bonus.bonus;
 		}
 	}
+	return 0.0f;
 }
 
 std::vector<std::shared_ptr<CUnit>> CUnit::getEnemyUnitsInSight() const

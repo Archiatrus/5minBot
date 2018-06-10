@@ -167,15 +167,19 @@ void MicroManager::regroup(const sc2::Point2D & regroupPosition) const
 			{
 				Micro::SmartAbility(unit, sc2::ABILITY_ID::MORPH_UNSIEGE, m_bot);
 			}
+			else if (unit->isType(sc2::UNIT_TYPEID::TERRAN_SCV))
+			{
+				m_bot.Workers().finishedWithWorker(unit);
+			}
 			else
 			{
-				if (unit->getWeaponCooldown())
+				if (unit->getWeaponCooldown()>0)
 				{
-					regroupUnitsShoot.push_back(unit);
+					regroupUnitsMove.push_back(unit);
 				}
 				else
 				{
-					regroupUnitsMove.push_back(unit);
+					regroupUnitsShoot.push_back(unit);
 				}
 			}
 		}

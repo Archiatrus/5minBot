@@ -493,7 +493,7 @@ std::string Util::GetStringFromRace(const sc2::Race & race)
 sc2::Race Util::GetRaceFromString(const std::string & raceIn)
 {
 	std::string race(raceIn);
-	std::transform(race.begin(), race.end(), race.begin(), ::tolower);
+	std::transform(race.begin(), race.end(), race.begin(), [](char c) {return static_cast<char>(::toupper(c)); });
 
 	if (race == "terran")
 	{

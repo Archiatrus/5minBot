@@ -8,7 +8,12 @@
 const int updateRatePathplaning = 10;
 const int hitSquadLimit = 3;
 
-Hitsquad::Hitsquad(CCBot & bot, CUnit_ptr medivac) : m_bot(bot), m_status(HarassStatus::Idle), m_medivac(medivac),m_pathPlanCounter(updateRatePathplaning+1), m_target(nullptr),m_stalemateCheck(sc2::Point2D())
+Hitsquad::Hitsquad(CCBot & bot, CUnit_ptr medivac) :
+	m_bot(bot),
+	m_status(HarassStatus::Idle),
+	m_medivac(medivac),
+	m_pathPlanCounter(updateRatePathplaning+1),
+	m_target(nullptr),m_stalemateCheck(sc2::Point2D())
 {
 }
 
@@ -17,10 +22,12 @@ Hitsquad::~Hitsquad()
 	if (m_medivac)
 	{
 		m_medivac->setOccupation({ CUnit::Occupation::Combat,0 });
+		m_medivac = nullptr;
 		for (const auto & m : m_marines)
 		{
 			m->setOccupation({ CUnit::Occupation::Combat,0 });
 		}
+		m_marines.clear();
 	}
 }
 void Hitsquad::escapePathPlaning()
@@ -106,11 +113,14 @@ void Hitsquad::checkForCasualties()
 		{
 			return false;
 		}
-		for (const auto & p : m_medivac->getPassengers())
+		if (m_medivac)
 		{
-			if (p.tag == unit->getTag())
+			for (const auto & p : m_medivac->getPassengers())
 			{
-				return false;
+				if (p.tag == unit->getTag())
+				{
+					return false;
+				}
 			}
 		}
 		return true;
@@ -154,10 +164,11 @@ bool Hitsquad::harass(const BaseLocation * target)
 		}
 	}
 	checkForCasualties();
+	BOT_ASSERT(!m_medivac || m_medivac->getOccupation().first == CUnit::Occupation::Harass, "Unit is not harass");
 	switch (m_status)
 	{
 	case HarassStatus::Idle:
-		if (haveNoTarget())
+		if (haveNoTarget() || m_bot.underAttack())
 		{
 			if (m_medivac && m_medivac->getCargoSpaceTaken() > 0)
 			{
@@ -321,7 +332,7 @@ bool Hitsquad::harass(const BaseLocation * target)
 	case HarassStatus::Fleeing:
 	{
 		//Pick everybody up
-		if (m_medivac->getCargoSpaceTaken() != m_marines.size())
+		if (m_medivac->getCargoSpaceTaken() < m_marines.size())
 		{
 			Micro::SmartRightClick(m_marines, m_medivac, m_bot);
 			Micro::SmartRightClick(m_medivac, m_marines, m_bot);

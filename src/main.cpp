@@ -185,7 +185,7 @@ int main(int argc, char* argv[])
 				while (coordinator.Update())
 				{
 				}
-				if (bot.Observation() && bot.Observation()->GetResults().front().result == sc2::GameResult::Win)
+				if (bot.Observation() && bot.Observation()->GetResults().size()>0 && bot.Observation()->GetResults().front().result == sc2::GameResult::Win)
 				{
 					mapScore[map] += sc2::Point2D(1, 0);
 					raceScore[opponent] += sc2::Point2D(1, 0);
