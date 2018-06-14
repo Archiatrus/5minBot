@@ -43,7 +43,7 @@ class pathPlaning
 	
 	void expandFrontNode(std::shared_ptr<node> frontNode);
 	std::vector<sc2::Point2D> constructPath(std::shared_ptr<const node> frontNode) const;
-	const float calcThreatLvl(sc2::Point2D pos) const;
+	//const float calcThreatLvl(sc2::Point2D pos) const;
 
 public:
 	pathPlaning(CCBot & bot, sc2::Point2D startPos, sc2::Point2D endPos, int mapWidth, int mapHeight,float stepSize);

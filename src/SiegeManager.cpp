@@ -210,7 +210,7 @@ float SiegeManager::getAttackPriority(const CUnit_ptr attacker, const CUnit_ptr 
 		{
 			return 12.0f;
 		}
-		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_LURKERMPBURROWED || unit->isType(sc2::UNIT_TYPEID::PROTOSS_SENTRY))
+		if ( unit->isType(sc2::UNIT_TYPEID::ZERG_LURKERMPBURROWED) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_SENTRY) || unit->isType(sc2::UNIT_TYPEID::TERRAN_SIEGETANK) || unit->isType(sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED))
 		{
 			return 11.0f;
 		}

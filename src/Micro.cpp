@@ -176,13 +176,7 @@ void Micro::SmartMove(CUnit_ptr attacker, const sc2::Point2D & targetPosition, C
 	}
 	if (!attacker->isFlying())
 	{
-		sc2::Point2D validWalkableTargetPosition = targetPosition;
-		if (!(bot.Map().isWalkable(targetPosition) && bot.Map().isValid(targetPosition)))
-		{
-			sc2::Point2D homeVector = bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase() - attacker->getPos();
-			homeVector *= Util::DistSq(attacker->getPos(), targetPosition) / Util::DistSq(homeVector);
-			validWalkableTargetPosition += homeVector;
-		}
+		sc2::Point2D validWalkableTargetPosition = bot.Map().getClosestWalkableTo(targetPosition);
 		bot.Actions()->UnitCommand(attacker->getUnit_ptr(), sc2::ABILITY_ID::MOVE, validWalkableTargetPosition, queue);
 	}
 	else
@@ -370,17 +364,17 @@ void Micro::SmartKiteTarget(CUnit_ptr rangedUnit, CUnit_ptr target, CCBot & bot,
 		//The same is true if it outranges us. We dont want to block following units
 		if (target->isBuilding())
 		{
-			targetPos += Util::normalizeVector(target->getPos() - rangedUnit->getPos(), dist - (range - 1));
+			targetPos += Util::normalizeVector(target->getPos() - rangedUnit->getPos(), (dist - target->getRadius()) - (range - 1));
 		}
 		else if (target->getAttackRange(rangedUnit) >= range || (!rangedUnit->canHitMe(target) && rangedUnit->getUnitType().ToType()!=sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER))
 		{
-			targetPos += Util::normalizeVector(target->getPos() - rangedUnit->getPos(), dist - (range - 1));
+			targetPos += Util::normalizeVector(target->getPos() - rangedUnit->getPos(), (dist - target->getRadius()) - (range - 1));
 		}
 		else
 		{
-			targetPos += Util::normalizeVector(target->getPos() - rangedUnit->getPos(), dist - range);
+			targetPos += Util::normalizeVector(target->getPos() - rangedUnit->getPos(), (dist - target->getRadius()) - range);
 		}
-
+		
 		SmartMove(rangedUnit, targetPos, bot, queue);
 	}
 }

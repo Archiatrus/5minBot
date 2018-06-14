@@ -147,11 +147,11 @@ int main(int argc, char* argv[])
 #else //DEBUG
 int main(int argc, char* argv[])
 {
-	std::vector<std::string> maps = { "BelShirVestigeLE.SC2Map","ProximaStationLE.SC2Map","OdysseyLE.SC2Map","AscensiontoAiurLE.SC2Map","MechDepotLE.SC2Map","NewkirkPrecinctTE.SC2Map" };
-	std::vector<sc2::Race> opponents = { sc2::Race::Terran, sc2::Race::Zerg, sc2::Race::Protoss};
+	std::vector<std::string> maps = { "RedShiftLE.SC2Map","AcidPlantLE.SC2Map","CatalystLE.SC2Map", "LostAndFoundLE.SC2Map","16BitLE.SC2Map", "DreamcatcherLE.SC2Map", "DarknessSanctuaryLE.SC2Map" };
+	std::vector<sc2::Race> opponents = { sc2::Race::Protoss, sc2::Race::Zerg, sc2::Race::Terran };
 	std::map<std::string, sc2::Point2D> mapScore;
 	std::map<sc2::Race, sc2::Point2D> raceScore;
-	
+
 	while (true)
 	{
 		for (const auto & map : maps)
@@ -185,7 +185,7 @@ int main(int argc, char* argv[])
 				while (coordinator.Update())
 				{
 				}
-				if (bot.Observation() && bot.Observation()->GetResults().size()>0 && bot.Observation()->GetResults().front().result == sc2::GameResult::Win)
+				if (bot.Observation() && bot.Observation()->GetResults().size() > 0 && bot.Observation()->GetResults().front().result == sc2::GameResult::Win)
 				{
 					mapScore[map] += sc2::Point2D(1, 0);
 					raceScore[opponent] += sc2::Point2D(1, 0);
@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
 				std::cout << std::endl;
 				for (const auto & rs : raceScore)
 				{
-					std::cout << Util::GetStringFromRace(rs.first) << " = " << rs.second.x << " : " << rs.second.y << " (" << roundf(rs.second.x/(rs.second.x+ rs.second.y) * 100.0f) / 100.0f<<"%)"<< std::endl;
+					std::cout << Util::GetStringFromRace(rs.first) << " = " << rs.second.x << " : " << rs.second.y << " (" << roundf(rs.second.x / (rs.second.x + rs.second.y) * 100.0f) / 100.0f << "%)" << std::endl;
 				}
 				std::cout << std::endl;
 				for (const auto & ms : mapScore)

@@ -18,6 +18,8 @@ class ProductionManager
 	bool m_vikingRequested;
 	bool m_liberatorRequested;
 	int m_scansRequested;
+	int m_defaultMacroSleep;
+	const int m_defaultMacroSleepMax;
 
 	bool    detectBuildOrderDeadlock();
 	void    create(BuildOrderItem item);

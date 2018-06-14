@@ -8,11 +8,6 @@
 const int UNIT = 5;
 const int BUILDING = 3;
 
-//it seems to many commands confuse the engine
-int defaultMacroSleep = 0;
-const int defaultMacroSleepMax = 5;
-
-bool startedResearch = false;
 
 ProductionManager::ProductionManager(CCBot & bot)
 	: m_bot(bot)
@@ -21,6 +16,8 @@ ProductionManager::ProductionManager(CCBot & bot)
 	, m_vikingRequested(false)
 	, m_liberatorRequested(false)
 	, m_scansRequested(0)
+	, m_defaultMacroSleep(0)
+	, m_defaultMacroSleepMax(5)
 {
 
 }
@@ -193,12 +190,12 @@ int ProductionManager::getFreeGas()
 void ProductionManager::defaultMacro()
 {
 	//This avoids repeating the same command twice.
-	++defaultMacroSleep;
-	if (defaultMacroSleep < defaultMacroSleepMax)
+	++m_defaultMacroSleep;
+	if (m_defaultMacroSleep < m_defaultMacroSleepMax)
 	{
 		return;
 	}
-	defaultMacroSleep = 0;
+	m_defaultMacroSleep = 0;
 
 	//Even without money we can drop mules
 	const CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, Util::getTownHallTypes());
@@ -232,7 +229,7 @@ void ProductionManager::defaultMacro()
 	//but not much else
 	if (minerals < 50)
 	{
-		defaultMacroSleep = defaultMacroSleepMax;
+		m_defaultMacroSleep = m_defaultMacroSleepMax;
 		return;
 	}
 	int32_t gas = getFreeGas();
@@ -839,7 +836,7 @@ void ProductionManager::defaultMacro()
 		return;
 	}
 	//When we did nothing...
-	defaultMacroSleep = defaultMacroSleepMax;
+	m_defaultMacroSleep = m_defaultMacroSleepMax;
 	return;
 }
 

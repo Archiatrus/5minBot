@@ -5,10 +5,6 @@
 #include "Drawing.h"
 #include <queue>
 
-const float reaperVisionRadius = 9;
-
-bool firstCheckOurBases = true;
-bool gotAttackedInEnemyRegion = false;
 
 ScoutManager::ScoutManager(CCBot & bot)
 	: m_bot			 (bot)
@@ -19,6 +15,8 @@ ScoutManager::ScoutManager(CCBot & bot)
 	, m_previousScoutHP (0.0f)
 	, m_targetBasesPositions(std::queue<sc2::Point2D>())
 	, m_foundProxy(false)
+	, m_firstCheckOurBases(true)
+	, m_gotAttackedInEnemyRegion(false)
 {
 
 }
@@ -30,7 +28,7 @@ void ScoutManager::onStart()
 
 void ScoutManager::onFrame()
 {
-	if (firstCheckOurBases)
+	if (m_firstCheckOurBases)
 	{
 		checkOurBases();
 	}
@@ -59,7 +57,7 @@ void ScoutManager::checkOurBases()
 			//We HAD a scout....
 			m_scoutStatus = "Need new scout!";
 			m_numScouts = -1;
-			firstCheckOurBases = true;
+			m_firstCheckOurBases = true;
 			m_targetBasesPositions = std::queue<sc2::Point2D>();
 		}
 		if (scout && m_bot.Observation()->GetGameLoop() - scout->getLastSeenGameLoop() > 1224)
@@ -138,7 +136,7 @@ void ScoutManager::checkOurBases()
 	}
 	if (m_targetBasesPositions.empty())
 	{
-		firstCheckOurBases = false;
+		m_firstCheckOurBases = false;
 		if (m_scoutUnit->isWorker())
 		{
 			const BaseLocation * enemyBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
@@ -171,7 +169,7 @@ void ScoutManager::setScout(CUnit_ptr unit)
 	}
 	m_numScouts=1;
 	m_scoutUnit = unit;
-	firstCheckOurBases = true;
+	m_firstCheckOurBases = true;
 	while (m_targetBasesPositions.size() > 0)
 	{
 		m_targetBasesPositions.pop();
@@ -212,11 +210,11 @@ void ScoutManager::moveScouts()
 			//We HAD a scout....
 			if (scout && Util::Dist(scout->getPos(),m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase()) > 50)
 			{
-				gotAttackedInEnemyRegion = true;
+				m_gotAttackedInEnemyRegion = true;
 			}
 			m_scoutStatus = "Need new scout!";
 			m_numScouts = -1;
-			firstCheckOurBases = true;
+			m_firstCheckOurBases = true;
 			m_targetBasesPositions = std::queue<sc2::Point2D>();
 		}
 		
@@ -258,7 +256,7 @@ void ScoutManager::moveScouts()
 	// if we know where the enemy region is and where our scout is
 	if (enemyBaseLocation)
 	{
-		if (gotAttackedInEnemyRegion && m_targetBasesPositions.empty())
+		if (m_gotAttackedInEnemyRegion && m_targetBasesPositions.empty())
 		{
 			updateNearestUnoccupiedBases(enemyBaseLocation->getCenterOfBase(), Players::Enemy);
 		}
@@ -282,7 +280,7 @@ void ScoutManager::moveScouts()
 			{
 				if (std::find_if(enemyUnitsInSight.begin(), enemyUnitsInSight.end(), [](const CUnit_ptr & enemy) {return enemy->isCombatUnit(); }) != enemyUnitsInSight.end())
 				{
-					gotAttackedInEnemyRegion = true;
+					m_gotAttackedInEnemyRegion = true;
 					m_targetBasesPositions.pop();
 				}
 			}

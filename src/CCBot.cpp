@@ -62,7 +62,7 @@ void CCBot::OnGameStart()
 	{
 		m_cameraModule.onStart();
 	}
-	Actions()->SendChat("5minBot");
+	//Actions()->SendChat("5minBot");
 }
 
 void CCBot::OnStep()

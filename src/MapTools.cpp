@@ -38,7 +38,6 @@ void MapTools::onStart()
 	m_lastSeen	   = vvi(m_width, std::vector<int>(m_height, 0));
 	m_sectorNumber   = vvi(m_width, std::vector<int>(m_height, 0));
 	m_terrainHeight  = vvf(m_width, std::vector<float>(m_height, 0.0f));
-
 	// Set the boolean grid data from the Map
 	for (size_t x(0); x < m_width; ++x)
 	{
@@ -54,7 +53,18 @@ void MapTools::onStart()
 	{
 		m_maxZ = std::max(unit->pos.z, m_maxZ);
 	}
-
+	//RedShift..... -.-
+	sc2::Units minerals = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral, sc2::IsUnits(Util::getMineralTypes()));
+	for (const auto & mineral : minerals)
+	{
+		for (int i = -1; i <= 1; ++i)
+		{
+			for (int j = -1; j <= 1; ++j)
+			{
+				m_walkable[static_cast<int>(mineral->pos.x)+i][static_cast<int>(mineral->pos.y)+j] = false;
+			}
+		}
+	}
 	computeConnectivity();
 
 	//overseerMap.setBot(&m_bot); //ADD THIS LINE (OVERSEER)
@@ -335,45 +345,125 @@ sc2::Point2D MapTools::getLeastRecentlySeenPosition() const
 
 sc2::Point2D MapTools::getWallPosition(sc2::UnitTypeID type) const
 {
-	sc2::Point2D bestPosition(0.0f, 0.0f);
-	return bestPosition;
-	/*
-	float maxDist = 0;
-	const BaseLocation *startBase=m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
-	sc2::Point2D startLocation = startBase->getPosition();
-	
-	//if it is farer away than our exe we don't care
-	sc2::Point2D expansionLocation = m_bot.Bases().getNextExpansion(Players::Self);
-	float ExpDist = Util::Dist(startLocation, expansionLocation);
-	//if it is not the same height as the bases height
-	float startBaseHeight = terrainHeight(startLocation.x, startLocation.y);
-	for (int x(0); x < m_width; ++x)
+	const sc2::Point2D startPoint = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase()+Util::normalizeVector(m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase()-m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfMinerals(),5.0f);
+	const float startHeight = m_bot.Observation()->TerrainHeight(startPoint);
+	sc2::Point2D currentPos = sc2::Point2D(std::round(startPoint.x) + 0.5f, std::round(startPoint.y) + 0.5f);
+	const sc2::Point2D enemyPoint = m_bot.Observation()->GetGameInfo().enemy_start_locations.front();
+	BaseLocation * const enemyBaseLocation = m_bot.Bases().getBaseLocation(enemyPoint);
+	const float stepSize = 1.0;
+	const sc2::Point2D xMove(stepSize, 0.0f);
+	const sc2::Point2D yMove(0.0f, stepSize);
+	int currentWalkingDistance = enemyBaseLocation->getGroundDistance(startPoint);
+	bool foundNewPos = true;
+	while (foundNewPos)
 	{
-		for (int y(0); y < m_height; ++y)
+		foundNewPos = false;
+		for (float i = -1.0f; i <= 1.0f; ++i)
 		{
-			//We do not need to check anything if it is not the correct height anyway.
-			float height = terrainHeight(static_cast<float>(x), static_cast<float>(y));
-			if (height == startBaseHeight)
+			for (float j = -1.0f; j <= 1.0f; ++j)
 			{
-				//We do not need to check anything else if it is too far away anyway.
-				sc2::Point2D position = sc2::Point2D(x + 0.5f, y + 0.5f);
-				float distance = Util::Dist(startLocation, position);
-				if (maxDist<distance && distance < ExpDist)
+				if (i != 0.0f || j != 0.0f)
 				{
-					if (m_bot.Query()->Placement(sc2::ABILITY_ID::BUILD_SUPPLYDEPOT, position))
+					const sc2::Point2D newPos = currentPos + i*xMove + j*yMove;
+					const int dist = enemyBaseLocation->getGroundDistance(newPos);
+					if (m_bot.Observation()->TerrainHeight(newPos) == startHeight && dist > 0 && m_bot.Observation()->IsPathable(newPos))
 					{
-						if (isNextToRamp(x,y))
+						bool newPosBetter = false;
+						if (currentWalkingDistance > dist)//easy
 						{
-							bestPosition = position;
-							maxDist = distance;
+							newPosBetter = true;
+						}
+						else if (currentWalkingDistance == dist && m_bot.Observation()->IsPlacable(currentPos))//Now it gets complicated
+						{
+							if (!m_bot.Observation()->IsPlacable(newPos))
+							{
+								newPosBetter = true;
+							}
+							else
+							{
+								const std::vector<float> dists = m_bot.Query()->PathingDistance({ { sc2::NullTag,currentPos,enemyBaseLocation->getCenterOfMinerals() },{ sc2::NullTag,newPos,enemyBaseLocation->getCenterOfMinerals() } });
+								if (dists.front() > dists.back())
+								{
+									newPosBetter = true;
+								}
+							}
+						}
+						if (newPosBetter)
+						{
+							currentWalkingDistance = dist;
+							currentPos = newPos;
+							foundNewPos = true;
+							break;
 						}
 					}
 				}
 			}
+			if (foundNewPos)
+			{
+				break;
+			}
 		}
 	}
-	return bestPosition;
-	*/
+	int rampType=0;
+	if (!m_bot.Observation()->IsPlacable(currentPos + sc2::Point2D{ 0, 1 }))  //North
+	{
+		rampType += 10;
+	}
+	if (!m_bot.Observation()->IsPlacable(currentPos + sc2::Point2D{ 1, 0 })) //East
+	{
+		rampType += 1;
+	}
+	std::vector<sc2::Point2D> positions;
+	switch (rampType)
+	{
+		case(0):  //SW
+		{
+			if (!m_bot.Observation()->IsPlacable(currentPos + sc2::Point2D{ 1.0f, -1.0f }))
+			{
+				currentPos += sc2::Point2D{ 1.0f, -1.0f };
+			}
+			positions = { currentPos + sc2::Point2D(0.5f, 1.5f), currentPos + sc2::Point2D(1.5f, -0.5f), currentPos + sc2::Point2D(-1.5f, 2.5f) };
+			break;
+		}
+		case(1):  // SE
+		{
+			if (!m_bot.Observation()->IsPlacable(currentPos + sc2::Point2D{ 1.0f, 1.0f }))
+			{
+				currentPos += sc2::Point2D{ 1.0f, 1.0f };
+			}
+			positions = { currentPos + sc2::Point2D(0.5f, 1.5f), currentPos + sc2::Point2D(-1.5f, 0.5f), currentPos + sc2::Point2D(-2.5f, -1.5f) };
+			break;
+		}
+		case(10):  // NW
+		{
+			if (!m_bot.Observation()->IsPlacable(currentPos + sc2::Point2D{ -1.0f, -1.0f }))
+			{
+				currentPos += sc2::Point2D{ -1.0f, -1.0f };
+			}
+			positions = { currentPos + sc2::Point2D(-0.5f,-1.5f),currentPos + sc2::Point2D(1.5f,-0.5f), currentPos + sc2::Point2D(2.5f, 1.5f) };
+			break;
+		}
+		case(11):  // NE
+		{
+			if (!m_bot.Observation()->IsPlacable(currentPos + sc2::Point2D{ -1.0f, 1.0f }))
+			{
+				currentPos += sc2::Point2D{ -1.0f, 1.0f };
+			}
+			positions = { currentPos + sc2::Point2D(-0.5f, -1.5f), currentPos + sc2::Point2D(-1.5f, 0.5f), currentPos + sc2::Point2D(1.5f,-2.5f) };
+			break;
+		}
+	}
+	const sc2::ABILITY_ID depotID = sc2::ABILITY_ID::BUILD_SUPPLYDEPOT;
+	std::vector<bool> result = m_bot.Query()->Placement({ { depotID, positions[0]},{ depotID, positions[1] },{ depotID, positions[2] } });
+	for (int i = 0; i < result.size(); ++i)
+	{
+		if (result[i])
+		{
+			Drawing::drawSphere(m_bot, positions[i], 1.0f, sc2::Colors::Green);
+			return positions[i];
+		}
+	}
+	return sc2::Point2D();
 }
 
 bool MapTools::isNextToRamp(int x, int y) const
@@ -592,19 +682,29 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 		staticDs.erase(std::remove_if(staticDs.begin(), staticDs.end(), [posEnd](const auto & staticD) {
 			return Util::Dist(staticD->getPos(), posEnd) > 20.0f;
 		}), staticDs.end());
-		const sc2::Point2D saveDirection = Util::normalizeVector(wayPoints.back() - posB);
+		sc2::Point2D saveDirection;
+		if (wayPoints.back() - posB != sc2::Point2D())
+		{
+			saveDirection = Util::normalizeVector(wayPoints.back() - posB);
+		}
+		else if (posStart - posB != sc2::Point2D())
+		{
+			saveDirection = Util::normalizeVector(posStart - posB);
+		}
+		else
+		{
+			saveDirection = Util::normalizeVector(posB - forbiddenCorner);
+		}
 		bool inRange = true;
-		while (inRange)
+		while (inRange && isValid(posB))
 		{
 			inRange = false;
-			for (const auto & staticD : staticDs)
+			while (calcThreatLvl(posB, sc2::Weapon::TargetType::Air) > 0)
 			{
-				while (Util::Dist(staticD->getPos(), posB) <= staticD->getAttackRange() + 1.0f)
-				{
-					posB += saveDirection;
-					inRange = true;
-				}
+				posB += saveDirection;
+				inRange = true;
 			}
+
 		}
 		wayPoints.push(posB);
 
@@ -848,6 +948,30 @@ void MapTools::draw() const
 			}
 		}
 	}
+}
+
+const float MapTools::calcThreatLvl(sc2::Point2D pos, const sc2::Weapon::TargetType & targetType) const
+{
+	float threatLvl = 0.0f;
+	for (const auto & enemy : m_bot.UnitInfo().getUnits(Players::Enemy))
+	{
+		// if it's a combat unit
+		if (enemy->isCombatUnit())
+		{
+			//If we are in range.
+			float range = enemy->getSightRange();
+			float dist = Util::Dist(enemy->getPos(), pos);
+			if (dist < range)
+			{
+				//Get its weapon
+				const sc2::Weapon weapon = enemy->getWeapon(targetType);
+				//I ignore bonus dmg for now.
+				float dps = weapon.attacks * weapon.damage_ / weapon.speed;
+				threatLvl += std::max(0.0f, dps*(range - dist) / range);
+			}
+		}
+	}
+	return threatLvl;
 }
 
 void MapTools::printMap() const 

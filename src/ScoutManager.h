@@ -17,6 +17,8 @@ class ScoutManager
 	float           m_previousScoutHP;
 	std::queue<sc2::Point2D> m_targetBasesPositions;
 	bool			m_foundProxy;
+	bool m_firstCheckOurBases;
+	bool m_gotAttackedInEnemyRegion;
 
 	bool            enemyWorkerInRadiusOf(const sc2::Point2D & pos) const;
 	sc2::Point2D    getFleePosition() const;

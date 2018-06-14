@@ -385,6 +385,7 @@ const sc2::Point2D BaseLocationManager::getRallyPoint() const
 sc2::Point2D BaseLocationManager::getNextExpansion(int player) const
 {
 	const BaseLocation * homeBase = getPlayerStartingBaseLocation(player);
+	const BaseLocation * EnemyBase = getPlayerStartingBaseLocation(Players::Enemy);
 	const BaseLocation * closestBase = nullptr;
 	int minDistance = std::numeric_limits<int>::max();
 
@@ -405,14 +406,22 @@ sc2::Point2D BaseLocationManager::getNextExpansion(int player) const
 
 		// the base's distance from our main nexus
 		int distanceFromHome = homeBase->getGroundDistance(tile);
-
+	
 		// if it is not connected, continue
 		if (distanceFromHome < 0)
 		{
 			continue;
 		}
-
-		if (!closestBase || distanceFromHome < minDistance)
+		int distanceFromEnemy;
+		if (player == Players::Self && EnemyBase)
+		{
+			distanceFromEnemy = std::max(0, EnemyBase->getGroundDistance(tile));
+		}
+		else
+		{
+			distanceFromEnemy = 0;
+		}
+		if (!closestBase || distanceFromHome-0.5f*distanceFromEnemy < minDistance)
 		{
 			bool tooDangerous = false;
 			for (const auto & enemy : m_bot.UnitInfo().getUnits(Players::Enemy))
@@ -426,7 +435,7 @@ sc2::Point2D BaseLocationManager::getNextExpansion(int player) const
 			if (!tooDangerous)
 			{
 				closestBase = base;
-				minDistance = distanceFromHome;
+				minDistance = static_cast<int>(distanceFromHome - 0.5f*distanceFromEnemy);
 			}
 		}
 	}
@@ -437,12 +446,16 @@ sc2::Point2D BaseLocationManager::getNextExpansion(int player) const
 sc2::Point2D BaseLocationManager::getNewestExpansion(int player) const
 {
 	const BaseLocation * homeBase = getPlayerStartingBaseLocation(player);
+	if (!homeBase)
+	{
+		return sc2::Point2D(0.0f, 0.0f);
+	}
 	const BaseLocation * newestBase = nullptr;
 	float maxDistance = -1;
 	for (const auto & base : getBaseLocations())
 	{
 		float dist = Util::Dist(homeBase->getCenterOfBase(), base->getCenterOfBase());
-		if (base->isOccupiedByPlayer(Players::Self) && maxDistance < dist && base->getTownHall())
+		if (base->isOccupiedByPlayer(player) && maxDistance < dist && base->getTownHall())
 		{
 			maxDistance = dist;
 			newestBase = base;

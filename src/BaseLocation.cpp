@@ -69,6 +69,33 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 	// compute this BaseLocation's DistanceMap, which will compute the ground distance
 	// from the center of its recourses to every other tile on the map
 	m_distanceMap = m_bot.Map().getDistanceMap(m_centerOfResources);
+	if (m_distanceMap.getSortedTiles().size() == 1)
+	{
+		bool foundBetterPos = false;
+		for (int k = 1; k <= 5; ++k)
+		{
+			for (int i = -k; i <= k; ++i)
+			{
+				for (int j = -k; j <= k; ++j)
+				{
+					if (m_bot.Map().isWalkable(m_centerOfResources + sc2::Point2D(i, j)))
+					{
+						m_distanceMap = m_bot.Map().getDistanceMap(m_bot.Map().getClosestWalkableTo(m_centerOfResources + sc2::Point2D(i, j)));
+						foundBetterPos = true;
+						break;
+					}
+				}
+				if (foundBetterPos)
+				{
+					break;
+				}
+			}
+			if (foundBetterPos)
+			{
+				break;
+			}
+		}
+	}
 
 	// if this base location position is near our own resource depot, it's our start location
 	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER))
@@ -258,6 +285,8 @@ void BaseLocation::draw()
 	{
 		ss << "Enemy ";
 	}
+
+	ss << "\n Position:	( " << m_centerOfBase.x << " , " << m_centerOfBase.y << " )\n";
 
 	Drawing::drawText(m_bot,sc2::Point2D(m_left, m_top+3), ss.str().c_str());
 	Drawing::drawText(m_bot,sc2::Point2D(m_left, m_bottom), ss.str().c_str());

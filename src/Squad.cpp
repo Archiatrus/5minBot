@@ -212,8 +212,9 @@ const bool Squad::needsToRegroup()
 	}
 	else if (m_order.getType() == SquadOrderTypes::Defend)
 	{
-		const sc2::Point2D test = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase();
-		if (m_order.getPosition().x == test.x && m_order.getPosition().y == test.y || m_bot.Observation()->GetFoodUsed()>=180)
+		const sc2::Point2D startingBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase();
+		const sc2::Point2D newestBase = m_bot.Bases().getNewestExpansion(Players::Self);
+		if ( (m_order.getPosition().x == startingBase.x && m_order.getPosition().y == startingBase.y) || !(m_order.getPosition().x == newestBase.x && m_order.getPosition().y == newestBase.y) || m_bot.Observation()->GetFoodUsed()>=180)
 		{
 			return false;
 		}
@@ -367,7 +368,7 @@ const SquadOrder & Squad::getSquadOrder()	const
 void Squad::addUnit(const CUnit_ptr unit)
 {
 	m_units.push_back(unit);
-	unit->setOccupation({ CUnit::Occupation::Combat,getPriority() });
+	unit->setOccupation({ CUnit::Occupation::Combat,static_cast<int>(getPriority()) });
 }
 
 void Squad::removeUnit(const CUnit_ptr unit)

@@ -83,6 +83,7 @@ public:
 	const float getHeight(const sc2::Point2D pos) const;
 	const float getHeight(const float x,const float y) const;
 	void draw() const;
+	const float calcThreatLvl(sc2::Point2D pos, const sc2::Weapon::TargetType & targetType) const;
 	void printMap() const;
 	std::queue<sc2::Point2D> getEdgePath(const sc2::Point2D posStart, const sc2::Point2D posEnd) const;
 	sc2::Point2D findLandingZone(sc2::Point2D pos) const;

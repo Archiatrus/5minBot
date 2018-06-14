@@ -6,7 +6,7 @@
 #include "Drawing.h"
 
 
-int frames = 60;
+const int frames = 60;
 
 BuildingManager::BuildingManager(CCBot & bot)
 	: m_bot(bot)

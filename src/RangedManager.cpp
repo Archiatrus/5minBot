@@ -3,7 +3,7 @@
 #include "CCBot.h"
 
 uint32_t counter;
-uint32_t speedFactor = 10;
+const uint32_t speedFactor = 10;
 
 RangedManager::RangedManager(CCBot & bot)
 	: MicroManager(bot)
@@ -181,7 +181,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 
 		if (rangedUnit->getTag() % speedFactor == counter%speedFactor)
 		{
-
+			//continue;
 		}
 		// if the order is to attack or defend
 		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend || order.getType() == SquadOrderTypes::GuardDuty)
@@ -445,7 +445,7 @@ int RangedManager::getAttackPriority(const CUnit_ptr & unit)
 		{
 			return 9;
 		}
-		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_LURKERMPBURROWED || unit->isType(sc2::UNIT_TYPEID::PROTOSS_SENTRY))
+		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_LURKERMPBURROWED || unit->isType(sc2::UNIT_TYPEID::PROTOSS_SENTRY) || unit->isType(sc2::UNIT_TYPEID::TERRAN_SIEGETANK) || unit->isType(sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED))
 		{
 			return 8;
 		}

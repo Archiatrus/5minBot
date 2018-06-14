@@ -1,20 +1,25 @@
-#include "sc2api/sc2_api.h"
-
 #include "CUnit.h"
+#include "sc2api/sc2_api.h"
 #include "CCBot.h"
 #include "Util.h"
 
-const uint32_t distanceUpdateFrequency = 5;
-
-CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
+CUnit::CUnit(const sc2::Unit * unit, CCBot * bot):
 	m_bot(bot),
 	m_unit(unit),
 	m_unitTypeId(unit->unit_type),
 	m_healthPointsMax(unit->health_max),
 	m_shieldMax(unit->shield_max),
 	m_maxEnergy(unit->energy_max),
-	m_isBuilding([&]{const auto attributes = this->getAttributes(); return std::find(attributes.begin(), attributes.end(), sc2::Attribute::Structure)!=attributes.end() && !isType(sc2::UNIT_TYPEID::TERRAN_KD8CHARGE) && !isType(sc2::UNIT_TYPEID::TERRAN_AUTOTURRET) && !isType(sc2::UNIT_TYPEID::TERRAN_POINTDEFENSEDRONE); }()), //m_isBuilding(Util::IsBuildingType(unit->unit_type, *bot)),
-	m_isCombatUnit(unit->alliance!=sc2::Unit::Alliance::Neutral && Util::IsCombatUnitType(unit->unit_type, *bot)),
+	m_isBuilding([&]
+		{
+			const auto attributes = this->getAttributes();
+			return std::find(attributes.begin(), attributes.end(),
+				sc2::Attribute::Structure) != attributes.end()
+				&& !isType(sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
+				&& !isType(sc2::UNIT_TYPEID::TERRAN_AUTOTURRET)
+				&& !isType(sc2::UNIT_TYPEID::TERRAN_POINTDEFENSEDRONE);
+		}()),
+	m_isCombatUnit(unit->alliance != sc2::Unit::Alliance::Neutral && Util::IsCombatUnitType(unit->unit_type, *bot)),
 	m_sight(m_bot->Observation()->GetUnitTypeData()[getUnitType()].sight_range),
 	m_pos(unit->pos),
 	m_healthPoints(unit->health),
@@ -28,19 +33,34 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 	m_abilityCooldown(bot->Observation()->GetGameLoop()),
 	m_AAWeapons(sc2::Weapon{}),
 	m_groundWeapons(sc2::Weapon{}),
-	m_occupation([&]() -> std::pair<CUnit::Occupation, int>{ if (this->isWorker()) { return { Occupation::Building,0 }; } if (m_isBuilding) { return { Occupation::Building,0 }; } if (m_isCombatUnit) { return { Occupation::Combat,0 }; } return { Occupation::None,0 }; }())
+	m_occupation([&]() -> std::pair<CUnit::Occupation, int>
+		{
+			if (this->isWorker())
+				{
+					return { Occupation::Building, 0 };
+				}
+			if (m_isBuilding)
+				{
+					return { Occupation::Building, 0 };
+				}
+			if (m_isCombatUnit)
+				{
+					return { Occupation::Combat, 0 };
+				}
+			return { Occupation::None, 0 };
+		}())
 {
-	//The default constructor is not setting the values...
+	// The default constructor is not setting the values...
 	m_AAWeapons.type = sc2::Weapon::TargetType::Air;
 	m_AAWeapons.damage_ = 0.0f;
 	m_AAWeapons.attacks = 0;
 	m_AAWeapons.range = 0.0f;
-	m_AAWeapons.speed = 1.0f;//For dps I divide dmg/speed
+	m_AAWeapons.speed = 1.0f;  // For dps I divide dmg/speed
 	m_groundWeapons.type = sc2::Weapon::TargetType::Ground;
 	m_groundWeapons.damage_ = 0.0f;
 	m_groundWeapons.attacks = 0;
 	m_groundWeapons.range = 0.0f;
-	m_groundWeapons.speed = 1.0f;//For dps I divide dmg/speed
+	m_groundWeapons.speed = 1.0f;  // For dps I divide dmg/speed
 	for (const auto & weapon : bot->Observation()->GetUnitTypeData()[unit->unit_type].weapons)
 	{
 		if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
@@ -48,19 +68,19 @@ CUnit::CUnit(const sc2::Unit * unit,CCBot * bot):
 			m_AAWeapons = weapon;
 			if (isType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET))
 			{
-				m_AAWeapons.range += 1.0f; //We never know when Hi-Sec Auto Tracking is researched
+				m_AAWeapons.range += 1.0f;  // We never know when Hi-Sec Auto Tracking is researched
 			}
 		}
-		if ((weapon.type == sc2::Weapon::TargetType::Ground || weapon.type == sc2::Weapon::TargetType::Any) && weapon.range > m_groundWeapons.range)//Siege tanks
+		if ((weapon.type == sc2::Weapon::TargetType::Ground || weapon.type == sc2::Weapon::TargetType::Any)
+			&& weapon.range > m_groundWeapons.range)  // Siege tanks
 		{
 			m_groundWeapons = weapon;
-			if (m_groundWeapons.range < 0.11f)//melee. Not exactly 0.1
+			if (m_groundWeapons.range < 0.11f)  // melee. Not exactly 0.1
 			{
 				m_groundWeapons.range += unit->radius;
 			}
 		}
 	}
-
 }
 
 
@@ -217,7 +237,7 @@ bool CUnit::isPowered() const
 
 bool CUnit::isAlive() const
 {
-	return m_unit->is_alive && (m_healthPointsMax==0 || m_healthPoints > 0.0f);
+	return m_unit->is_alive && (m_healthPointsMax == 0 || m_healthPoints > 0.0f);
 }
 
 
@@ -227,7 +247,7 @@ uint32_t CUnit::getLastSeenGameLoop() const
 }
 
 void CUnit::update()
-{	
+{
 	if (isVisible())
 	{
 		/*
@@ -240,31 +260,31 @@ void CUnit::update()
 			}
 		}
 		*/
-		//DT detection
+		// DT detection
 		if (getOwner() == Players::Self && m_bot->GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
 		{
 			const float lostHealth = m_healthPoints - m_unit->health;
 			const int armor = m_bot->getArmorBio();
-			//Immortal against Marauder gives false alarm...
+			// Immortal against Marauder gives false alarm...
 			if (lostHealth == 45.0f - armor || lostHealth == 50.0f - armor || lostHealth == 55.0f - armor || lostHealth == 60.0f - armor)
 			{
 				m_bot->OnDTdetected(m_unit->pos);
 			}
 		}
 		m_pos = m_unit->pos;
-		m_healthPoints= m_unit->health;
-		m_healthPointsMax = m_unit->health_max; //Combat shield
-		m_shield= m_unit->shield;
-		m_energy= m_unit->energy;
-		m_mineralContents= m_unit->mineral_contents;
-		m_vespeneContents= m_unit->vespene_contents;
-		m_isFlying= m_unit->is_flying;
-		m_isBurrowed= m_unit->is_burrowed;
-		m_weaponCooldown= m_unit->weapon_cooldown;
+		m_healthPoints = m_unit->health;
+		m_healthPointsMax = m_unit->health_max;  // Combat shield
+		m_shield = m_unit->shield;
+		m_energy = m_unit->energy;
+		m_mineralContents = m_unit->mineral_contents;
+		m_vespeneContents = m_unit->vespene_contents;
+		m_isFlying = m_unit->is_flying;
+		m_isBurrowed = m_unit->is_burrowed;
+		m_weaponCooldown = m_unit->weapon_cooldown;
 	}
 	else
 	{
-		if (m_bot->Observation()->GetVisibility(m_pos) == sc2::Visibility::Visible && getAlliance()!=sc2::Unit::Alliance::Neutral)
+		if (m_bot->Observation()->GetVisibility(m_pos) == sc2::Visibility::Visible && getAlliance() != sc2::Unit::Alliance::Neutral)
 		{
 			if (isBuilding())
 			{
@@ -349,7 +369,7 @@ bool CUnit::isWorker() const
 
 bool CUnit::canHitMe(const std::shared_ptr<CUnit> & enemy) const
 {
-	if (!enemy || !enemy->isAlive() || !enemy->isCompleted()||(isBurrowed()&&!isVisible()))
+	if (!enemy || !enemy->isAlive() || !enemy->isCompleted() || (isBurrowed() && !isVisible()))
 	{
 		return false;
 	}
@@ -434,7 +454,7 @@ const float CUnit::getAttackRange() const
 	{
 		return 4.0f;
 	}
-	return m_groundWeapons.range>m_AAWeapons.range ? m_groundWeapons.range : m_AAWeapons.range;
+	return m_groundWeapons.range > m_AAWeapons.range ? m_groundWeapons.range : m_AAWeapons.range;
 }
 
 const sc2::Unit * CUnit::getUnit_ptr() const
@@ -534,10 +554,10 @@ const uint32_t CUnit::getAbilityCoolDown() const
 
 void CUnit::newAbilityCoolDown(const uint32_t CD)
 {
-	m_abilityCooldown=CD;
+	m_abilityCooldown = CD;
 }
 
-const std::pair<CUnit::Occupation,int> CUnit::getOccupation() const
+const std::pair<CUnit::Occupation, int> CUnit::getOccupation() const
 {
 	return m_occupation;
 }
@@ -562,7 +582,7 @@ const std::shared_ptr<CUnit> CUnitsData::insert(const sc2::Unit * unit, CCBot & 
 			u->update();
 			return nullptr;
 		}
-		//Snapshots have different tags -.-
+		// Snapshots have different tags -.-
 		if (u->getDisplayType() == sc2::Unit::DisplayType::Snapshot && unit->display_type == sc2::Unit::DisplayType::Visible && Util::Dist(u->getPos(), unit->pos) <= 0.1f)
 		{
 			m_units.erase(std::find(m_units.begin(), m_units.end(), u));

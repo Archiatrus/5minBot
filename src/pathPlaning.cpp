@@ -18,7 +18,7 @@ pathPlaning::pathPlaning(CCBot & bot, sc2::Point2D startPos, sc2::Point2D endPos
 	int status = 0;
 	float travelCost = 0.0f;
 	float heuristicToGoal = calcHeuristic(startPos);
-	float threatLvl = calcThreatLvl(startPos);
+	float threatLvl = m_bot.Map().calcThreatLvl(startPos, sc2::Weapon::TargetType::Air);
 	setMap(startPos,std::make_shared<node>(startPos, status, travelCost, heuristicToGoal, threatLvl));
 	m_openList.push_front(map(startPos));
 }
@@ -31,6 +31,7 @@ const float pathPlaning::calcHeuristic(sc2::Point2D pos) const
 	return std::max(xDist, yDist) + (std::sqrt(2.0f) - 1.0f)*std::min(xDist, yDist);
 }
 
+/*
 const float pathPlaning::calcThreatLvl(sc2::Point2D pos) const
 {
 	float threatLvl = 0.0f;
@@ -62,6 +63,7 @@ const float pathPlaning::calcThreatLvl(sc2::Point2D pos) const
 	}
 	return threatLvl;
 }
+*/
 
 std::vector<sc2::Point2D> pathPlaning::planPath()
 {
@@ -125,7 +127,7 @@ void pathPlaning::activateNode(sc2::Point2D pos, std::shared_ptr<node> parent)
 {
 	int status = 0;
 	float heuristicToGoal=calcHeuristic(pos);
-	float threatLvl=calcThreatLvl(pos);
+	float threatLvl=m_bot.Map().calcThreatLvl(pos,sc2::Weapon::TargetType::Air);
 	float travelCost = parent->m_travelCost + threatLvl + Util::Dist(pos, parent->m_pos);
 	setMap(pos,std::make_shared<node>(pos, status, travelCost, heuristicToGoal, threatLvl,parent));
 	m_openList.push_front(map(pos));
