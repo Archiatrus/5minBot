@@ -663,7 +663,7 @@ const CUnit_ptr Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 	{
 		//We don't care for not finished bases.
 		const CUnit_ptr townHall = base->getTownHall();
-		if (townHall && townHall->getBuildProgress() != 1.0f && townHall->getAssignedHarvesters()<24)
+		if (!townHall || (townHall && townHall->getBuildProgress() != 1.0f && townHall->getAssignedHarvesters()>24))
 		{
 			continue;
 		}
@@ -673,21 +673,13 @@ const CUnit_ptr Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 	for (const auto & baseMap : orderedBases)
 	{
 		const CUnits mineralPatches = baseMap.second->getMinerals();
-		std::map<int, CUnit_ptr> orderedMinerals;
 		for (const auto & mineralPatch : mineralPatches)
 		{
-			int distance = bot.Map().getGroundDistance(mineralPatch->getPos(), pos);
-
-			//Bad things happen if it is not alive or just snapshot
+			// Bad things happen if it is not alive or just snapshot
 			if (mineralPatch->isAlive() && mineralPatch->getDisplayType() == sc2::Unit::DisplayType::Visible && mineralPatch->getMineralContents() > 200)
 			{
-				orderedMinerals[distance] = mineralPatch;
+				return mineralPatch;
 			}
-			
-		}
-		for (const auto & mineralPatch : orderedMinerals )
-		{
-			return mineralPatch.second;
 		}
 	}
 	//If we get till here its time to long distance mine
@@ -707,7 +699,7 @@ const CUnit_ptr Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 		const CUnits mineralPatches = baseMap.second->getMinerals();
 		for (const auto & mineralPatch : mineralPatches)
 		{
-			//Bad things happen if it is not alive or just snapshot. But they are probably snapshots if we get till here.
+			// Bad things happen if it is not alive or just snapshot
 			if (mineralPatch->isAlive() && mineralPatch->getDisplayType() == sc2::Unit::DisplayType::Visible && mineralPatch->getMineralContents() > 200)
 			{
 				return mineralPatch;
@@ -789,9 +781,9 @@ const sc2::UpgradeID Util::abilityIDToUpgradeID(const sc2::ABILITY_ID id)
 }
 
 
-sc2::Point3D Util::get3DPoint(const sc2::Point2D pos,CCBot & bot)
+sc2::Point3D Util::get3DPoint(const sc2::Point2D pos, CCBot & bot)
 {
-	return sc2::Point3D(pos.x,pos.y,bot.Observation()->TerrainHeight(pos));
+	return sc2::Point3D(pos.x, pos.y, bot.Observation()->TerrainHeight(pos));
 }
 
 sc2::Point2D Util::normalizeVector(const sc2::Point2D pos, const float length)

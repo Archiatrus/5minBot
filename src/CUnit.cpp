@@ -448,6 +448,18 @@ const float CUnit::getAttackRange(const std::shared_ptr<CUnit> & target) const
 	}
 }
 
+const float CUnit::getAttackRange(const sc2::Weapon::TargetType &target) const
+{
+	if (target==sc2::Weapon::TargetType::Air)
+	{
+		return m_AAWeapons.range;
+	}
+	else
+	{
+		return m_groundWeapons.range;
+	}
+}
+
 const float CUnit::getAttackRange() const
 {
 	if (getUnitType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
@@ -544,7 +556,15 @@ void CUnit::drawSphere() const
 		break;
 	}
 	}
-	Drawing::drawText(*m_bot, m_pos, sc2::UnitTypeToName(getUnitType()));
+	std::string name = sc2::UnitTypeToName(getUnitType());
+	if (name == "UNKNOWN")
+	{
+		Drawing::drawText(*m_bot, m_pos, std::to_string(getUnitType()));
+	}
+	else
+	{
+		Drawing::drawText(*m_bot, m_pos, sc2::UnitTypeToName(getUnitType()));
+	}
 }
 
 const uint32_t CUnit::getAbilityCoolDown() const

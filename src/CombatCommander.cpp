@@ -18,8 +18,8 @@ CombatCommander::CombatCommander(CCBot & bot)
 	, m_attackStarted(false)
 	, m_needGuards(false)
 	, m_underAttack(false)
+	, m_attack(false)
 {
-
 }
 
 void CombatCommander::onStart()
@@ -59,28 +59,20 @@ void CombatCommander::onFrame(const CUnits & combatUnits)
 	if (isSquadUpdateFrame())
 	{
 		updateIdleSquad();
-		//updateScoutDefenseSquad();
+		// updateScoutDefenseSquad();
 		updateDefenseSquads();
 		updateAttackSquads();
 		updateGuardSquads();
 	}
 	checkForProxyOrCheese();
+	checkDepots();
+	checkForLostWorkers();  // This shouldn't be neccessary. I really don't know how they get lost.
 	m_squadData.onFrame();
 }
 
 bool CombatCommander::shouldWeStartAttacking()
 {
-	// TODO: make this more clever
-	// For now: start attacking when we have more than 10 combat units
-	auto upgrades = m_bot.Observation()->GetUpgrades();
-	for (auto & upgrade : upgrades)
-	{
-		if (upgrade.ToType() == sc2::UPGRADE_ID::STIMPACK && m_combatUnits.size() >= m_bot.Config().CombatUnitsForAttack && (m_bot.Observation()->GetFoodUsed()>198 || m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER) >= m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_COLOSSUS)))
-		{
-			return true;
-		}
-	}
-	return m_combatUnits.size() >= 100;
+	return m_combatUnits.size() >= 100 || m_bot.Observation()->GetFoodUsed() >= 185;
 }
 
 void CombatCommander::updateIdleSquad()
@@ -99,22 +91,20 @@ void CombatCommander::updateIdleSquad()
 
 void CombatCommander::updateAttackSquads()
 {
-	if (!m_attackStarted)
-	{
-		return;
-	}
 
 	Squad & mainAttackSquad = m_squadData.getSquad("MainAttack");
 
-	//We reassign every frame. Otherwise we can not change the jobs aka Harass, scout etc
-	//mainAttackSquad.clear();
-
+	if (!(m_attackStarted || m_attack))
+	{
+		mainAttackSquad.clear();
+		return;
+	}
 	for (const auto & unit : m_combatUnits)
-	{   
+	{
 		BOT_ASSERT(unit, "null unit in combat units");
 		// get every unit of a lower priority and put it into the attack squad
 		if (!unit->isWorker()
-			&& !(unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_OVERLORD) 
+			&& !(unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_OVERLORD)
 			&& !(unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_QUEEN)
 			&& m_squadData.canAssignUnitToSquad(unit, mainAttackSquad))
 		{
@@ -139,7 +129,7 @@ void CombatCommander::updateGuardSquads()
 		return;
 	}
 
-	if (m_attackStarted || m_bot.underAttack())
+	if (m_attack || m_attackStarted || m_bot.underAttack())
 	{
 		return;
 	}
@@ -168,11 +158,6 @@ void CombatCommander::updateGuardSquads()
 
 void CombatCommander::updateScoutDefenseSquad()
 {
-	//if (m_combatUnits.empty())
-	//{
-	//    return;
-	//}
-
 	// if the current squad has units in it then we can ignore this
 	Squad & scoutDefenseSquad = m_squadData.getSquad("ScoutDefense");
 
@@ -234,10 +219,6 @@ void CombatCommander::updateScoutDefenseSquad()
 void CombatCommander::updateDefenseSquads()
 {
 	m_underAttack = false;
-	//if (m_combatUnits.empty())
-	//{
-	//    return;
-	//}
 
 	// for each of our occupied regions
 	const BaseLocation * enemyBaseLocation = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
@@ -275,7 +256,7 @@ void CombatCommander::updateDefenseSquads()
 		}
 
 		// we can ignore the first enemy worker in our region since we assume it is a scout
-		//......and miss the cannon rush
+		// ......and miss the cannon rush
 		/*
 		for (const auto & unit : enemyUnitsInRegion)
 		{
@@ -368,7 +349,7 @@ void CombatCommander::updateDefenseSquads()
 		bool enemyUnitInRange = false;
 		for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Enemy))
 		{
-			if (unit->getPos()!=sc2::Point3D() && Util::Dist(unit->getPos(), order.getPosition()) < order.getRadius())
+			if (unit->getPos() != sc2::Point3D() && Util::Dist(unit->getPos(), order.getPosition()) < order.getRadius())
 			{
 				enemyUnitInRange = true;
 				break;
@@ -383,7 +364,7 @@ void CombatCommander::updateDefenseSquads()
 				break;
 			}
 		}
-		if (!enemyUnitInRange||onlyMedivacs)
+		if (!enemyUnitInRange || onlyMedivacs)
 		{
 			m_squadData.getSquad(squad.getName()).clear();
 		}
@@ -407,7 +388,7 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
 	{
 		defenseSquad.removeUnit(rw);
 	}
-	// TODO: right now this will assign arbitrary defenders, change this so that we make sure they can attack air/ground
+	// right now this will assign arbitrary defenders, change this so that we make sure they can attack air/ground
 
 	// if there's nothing left to defend, clear the squad
 	if (flyingDefendersNeeded == 0 && groundDefendersNeeded == 0)
@@ -418,7 +399,7 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
 	size_t defendersNeeded = flyingDefendersNeeded + groundDefendersNeeded;
 	size_t defendersAdded = squadUnits.size();
 
-	//If we are not attacking everybody can defend
+	// If we are not attacking everybody can defend
 	while (defendersNeeded > defendersAdded || !shouldWeStartAttacking())
 	{
 		const CUnit_ptr defenderToAdd = findClosestDefender(defenseSquad, defenseSquad.getSquadOrder().getPosition());
@@ -437,9 +418,10 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
 	const CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
 	const CUnits worker = m_bot.Workers().getMineralWorkers();
 	size_t workerCounter = worker.size();
-	while (defendersNeeded > defendersAdded && m_bot.UnitInfo().getNumCombatUnits(Players::Self)<20 && (Bunker.empty() || Bunker.front()->getCargoSpaceTaken()==0) && workerCounter>5)
+	while (defendersNeeded > defendersAdded && m_bot.UnitInfo().getNumCombatUnits(Players::Self)<20 && (Bunker.empty()
+			|| Bunker.front()->getCargoSpaceTaken() == 0) && workerCounter>5)
 	{
-		const CUnit_ptr workerDefender = findClosestWorkerTo(worker,defenseSquad.getSquadOrder().getPosition());
+		const CUnit_ptr workerDefender = findClosestWorkerTo(worker, defenseSquad.getSquadOrder().getPosition());
 
 		// grab it from the worker manager and put it in the squad
 		if (workerDefender && m_squadData.canAssignUnitToSquad(workerDefender, defenseSquad))
@@ -460,8 +442,6 @@ const CUnit_ptr CombatCommander::findClosestDefender(const Squad & defenseSquad,
 {
 	CUnit_ptr closestDefender = nullptr;
 	float minDistance = std::numeric_limits<float>::max();
-
-	// TODO: add back special case of zergling rush defense
 
 	for (const auto & unit : m_combatUnits)
 	{
@@ -508,7 +488,7 @@ sc2::Point2D CombatCommander::getMainAttackLocation()
 			// if it has been explored, go there if there are any visible enemy units there
 			for (auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
 			{
-				if (enemyUnit->isAlive() && Util::Dist(enemyUnit->getPos(), enemyBasePosition) < 10) //Not to large. Maybe it is not in range
+				if (enemyUnit->isAlive() && Util::Dist(enemyUnit->getPos(), enemyBasePosition) < 10)  // Not to large. Maybe it is not in range
 				{
 					return enemyBasePosition;
 				}
@@ -527,7 +507,7 @@ sc2::Point2D CombatCommander::getMainAttackLocation()
 		base = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
 	}
 	int minDist = std::numeric_limits<int>::max();
-	sc2::Point2D clostestEnemyBuildingPos(0.0f,0.0f);
+	sc2::Point2D clostestEnemyBuildingPos(0.0f, 0.0f);
 	for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Enemy))
 	{
 		if (unit->isBuilding() && unit->isAlive())
@@ -608,6 +588,11 @@ const bool CombatCommander::underAttack() const
 	return m_underAttack;
 }
 
+void CombatCommander::attack(const bool attack)
+{
+	m_attack = attack;
+}
+
 void CombatCommander::requestGuards(const bool req)
 {
 	m_needGuards = req;
@@ -615,10 +600,7 @@ void CombatCommander::requestGuards(const bool req)
 
 void CombatCommander::checkForProxyOrCheese()
 {
-	//const size_t numReactor = m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR,false);
-	//if (numReactor == 1)
-	//{
-	if (m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Terran || m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
+	if (m_bot.Observation()->GetGameInfo().enemy_start_locations.size() == 1 && (m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Terran || m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Protoss || m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Random))
 	{
 		const uint32_t time = m_bot.Observation()->GetGameLoop();
 		if (time >= 2240)
@@ -626,7 +608,7 @@ void CombatCommander::checkForProxyOrCheese()
 			const size_t bases = m_bot.UnitInfo().getUnitTypeCount(Players::Self, Util::getTownHallTypes());
 			if (bases <= 1)
 			{
-				const CUnits enemyProduction = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UnitTypeID>({ sc2::UNIT_TYPEID::TERRAN_BARRACKS,sc2::UNIT_TYPEID::PROTOSS_GATEWAY }));
+				const CUnits enemyProduction = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UnitTypeID>({ sc2::UNIT_TYPEID::TERRAN_BARRACKS, sc2::UNIT_TYPEID::PROTOSS_GATEWAY }));
 				if (enemyProduction.empty())
 				{
 					m_underAttack = true;
@@ -653,6 +635,58 @@ void CombatCommander::checkForProxyOrCheese()
 							return;
 						}
 					}
+				}
+			}
+		}
+	}
+}
+
+void CombatCommander::checkDepots() const
+{
+	for (const auto & depot : m_bot.UnitInfo().getUnits(Players::Self, std::vector<sc2::UNIT_TYPEID>{sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT, sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOTLOWERED}))
+	{
+		bool enemyNear = false;
+		for (const auto & enemy : m_bot.UnitInfo().getUnits(Players::Enemy))
+		{
+			if (!enemy->isFlying() && Util::DistSq(depot->getPos(), enemy->getPos()) < 25)
+			{
+				if (depot->isType(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOTLOWERED))
+				{
+					Micro::SmartAbility(depot, sc2::ABILITY_ID::MORPH_SUPPLYDEPOT_RAISE, m_bot);
+				}
+				enemyNear = true;
+				break;
+			}
+		}
+		if (!enemyNear && depot->isType(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT))
+		{
+			Micro::SmartAbility(depot, sc2::ABILITY_ID::MORPH_SUPPLYDEPOT_LOWER, m_bot);
+		}
+	}
+}
+
+void CombatCommander::checkForLostWorkers()
+{
+	for (const auto & worker : m_bot.Workers().getCombatWorkers())
+	{
+		if(!m_squadData.getUnitSquad(worker))
+		{
+			m_bot.Workers().finishedWithWorker(worker);
+		}
+	}
+}
+
+void CombatCommander::handlePlanetaries() const
+{
+	for (const auto & pf : m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS))
+	{
+		if (pf->getEngagedTargetTag() && m_bot.UnitInfo().getUnit(pf->getEngagedTargetTag()) && m_bot.UnitInfo().getUnit(pf->getEngagedTargetTag())->isType(sc2::UNIT_TYPEID::ZERG_BANELING))
+		{
+			for (const auto & enemy : m_bot.UnitInfo().getUnits(Players::Enemy))
+			{
+				if (enemy->isType(sc2::UNIT_TYPEID::ZERG_BANELING) && Util::DistSq(pf->getPos(), enemy->getPos()) < 36)
+				{
+					Micro::SmartAttackUnit(pf, enemy, m_bot);
 				}
 			}
 		}

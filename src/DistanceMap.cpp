@@ -46,12 +46,12 @@ void DistanceMap::computeDistanceMap(CCBot & m_bot, const sc2::Point2D & startTi
 
 	m_dist[(int)startTile.x][(int)startTile.y] = 0;
 
-	for (size_t fringeIndex=0; fringeIndex<fringe.size(); ++fringeIndex)
+	for (size_t fringeIndex = 0; fringeIndex<fringe.size(); ++fringeIndex)
 	{
 		const sc2::Point2D & tile = fringe[fringeIndex];
 
 		// check every possible child of this tile
-		for (size_t a=0; a<LegalActions; ++a)
+		for (size_t a = 0; a<LegalActions; ++a)
 		{
 			sc2::Point2D nextTile(tile.x + actionX[a], tile.y + actionY[a]);
 
@@ -61,6 +61,47 @@ void DistanceMap::computeDistanceMap(CCBot & m_bot, const sc2::Point2D & startTi
 				m_dist[(int)nextTile.x][(int)nextTile.y] = m_dist[(int)tile.x][(int)tile.y] + 1;
 				fringe.push_back(nextTile);
 				m_sortedTilePositions.push_back(nextTile);
+			}
+		}
+	}
+}
+
+const std::vector<sc2::Point2D> & DistanceMap::getSortedTilesAir() const
+{
+	return m_sortedTilePositionsAir;
+}
+
+void DistanceMap::computeAirDistanceMap(CCBot & m_bot, const sc2::Point2D & startTile)
+{
+	m_startTile = startTile;
+	m_width = m_bot.Map().width();
+	m_height = m_bot.Map().height();
+	m_dist = std::vector<std::vector<int>>(m_width, std::vector<int>(m_height, -1));
+	m_sortedTilePositionsAir.reserve(m_width * m_height);
+
+	// the fringe for the BFS we will perform to calculate distances
+	std::vector<sc2::Point2D> fringe;
+	fringe.reserve(m_width * m_height);
+	fringe.push_back(startTile);
+	m_sortedTilePositionsAir.push_back(startTile);
+
+	m_dist[(int)startTile.x][(int)startTile.y] = 0;
+
+	for (size_t fringeIndex = 0; fringeIndex<fringe.size(); ++fringeIndex)
+	{
+		const sc2::Point2D & tile = fringe[fringeIndex];
+
+		// check every possible child of this tile
+		for (size_t a = 0; a<LegalActions; ++a)
+		{
+			sc2::Point2D nextTile(tile.x + actionX[a], tile.y + actionY[a]);
+
+			// if the new tile is inside the map bounds, is walkable, and has not been visited yet, set the distance of its parent + 1
+			if (m_bot.Map().isValid(nextTile) && getDistance(nextTile) == -1)
+			{
+				m_dist[(int)nextTile.x][(int)nextTile.y] = m_dist[(int)tile.x][(int)tile.y] + 1;
+				fringe.push_back(nextTile);
+				m_sortedTilePositionsAir.push_back(nextTile);
 			}
 		}
 	}

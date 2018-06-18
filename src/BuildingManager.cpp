@@ -15,7 +15,6 @@ BuildingManager::BuildingManager(CCBot & bot)
 	, m_reservedMinerals(0)
 	, m_reservedGas(0)
 {
-
 }
 
 void BuildingManager::onStart()
@@ -31,11 +30,11 @@ void BuildingManager::onFrame()
 	m_buildingPlacer.onFrame();
 
 	validateWorkersAndBuildings();		  // check to see if assigned workers have died en route or while constructing
-	assignWorkersToUnassignedBuildings();   // assign workers to the unassigned buildings and label them 'planned'	
+	assignWorkersToUnassignedBuildings();   // assign workers to the unassigned buildings and label them 'planned'
 	constructAssignedBuildings();		   // for each planned building, if the worker isn't constructing, send the command
 	requestGuards();						// for new expansion we need to send guards to secure the area
-	checkForStartedConstruction();		  // check to see if any buildings have started construction and update data structures	
-	checkForDeadTerranBuilders();		   // if we are terran and a building is under construction without a worker, assign a new one	
+	checkForStartedConstruction();		  // check to see if any buildings have started construction and update data structures
+	checkForDeadTerranBuilders();		   // if we are terran and a building is under construction without a worker, assign a new one
 	checkForCompletedBuildings();		   // check to see if any buildings have completed and update data structures
 
 	drawBuildingInformation();
@@ -74,9 +73,6 @@ bool BuildingManager::isBeingBuilt(sc2::UnitTypeID type)
 // STEP 1: DO BOOK KEEPING ON WORKERS WHICH MAY HAVE DIED
 void BuildingManager::validateWorkersAndBuildings()
 {
-	// TODO: if a terran worker dies while constructing and its building
-	//	   is under construction, place unit back into buildingsNeedingBuilders
-
 	std::vector<Building> toRemove;
 
 	// find any buildings which have become obsolete
@@ -121,7 +117,7 @@ void BuildingManager::assignWorkersToUnassignedBuildings()
 
 		// grab a worker unit from WorkerManager which is closest to this final position
 		sc2::Point2D testLocation = getBuildingLocation(b);
-		if (!m_bot.Map().isValid(testLocation))
+		if (!m_bot.Map().isValid(testLocation) && testLocation != sc2::Point2D{ 0.0f, 0.0f })
 		{
 			continue;
 		}
@@ -139,11 +135,11 @@ void BuildingManager::assignWorkersToUnassignedBuildings()
 		// reserve this building's space
 		if (b.m_type == sc2::UNIT_TYPEID::TERRAN_BARRACKS || b.m_type == sc2::UNIT_TYPEID::TERRAN_FACTORY || b.m_type == sc2::UNIT_TYPEID::TERRAN_STARPORT)
 		{
-			m_buildingPlacer.reserveTiles((int)b.finalPosition.x, (int)b.finalPosition.y, Util::GetUnitTypeWidth(b.m_type, m_bot)+2, Util::GetUnitTypeHeight(b.m_type, m_bot));
+			m_buildingPlacer.reserveTiles(static_cast<int>(b.finalPosition.x), static_cast<int>(b.finalPosition.y), Util::GetUnitTypeWidth(b.m_type, m_bot)+2, Util::GetUnitTypeHeight(b.m_type, m_bot));
 		}
 		else
 		{
-			m_buildingPlacer.reserveTiles((int)b.finalPosition.x, (int)b.finalPosition.y, Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot));
+			m_buildingPlacer.reserveTiles(static_cast<int>(b.finalPosition.x), static_cast<int>(b.finalPosition.y), Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot));
 		}
 
 		b.status = BuildingStatus::Assigned;
@@ -161,7 +157,6 @@ void BuildingManager::constructAssignedBuildings()
 			continue;
 		}
 
-		
 		sc2::AbilityID buildAbility = m_bot.Data(b.m_type).buildAbility;
 		std::shared_ptr<CUnit> builderUnit = b.builderUnit;
 		// If the builder died on its way remove this building
@@ -170,16 +165,16 @@ void BuildingManager::constructAssignedBuildings()
 			toRemove.push_back(b);
 			continue;
 		}
-		//if we are under attack don't start buildings
+		// if we are under attack don't start buildings
 		if (m_bot.underAttack())
 		{
 			if (b.m_type == sc2::UNIT_TYPEID::TERRAN_BUNKER || b.m_type == sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT)
 			{
-				//We still want to build bunker and supply depots
+				// We still want to build bunker and supply depots
 			}
 			else if (m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER))
 			{
-				//We can take an exe if the bunker is finished.
+				// We can take an exe if the bunker is finished.
 			}
 			else
 			{
@@ -215,8 +210,6 @@ void BuildingManager::constructAssignedBuildings()
 			else if (b.buildCommandGiven)
 			{
 				Micro::SmartBuild(b.builderUnit, b.m_type, b.finalPosition, m_bot);
-				// TODO: in here is where we would check to see if the builder died on the way
-				//       or if things are taking too long, or the build location is no longer valid
 			}
 			else
 			{
@@ -225,7 +218,7 @@ void BuildingManager::constructAssignedBuildings()
 				{
 					// first we find the geyser at the desired location
 					CUnit_ptr geyser = nullptr;
-					for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Neutral,Util::getGeyserTypes()))
+					for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Neutral, Util::getGeyserTypes()))
 					{
 						if (Util::Dist(b.finalPosition, unit->getPos()) < 3)
 						{
@@ -249,7 +242,6 @@ void BuildingManager::constructAssignedBuildings()
 					if (m_bot.Query()->Placement(m_bot.Data(b.m_type).buildAbility, b.finalPosition))
 					{
 						Micro::SmartBuild(b.builderUnit, b.m_type, b.finalPosition, m_bot);
-
 					}
 				}
 
@@ -267,11 +259,11 @@ void BuildingManager::requestGuards()
 	{
 		if (b.m_type.ToType() == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER)
 		{
-			//We need guards when the build order is issued bot there is no building yet
+			// We need guards when the build order is issued bot there is no building yet
 			if (b.status == BuildingStatus::Assigned)
 			{
 				m_bot.requestGuards(true);
-				//We usually only build one CC at a time
+				// We usually only build one CC at a time
 				return;
 			}
 		}
@@ -314,7 +306,7 @@ void BuildingManager::checkForStartedConstruction()
 				// the resources should now be spent, so unreserve them
 				m_reservedMinerals -= Util::GetUnitTypeMineralPrice(buildingStarted->getUnitType(), m_bot);
 				m_reservedGas      -= Util::GetUnitTypeGasPrice(buildingStarted->getUnitType(), m_bot);
-				
+
 				// flag it as started and set the buildingUnit
 				b.underConstruction = true;
 				b.buildingUnit = buildingStarted;
@@ -332,17 +324,17 @@ void BuildingManager::checkForStartedConstruction()
 
 				// put it in the under construction vector
 				b.status = BuildingStatus::UnderConstruction;
-				//Starting with the construction we do not need any guards anymore since the rally point defaults to newest base
+				// Starting with the construction we do not need any guards anymore since the rally point defaults to newest base
 				if (b.m_type.ToType() == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER)
 				{
 					m_bot.requestGuards(false);
 				}
 				// free this space
-				//but not if it is an starport or factory.
-				//this whole part should actually only be done if the building is destroyed.
+				// but not if it is an starport or factory.
+				// this whole part should actually only be done if the building is destroyed.
 				if (b.m_type.ToType() != sc2::UNIT_TYPEID::TERRAN_FACTORY && b.m_type.ToType() != sc2::UNIT_TYPEID::TERRAN_STARPORT)
 				{
-					m_buildingPlacer.freeTiles((int)b.finalPosition.x, (int)b.finalPosition.y, Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot));
+					m_buildingPlacer.freeTiles(static_cast<int>(b.finalPosition.x), static_cast<int>(b.finalPosition.y), Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot));
 				}
 
 				// only one building will match
@@ -356,7 +348,7 @@ void BuildingManager::checkForStartedConstruction()
 void BuildingManager::checkForDeadTerranBuilders()
 {
 	std::vector<Building> toRemove;
-	//At this point all buildings should have a builder. If not remove them
+	// At this point all buildings should have a builder. If not remove them
 	for (auto & b : m_buildings)
 	{
 		if (b.status == BuildingStatus::UnderConstruction)
@@ -380,9 +372,9 @@ void BuildingManager::checkForDeadTerranBuilders()
 		}
 		if (b.status == BuildingStatus::Assigned)
 		{
-			if (!b.builderUnit->isAlive() || b.builderUnit->getOrders().empty() || !(isBuildingOrder(b.builderUnit->getOrders().front().ability_id) || b.builderUnit->getOrders().front().ability_id==sc2::ABILITY_ID::MOVE))
+			if (!b.builderUnit->isAlive() || b.builderUnit->getOrders().empty() || !(isBuildingOrder(b.builderUnit->getOrders().front().ability_id) || b.builderUnit->getOrders().front().ability_id == sc2::ABILITY_ID::MOVE))
 			{
-				if (b.lastOrderFrame > frames) //We give the worker 10 frames to move
+				if (b.lastOrderFrame > frames)  // We give the worker 10 frames to move
 				{
 					toRemove.push_back(b);
 					m_reservedMinerals -= Util::GetUnitTypeMineralPrice(b.m_type, m_bot);
@@ -419,7 +411,7 @@ void BuildingManager::checkForCompletedBuildings()
 			{
 				if (b.m_type == sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT)
 				{
-					Micro::SmartAbility(b.buildingUnit, sc2::ABILITY_ID::MORPH_SUPPLYDEPOT_LOWER,m_bot);
+					Micro::SmartAbility(b.buildingUnit, sc2::ABILITY_ID::MORPH_SUPPLYDEPOT_LOWER, m_bot);
 				}
 				m_bot.Workers().finishedWithWorker(b.builderUnit);
 			}
@@ -440,15 +432,15 @@ void BuildingManager::addBuildingTask(const sc2::UnitTypeID & type, const sc2::P
 	Building b(type, desiredPosition);
 	b.status = BuildingStatus::Unassigned;
 
-	//with an empty building task queue there shouldn't be any reserved tiles.
+	// with an empty building task queue there shouldn't be any reserved tiles.
 	if (m_buildings.empty())
 	{
 		bool canReset = true;
-		//Well there are. The ones reserved for addons...
+		// Well there are. The ones reserved for addons...
 		const CUnits flyingBuildings = m_bot.UnitInfo().getUnits(Players::Self, std::vector<sc2::UNIT_TYPEID>({sc2::UNIT_TYPEID::TERRAN_STARPORTFLYING, sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING }));
 		if (flyingBuildings.empty())
 		{
-			const CUnits addonBuildings = m_bot.UnitInfo().getUnits(Players::Self, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::TERRAN_BARRACKS, sc2::UNIT_TYPEID::TERRAN_STARPORT , sc2::UNIT_TYPEID::TERRAN_STARPORTFLYING,sc2::UNIT_TYPEID::TERRAN_FACTORY , sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING }));
+			const CUnits addonBuildings = m_bot.UnitInfo().getUnits(Players::Self, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::TERRAN_BARRACKS, sc2::UNIT_TYPEID::TERRAN_STARPORT , sc2::UNIT_TYPEID::TERRAN_STARPORTFLYING, sc2::UNIT_TYPEID::TERRAN_FACTORY, sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING }));
 			for (const auto & addonBuilding : addonBuildings)
 			{
 				if (!addonBuilding->getAddOnTag())
@@ -466,7 +458,6 @@ void BuildingManager::addBuildingTask(const sc2::UnitTypeID & type, const sc2::P
 	m_buildings.push_back(b);
 }
 
-// TODO: may need to iterate over all tiles of the building footprint
 bool BuildingManager::isBuildingPositionExplored(const Building & b) const
 {
 	return m_bot.Map().isExplored(b.finalPosition);
@@ -523,7 +514,7 @@ void BuildingManager::drawBuildingInformation()
 		if (b.buildingUnit)
 		{
 			dss << "Building: " << b.buildingUnit->getTag() << "\n" << b.buildingUnit->getBuildProgress();
-			Drawing::drawText(m_bot,b.buildingUnit->getPos(), dss.str());
+			Drawing::drawText(m_bot, b.buildingUnit->getPos(), dss.str());
 		}
 
 
@@ -541,8 +532,8 @@ void BuildingManager::drawBuildingInformation()
 			float x2 = b.finalPosition.x + Util::GetUnitTypeWidth(b.m_type, m_bot);
 			float y2 = b.finalPosition.y + Util::GetUnitTypeHeight(b.m_type, m_bot);
 
-			Drawing::drawSquare(m_bot,x1, y1, x2, y2, sc2::Colors::Red);
-			//m_bot.Map().drawLine(b.finalPosition, m_bot.GetUnit(b.builderUnitTag)->pos, sc2::Colors::Yellow);
+			Drawing::drawSquare(m_bot, x1, y1, x2, y2, sc2::Colors::Red);
+			// m_bot.Map().drawLine(b.finalPosition, m_bot.GetUnit(b.builderUnitTag)->pos, sc2::Colors::Yellow);
 		}
 		else if (b.status == BuildingStatus::UnderConstruction)
 		{
@@ -550,7 +541,7 @@ void BuildingManager::drawBuildingInformation()
 		}
 	}
 
-	Drawing::drawTextScreen(m_bot,sc2::Point2D(0.05f, 0.05f), ss.str());
+	Drawing::drawTextScreen(m_bot, sc2::Point2D(0.05f, 0.05f), ss.str());
 }
 
 std::vector<sc2::UnitTypeID> BuildingManager::buildingsQueued() const
@@ -585,8 +576,6 @@ int BuildingManager::getNumBuildingsQueued(sc2::UnitTypeID type) const
 
 sc2::Point2D BuildingManager::getBuildingLocation(const Building & b)
 {
-	// TODO: if requires psi and we have no pylons return 0
-
 	if (Util::IsRefineryType(b.m_type))
 	{
 		return m_buildingPlacer.getRefineryPosition();
@@ -594,20 +583,38 @@ sc2::Point2D BuildingManager::getBuildingLocation(const Building & b)
 
 	if (Util::IsTownHallType(b.m_type))
 	{
+		if (m_bot.Query()->Placement(sc2::ABILITY_ID::BUILD_COMMANDCENTER, b.desiredPosition))
+		{
+			return b.desiredPosition;
+		}
 		return m_buildingPlacer.getTownHallLocationNear(b);
 	}
 
 	if (b.m_type == sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT)
 	{
-		sc2::Point2D test = m_bot.Map().getWallPosition(b.m_type);
-		if (test != sc2::Point2D(0, 0))
+		sc2::Point2D testPoint = m_bot.Map().getWallPositionDepot();
+		if (testPoint != sc2::Point2D(0, 0))
 		{
-			return test;
+			return testPoint;
 		}
-
+	}
+	if (b.m_type == sc2::UNIT_TYPEID::TERRAN_BUNKER)
+	{
+		sc2::Point2D testPoint = m_buildingPlacer.getBunkerPosition();
+		if (testPoint != sc2::Point2D(0, 0))
+		{
+			return testPoint;
+		}
+	}
+	if (b.m_type == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
+	{
+		if (m_bot.Query()->Placement(sc2::ABILITY_ID::BUILD_MISSILETURRET, b.desiredPosition))
+		{
+			return b.desiredPosition;
+		}
+		return m_buildingPlacer.getBuildLocationNear(b, 0);
 	}
 	// get a position within our region
-	// TODO: put back in special pylon / cannon spacing
 	return m_buildingPlacer.getBuildLocationNear(b, m_bot.Config().BuildingSpacing);
 }
 
@@ -623,7 +630,7 @@ void BuildingManager::removeBuildings(const std::vector<Building> & toRemove)
 			{
 				m_bot.Workers().finishedWithWorker(b.builderUnit);
 			}
-			m_buildingPlacer.freeTiles((int)b.finalPosition.x, (int)b.finalPosition.y, Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot));
+			m_buildingPlacer.freeTiles(static_cast<int>(b.finalPosition.x), static_cast<int>(b.finalPosition.y), Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot));
 			m_buildings.erase(it);
 		}
 	}

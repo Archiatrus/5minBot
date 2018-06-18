@@ -13,6 +13,7 @@
 #include <chrono>
 #include <thread>
 
+
 #include "CCBot.h"
 
 #ifdef LADDEREXE
@@ -91,7 +92,6 @@ static void ParseArguments(int argc, char *argv[], ConnectionOptions &connect_op
 	{
 		if (realTime == "true" || realTime == "True" || realTime == "1")
 		{
-
 			std::cout << "Real time on. Not extensively tested." << std::endl << std::endl;
 			connect_options.rt = true;
 		}
@@ -144,11 +144,11 @@ int main(int argc, char* argv[])
 	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	return 0;
 }
-#else //DEBUG
+#else  // DEBUG
 int main(int argc, char* argv[])
 {
-	std::vector<std::string> maps = { "RedShiftLE.SC2Map","AcidPlantLE.SC2Map","CatalystLE.SC2Map", "LostAndFoundLE.SC2Map","16BitLE.SC2Map", "DreamcatcherLE.SC2Map", "DarknessSanctuaryLE.SC2Map" };
-	std::vector<sc2::Race> opponents = { sc2::Race::Protoss, sc2::Race::Zerg, sc2::Race::Terran };
+	std::vector<std::string> maps = { "DarknessSanctuaryLE.SC2Map", "AcidPlantLE.SC2Map", "RedShiftLE.SC2Map", "DreamcatcherLE.SC2Map", "CatalystLE.SC2Map", "LostAndFoundLE.SC2Map", "16BitLE.SC2Map" };
+	std::vector<sc2::Race> opponents = { sc2::Race::Zerg, sc2::Race::Protoss, sc2::Race::Terran};
 	std::map<std::string, sc2::Point2D> mapScore;
 	std::map<sc2::Race, sc2::Point2D> raceScore;
 
@@ -160,7 +160,7 @@ int main(int argc, char* argv[])
 			{
 				// Add the custom bot, it will control the players.
 				CCBot bot;
-				//CCBot bot2;
+				// CCBot bot2;
 				sc2::Coordinator coordinator;
 				if (!coordinator.LoadSettings(argc, argv))
 				{

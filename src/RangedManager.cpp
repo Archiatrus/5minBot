@@ -404,25 +404,25 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 		}
 	}
 	//Grouped by target attack command
-	for (auto & t : targetsAttackedBy)
+	for (const auto & t : targetsAttackedBy)
 	{
 		Micro::SmartAttackUnit(t.second, t.first, m_bot);
 	}
-	for (auto & t : targetsMovedTo)
+	for (const auto & t : targetsMovedTo)
 	{
 		if (t.first->isVisible())
 		{
-			Micro::SmartMove(t.second, t.first, m_bot);
+			Micro::SmartAttackMoveToUnit(t.second, t.first, m_bot);
 		}
 		else
 		{
-			Micro::SmartMove(t.second, t.first->getPos(), m_bot);
+			Micro::SmartAttackMoveToPos(t.second, t.first->getPos(), m_bot);
 		}
 	}
 	//Grouped by  position Move command
 	if (moveToPosition.size() > 0)
 	{
-		Micro::SmartAttackMove(moveToPosition, order.getPosition(), m_bot);
+		Micro::SmartAttackMoveToPos(moveToPosition, order.getPosition(), m_bot);
 	}
 }
 

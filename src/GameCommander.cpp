@@ -186,6 +186,7 @@ bool GameCommander::shouldSendInitialScout()
 	{
 	case sc2::Race::Terran:  return m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOTLOWERED, true) == 1;
 	case sc2::Race::Protoss: return m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOTLOWERED, true) == 1;
+	case sc2::Race::Random: return m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOTLOWERED, true) == 1;
 	case sc2::Race::Zerg:	return false;
 	default: return false;
 	}
@@ -319,9 +320,13 @@ void GameCommander::onUnitDestroy(CUnit_ptr unit)
 
 void GameCommander::OnUnitEnterVision(CUnit_ptr unit)
 {
-	if (unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_LIBERATOR || unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_BANSHEE || unit->getUnitType().ToType() == sc2::UNIT_TYPEID::PROTOSS_COLOSSUS)
+	if (unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_LIBERATOR || unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_BANSHEE || unit->getUnitType().ToType() == sc2::UNIT_TYPEID::PROTOSS_COLOSSUS || unit->getUnitType().ToType() == sc2::UNIT_TYPEID::ZERG_BROODLORD)
 	{
 		m_productionManager.requestVikings();
+	}
+	else if (unit->isType(sc2::UNIT_TYPEID::ZERG_MUTALISK) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_ORACLE) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_DARKTEMPLAR))
+	{
+		m_productionManager.requestTurrets();
 	}
 }
 
@@ -466,4 +471,9 @@ std::shared_ptr<shuttle> GameCommander::requestShuttleService(CUnits passengers,
 const bool GameCommander::underAttack() const
 {
 	return m_combatCommander.underAttack();
+}
+
+void GameCommander::attack(const bool attack)
+{
+	return m_combatCommander.attack(attack);
 }

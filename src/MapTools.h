@@ -6,6 +6,7 @@
 #include "DistanceMap.h"
 #include "CUnit.h"
 #include "../Overseer/src/MapImpl.h"
+#include "BaseLocation.h"
 
 class CCBot;
 
@@ -19,7 +20,8 @@ class MapTools
 	Overseer::MapImpl overseerMap;
 
 	// a cache of already computed distance maps, which is mutable since it only acts as a cache
-	mutable std::map<std::pair<int, int>, DistanceMap>   _allMaps;   
+	mutable std::map<std::pair<int, int>, DistanceMap>   _allMaps;
+	mutable std::map<std::pair<int, int>, DistanceMap>   _allAirMaps;
 
 	std::vector<std::vector<bool>>  m_walkable;		 // whether a tile is buildable (includes static resources)
 	std::vector<std::vector<bool>>  m_buildable;		// whether a tile is buildable (includes static resources)
@@ -32,9 +34,7 @@ class MapTools
 
 		
 	bool isNextToRamp(int x, int y) const;
-
-	
-
+	sc2::Point2D getRampPoint(const BaseLocation * base) const;
 
 public:
 	int getSectorNumber(int x, int y) const;
@@ -59,7 +59,8 @@ public:
 	bool	isVisible(const sc2::Point2D & pos) const;
 	bool	canBuildTypeAtPosition(int x, int y, sc2::UnitTypeID type) const;
 
-	const   DistanceMap & getDistanceMap(const sc2::Point2D & tile) const;
+	const DistanceMap & getDistanceMap(const sc2::Point2D & tile) const;
+	const DistanceMap & getAirDistanceMap(const sc2::Point2D & tile) const;
 	int	 getGroundDistance(const sc2::Point2D & src, const sc2::Point2D & dest) const;
 	bool	isConnected(int x1, int y1, int x2, int y2) const;
 	bool	isConnected(const sc2::Point2D & from, const sc2::Point2D & to) const;
@@ -72,9 +73,14 @@ public:
 	
 	sc2::Point2D getLeastRecentlySeenPosition() const;
 
-	sc2::Point2D getWallPosition(sc2::UnitTypeID type) const;
+
+	sc2::Point2D getWallPositionBunker() const;
+
+	sc2::Point2D getWallPositionDepot() const;
+	sc2::Point2D getWallPositionDepot(const BaseLocation * base) const;
 	// returns a list of all tiles on the map, sorted by 4-direcitonal walk distance from the given position
 	const std::vector<sc2::Point2D> & getClosestTilesTo(const sc2::Point2D & pos) const;
+	const std::vector<sc2::Point2D>& getClosestTilesToAir(const sc2::Point2D & pos) const;
 	const sc2::Point2D getClosestWalkableTo(const sc2::Point2D & pos) const;
 	const sc2::Point2D getClosestBorderPoint(sc2::Point2D pos,int margin) const;
 	const sc2::Point2D getForbiddenCorner(const int margin,const int player=Players::Enemy) const;

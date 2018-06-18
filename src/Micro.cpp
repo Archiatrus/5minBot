@@ -21,11 +21,11 @@ void Micro::SmartStop(CUnit_ptr attacker, CCBot & bot)
 	bot.Actions()->UnitCommand(attacker->getUnit_ptr(), sc2::ABILITY_ID::STOP);
 }
 
-void Micro::SmartAttackUnit(CUnit_ptr attacker,CUnit_ptr target, CCBot & bot, bool queue)
+void Micro::SmartAttackUnit(CUnit_ptr attacker, CUnit_ptr target, CCBot & bot, bool queue)
 {
 	BOT_ASSERT(attacker != nullptr, "Attacker is null");
 	BOT_ASSERT(target != nullptr, "Target is null");
-	//if we are already attack it, we do not need to spam the attack
+	// if we are already attack it, we do not need to spam the attack
 	if (!attacker->getOrders().empty() && attacker->getOrders().back().target_unit_tag == target->getTag())
 	{
 		return;
@@ -36,7 +36,7 @@ void Micro::SmartAttackUnit(CUnit_ptr attacker,CUnit_ptr target, CCBot & bot, bo
 void Micro::SmartAttackUnit(const CUnits & attacker, const CUnit_ptr target, CCBot & bot, bool queue)
 {
 	BOT_ASSERT(target != nullptr, "Target is null");
-	//if we are already attack it, we do not need to spam the attack
+	// if we are already attack it, we do not need to spam the attack
 	sc2::Units attackerThatNeedToAttack;
 	sc2::Units attackerThatNeedToAttackMove;
 	for (const auto & a : attacker)
@@ -45,11 +45,7 @@ void Micro::SmartAttackUnit(const CUnits & attacker, const CUnit_ptr target, CCB
 		{
 			continue;
 		}
-		//Distance to target
-		//float dist = Util::Dist(a->getPos(), target->getPos());
-		//Our range
-		//float range = a->getAttackRange(target);
-		if(target->isVisible())//if (a->getWeaponCooldown() == 0.0f && dist>range + 0.5f)
+		if(target->isVisible())
 		{
 			attackerThatNeedToAttack.push_back(a->getUnit_ptr());
 		}
@@ -71,13 +67,13 @@ void Micro::SmartAttackUnit(const CUnits & attacker, const CUnit_ptr target, CCB
 void Micro::SmartAttackMove(CUnit_ptr attacker, const sc2::Point2D & targetPosition, CCBot & bot)
 {
 	BOT_ASSERT(attacker != nullptr, "Attacker is null");
-	if (attacker->getOrders().empty() || attacker->getOrders().back().ability_id != sc2::ABILITY_ID::ATTACK || Util::Dist(attacker->getOrders().back().target_pos,targetPosition) > 1.0f)
+	if (attacker->getOrders().empty() || attacker->getOrders().back().ability_id != sc2::ABILITY_ID::ATTACK || Util::Dist(attacker->getOrders().back().target_pos, targetPosition) > 1.0f)
 	{
 		bot.Actions()->UnitCommand(attacker->getUnit_ptr(), sc2::ABILITY_ID::ATTACK_ATTACK, targetPosition);
 	}
 }
 
-void Micro::SmartAttackMoveToUnit(CUnits & attacker, const CUnit_ptr target, CCBot & bot)
+void Micro::SmartAttackMoveToUnit(const CUnits & attacker, const CUnit_ptr target, CCBot & bot)
 {
 	sc2::Units attackerThatNeedToAttackTarget;
 	sc2::Units attackerThatNeedToMove;
@@ -106,22 +102,53 @@ void Micro::SmartAttackMoveToUnit(CUnits & attacker, const CUnit_ptr target, CCB
 			{
 				if (a->getOrders().empty() || a->getOrders().front().target_pos != target->getPos())
 				{
-				attackerThatNeedToAttackMove.push_back(a->getUnit_ptr());
+					attackerThatNeedToAttackMove.push_back(a->getUnit_ptr());
 				}
 			}
 		}
 	}
-	if (attackerThatNeedToAttackTarget.size()>0)
+	if (attackerThatNeedToAttackTarget.size() > 0)
 	{
 		bot.Actions()->UnitCommand(attackerThatNeedToAttackTarget, sc2::ABILITY_ID::ATTACK_ATTACK, target->getUnit_ptr());
 	}
-	if (attackerThatNeedToMove.size()>0)
+	if (attackerThatNeedToMove.size() > 0)
 	{
 		bot.Actions()->UnitCommand(attackerThatNeedToMove, sc2::ABILITY_ID::MOVE, target->getPos());
 	}
-	if (attackerThatNeedToAttackMove.size()>0)
+	if (attackerThatNeedToAttackMove.size() > 0)
 	{
 		bot.Actions()->UnitCommand(attackerThatNeedToAttackMove, sc2::ABILITY_ID::ATTACK, target->getPos());
+	}
+}
+
+void Micro::SmartAttackMoveToPos(const CUnits & attacker, const sc2::Point2D pos, CCBot & bot)
+{
+	sc2::Units attackerThatNeedToMove;
+	sc2::Units attackerThatNeedToAttackMove;
+	for (const auto & a : attacker)
+	{
+		if (a->getWeaponCooldown() > 0.0f)
+		{
+			if (a->getOrders().empty() || a->getOrders().front().ability_id != sc2::ABILITY_ID::MOVE || a->getOrders().front().target_pos != pos)
+			{
+				attackerThatNeedToMove.push_back(a->getUnit_ptr());
+			}
+		}
+		else
+		{
+			if (a->getOrders().empty() || a->getOrders().front().target_pos != pos)
+			{
+				attackerThatNeedToAttackMove.push_back(a->getUnit_ptr());
+			}
+		}
+	}
+	if (attackerThatNeedToMove.size() > 0)
+	{
+		bot.Actions()->UnitCommand(attackerThatNeedToMove, sc2::ABILITY_ID::MOVE, pos);
+	}
+	if (attackerThatNeedToAttackMove.size() > 0)
+	{
+		bot.Actions()->UnitCommand(attackerThatNeedToAttackMove, sc2::ABILITY_ID::ATTACK, pos);
 	}
 }
 
@@ -129,20 +156,20 @@ void Micro::SmartAttackMoveToUnit(CUnits & attacker, const CUnit_ptr target, CCB
 void Micro::SmartAttackMove(CUnits & attacker, const sc2::Point2D & targetPosition, CCBot & bot)
 {
 	sc2::Units attackerThatNeedToMove;
-	for (const auto & a:attacker)
+	for (const auto & a : attacker)
 	{
 		if (a->getOrders().empty() || a->getOrders().back().ability_id != sc2::ABILITY_ID::ATTACK || Util::Dist(a->getOrders().back().target_pos, targetPosition) > 1.0f)
 		{
 			attackerThatNeedToMove.push_back(a->getUnit_ptr());
 		}
 	}
-	if (attackerThatNeedToMove.size()>0)
+	if (attackerThatNeedToMove.size() > 0)
 	{
 		bot.Actions()->UnitCommand(attackerThatNeedToMove, sc2::ABILITY_ID::ATTACK, targetPosition);
 	}
 }
 
-void Micro::SmartMove(const CUnits attackers,const CUnit_ptr target, CCBot & bot,const bool queue)
+void Micro::SmartMove(const CUnits attackers, const CUnit_ptr target, CCBot & bot,const bool queue)
 {
 	sc2::Units attackersThatNeedToMove;
 	for (const auto & attacker : attackers)
@@ -158,7 +185,7 @@ void Micro::SmartMove(const CUnits attackers,const CUnit_ptr target, CCBot & bot
 
 void Micro::SmartMove(CUnit_ptr attacker, CUnit_ptr target, CCBot & bot, bool queue)
 {
-	//SmartMove(attacker, target->getPos(), bot, queue);
+	// SmartMove(attacker, target->getPos(), bot, queue);
 	if (!attacker->getOrders().empty() && attacker->getOrders().back().ability_id == sc2::ABILITY_ID::MOVE && attacker->getOrders().back().target_unit_tag == target->getTag())
 	{
 		return;
@@ -169,7 +196,7 @@ void Micro::SmartMove(CUnit_ptr attacker, CUnit_ptr target, CCBot & bot, bool qu
 void Micro::SmartMove(CUnit_ptr attacker, const sc2::Point2D & targetPosition, CCBot & bot,bool queue)
 {
 	BOT_ASSERT(attacker != nullptr, "Attacker is null");
-	//If we are already going there we do not have to spam it
+	// If we are already going there we do not have to spam it
 	if (!attacker->getOrders().empty() && attacker->getOrders().back().ability_id == sc2::ABILITY_ID::MOVE && Util::Dist(attacker->getOrders().back().target_pos,targetPosition) < 0.1f || Util::Dist(attacker->getPos(),targetPosition) < 0.1f)
 	{
 		return;
@@ -283,7 +310,7 @@ void Micro::SmartRightClick(CUnit_ptr unit, CUnit_ptr target, CCBot & bot, bool 
 
 void Micro::SmartRightClick(CUnits units, CUnit_ptr target, CCBot & bot, bool queue)
 {
-	BOT_ASSERT(units.size()>0, "Unit is null");
+	BOT_ASSERT(units.size() > 0, "Unit is null");
 	BOT_ASSERT(target != nullptr, "Unit is null");
 	bot.Actions()->UnitCommand(CUnits2Units(units), sc2::ABILITY_ID::SMART, target->getUnit_ptr(), queue);
 }
@@ -291,7 +318,7 @@ void Micro::SmartRightClick(CUnits units, CUnit_ptr target, CCBot & bot, bool qu
 void Micro::SmartRightClick(CUnit_ptr unit, CUnits targets, CCBot & bot)
 {
 	BOT_ASSERT(unit != nullptr, "Unit is null");
-	BOT_ASSERT(targets.size()>0, "Unit is null");
+	BOT_ASSERT(targets.size() > 0, "Unit is null");
 	if (unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 	{
 		CUnit_ptr target = nullptr;
@@ -337,7 +364,7 @@ void Micro::SmartKiteTarget(CUnit_ptr rangedUnit, CUnit_ptr target, CCBot & bot,
 	float dist = Util::Dist(rangedUnit->getPos(), target->getPos());
 	//Our range
 	float range = rangedUnit->getAttackRange(target);
-	if (rangedUnit->getWeaponCooldown() == 0.0f || dist>range+0.5f)
+	if ((rangedUnit->getWeaponCooldown() == 0.0f || dist>range+0.5f) && !(rangedUnit->isType(sc2::UNIT_TYPEID::TERRAN_MARINE) && target->isType(sc2::UNIT_TYPEID::ZERG_BANELING) && dist < 2.0f))
 	{
 		SmartAttackUnit(rangedUnit, target, bot,queue);
 	}

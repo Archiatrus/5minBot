@@ -20,6 +20,7 @@ class ProductionManager
 	int m_scansRequested;
 	int m_defaultMacroSleep;
 	const int m_defaultMacroSleepMax;
+	bool m_turretsRequested;
 
 	bool    detectBuildOrderDeadlock();
 	void    create(BuildOrderItem item);
@@ -42,6 +43,7 @@ public:
 
 	void requestScout();
 	void requestVikings();
+	void requestTurrets();
 	void requestLiberator();
 	void requestScan();
 	void usedScan(const int i=1);

@@ -43,6 +43,7 @@ public:
     const char * getJobCode(const CUnit_ptr unit);
     const CUnits & getWorkers() const;
 	const CUnits getMineralWorkers() const;
+	const CUnits getCombatWorkers() const;
 	const CUnits getGasWorkers() const;
 	const size_t isBeingRepairedNum(const CUnit_ptr unit) const;
 	void checkRepairedBuildings();

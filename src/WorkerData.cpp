@@ -102,7 +102,7 @@ void WorkerData::setWorkerJob(const CUnit_ptr unit, int job, const CUnit_ptr job
 		else
 		{
 			const CUnit_ptr mineralToMine = getMineralToMine(unit);
-			Micro::SmartRightClick(unit, mineralToMine, m_bot);
+			Micro::SmartAbility(unit, sc2::ABILITY_ID::HARVEST_GATHER, mineralToMine, m_bot);
 		}
     }
     else if (job == WorkerJobs::Gas)
@@ -205,7 +205,7 @@ const CUnit_ptr WorkerData::getMineralToMine(const CUnit_ptr unit) const
     {
         if (!mineral->isMineral()||!mineral->isAlive()) continue;
 
-        double dist = Util::Dist(mineral->getPos(), unit->getPos());
+        double dist = Util::DistSq(mineral->getPos(), unit->getPos());
 
 		if (dist < bestDist)
 		{
@@ -306,6 +306,20 @@ const CUnits WorkerData::getMineralWorkers() const
 	}
 	return mineralWorkers;
 }
+
+const CUnits WorkerData::getCombatWorkers() const
+{
+	std::vector<CUnit_ptr> combatWorkers;
+	for (const auto & unitjob : m_workerJobMap)
+	{
+		if (unitjob.first && unitjob.second == WorkerJobs::Combat)
+		{
+			combatWorkers.push_back(unitjob.first);
+		}
+	}
+	return combatWorkers;
+}
+
 const CUnits WorkerData::getGasWorkers() const
 {
 	std::vector<CUnit_ptr> gasWorkers;

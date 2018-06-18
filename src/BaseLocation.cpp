@@ -8,6 +8,10 @@ const int NearBaseLocationTileDistance = 20;
 
 BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 	: m_bot(bot)
+	, m_centerOfResources(0.0f, 0.0f)
+	, m_centerOfMinerals(0.0f, 0.0f)
+	, m_centerOfBase(0.0f, 0.0f)
+	, m_townhall(nullptr)
 	, m_baseID(baseID)
 	, m_isStartLocation(false)
 	, m_left(std::numeric_limits<float>::max())
@@ -78,9 +82,9 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 			{
 				for (int j = -k; j <= k; ++j)
 				{
-					if (m_bot.Map().isWalkable(m_centerOfResources + sc2::Point2D(i, j)))
+					if (m_bot.Map().isWalkable(m_centerOfResources + sc2::Point2D(static_cast<float>(i), static_cast<float>(j))))
 					{
-						m_distanceMap = m_bot.Map().getDistanceMap(m_bot.Map().getClosestWalkableTo(m_centerOfResources + sc2::Point2D(i, j)));
+						m_distanceMap = m_bot.Map().getDistanceMap(m_bot.Map().getClosestWalkableTo(m_centerOfResources + sc2::Point2D(static_cast<float>(i), static_cast<float>(j))));
 						foundBetterPos = true;
 						break;
 					}
@@ -120,7 +124,7 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 			m_centerOfBase = pos;
 		}
 	}
-	//Get the CC/Nexus/hatch position
+	// Get the CC/Nexus/hatch position
 	if (!m_isStartLocation)
 	{
 		if (numResources == 10)
@@ -140,14 +144,7 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 			}
 		}
 	}
-	
 }
-
-// TODO: calculate the actual depot position
-//const sc2::Point2D & BaseLocation::getDepotPosition() const
-//{
-//	return getCenterOfRessources();
-//}
 
 const sc2::Point2D & BaseLocation::getCenterOfMinerals() const
 {
@@ -196,7 +193,12 @@ bool BaseLocation::containsPosition(const sc2::Point2D & pos) const
 	{
 		return false;
 	}
-	return getGroundDistance(pos) < NearBaseLocationTileDistance && m_bot.Map().terrainHeight(m_centerOfResources) == m_bot.Map().terrainHeight(pos);
+	//return getGroundDistance(pos) < NearBaseLocationTileDistance && m_bot.Map().terrainHeight(m_centerOfResources) == m_bot.Map().terrainHeight(pos);
+	if (sc2::Point2D{0.0f, 0.0f} != m_centerOfBase)
+	{
+		return Util::DistSq(m_centerOfBase, pos) < 400 && m_bot.Map().terrainHeight(m_centerOfBase) == m_bot.Map().terrainHeight(pos);
+	}
+	return Util::DistSq(m_centerOfMinerals, pos) < 400 && m_bot.Map().terrainHeight(m_centerOfMinerals) == m_bot.Map().terrainHeight(pos);
 }
 
 const CUnits & BaseLocation::getGeysers() const
@@ -362,7 +364,7 @@ const int BaseLocation::getNumEnemyStaticD() const
 			threadLvl+=3;
 		}
 	}
-	CUnits staticD = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON,sc2::UNIT_TYPEID::ZERG_SPORECRAWLER,sc2::UNIT_TYPEID::TERRAN_MISSILETURRET }));
+	CUnits staticD = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON, sc2::UNIT_TYPEID::ZERG_SPORECRAWLER, sc2::UNIT_TYPEID::TERRAN_MISSILETURRET }));
 	for (const auto & d : staticD)
 	{
 		if (d->isCompleted() && containsPosition(d->getPos()))

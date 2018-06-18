@@ -41,6 +41,7 @@ class CCBot : public sc2::Agent
 
 	void OnUpgradeCompleted(sc2::UpgradeID upgrade) override;
 
+
 public:
 
 	CCBot();
@@ -76,6 +77,7 @@ public:
 	const int getWeaponBio() const;
 	const int getWeaponMech() const;
 	const bool underAttack() const;
+	void retreat();
 };
 
 extern bool useDebug;

@@ -17,7 +17,7 @@ class CombatCommander
 
 	bool			m_needGuards;
 	bool			m_underAttack;
-
+	bool			m_attack;
 	void			updateScoutDefenseSquad();
 	void			updateDefenseSquads();
 	void			updateAttackSquads();
@@ -35,6 +35,12 @@ class CombatCommander
 	bool			shouldWeStartAttacking();
 	void			checkForProxyOrCheese();
 
+	void checkDepots() const;
+
+	void checkForLostWorkers();
+
+	void handlePlanetaries() const;
+
 public:
 
 	CombatCommander(CCBot & bot);
@@ -45,6 +51,6 @@ public:
 
 	void drawSquadInformation();
 	const bool underAttack() const;
+	void attack(const bool attack);
 	void requestGuards(const bool req);
 };
-

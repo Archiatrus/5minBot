@@ -32,6 +32,8 @@ public:
 	const bool isOccupiedBy(int player, sc2::Point2D pos) const;
 	const sc2::Point2D getBuildingLocation() const;
 	const BaseLocation * getPlayerStartingBaseLocation(int player) const;
+
+	const BaseLocation * getNaturalExpansion(int player) const;
 	
 	sc2::Point2D getNextExpansion(int player) const;
 	sc2::Point2D getNewestExpansion(int player) const;

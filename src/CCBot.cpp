@@ -62,14 +62,14 @@ void CCBot::OnGameStart()
 	{
 		m_cameraModule.onStart();
 	}
-	//Actions()->SendChat("5minBot");
+	// Actions()->SendChat("5minBot");
 }
 
 void CCBot::OnStep()
 {
 	Timer t;
 	t.start();
-	//Control()->GetObservation();
+	// Control()->GetObservation();
 
 	m_map.onFrame();
 	m_unitInfo.onFrame();
@@ -83,7 +83,7 @@ void CCBot::OnStep()
 		m_cameraModule.onFrame();
 	}
 
-	//OnStep,OnUnitCreated,OnBuildingConstructionComplete,OnUnitEnterVision
+	// OnStep,OnUnitCreated,OnBuildingConstructionComplete,OnUnitEnterVision
 	m_time[Observation()->GetGameLoop()][0] = t.getElapsedTimeInMilliSec();
 	double ms=0.0;
 	if (Observation()->GetGameLoop() > 1)
@@ -110,11 +110,7 @@ void CCBot::OnStep()
 		}
 	}
 	Drawing::drawTextScreen(*this, sc2::Point2D(0.85f, 0.6f), "Step time: " + std::to_string(int(std::round(ms))) + "ms\nMax step time: " + std::to_string(int(std::round(maxStepTime))) + "ms\n" + "#Frames >	85ms: " + std::to_string(lvl85) + "\n#Frames >  1000ms: " + std::to_string(lvl1000) + "\n#Frames > 10000ms: " + std::to_string(lvl10000), sc2::Colors::White, 16);
-	//std::cout << "#Frames > 85: " << lvl85 << ",	#Frames > 1000: " << lvl1000 << ",	#Frames > 10000ms: " << lvl10000 << std::endl;
-	//if (Observation()->GetGameLoop() == 100)
-	//{
-	//	Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_DARKTEMPLAR, Bases().getNextExpansion(Players::Self), 2, 1);
-	//}
+
 	if (useDebug)
 	{
 		Debug()->SendDebug();
@@ -123,11 +119,6 @@ void CCBot::OnStep()
 	while (timer.getElapsedTimeInMilliSec() - oldTime < 1000.0 / 22.4) {};
 	oldTime = timer.getElapsedTimeInMilliSec();
 	#endif // VSHUMAN
-	auto test = Observation()->GetRawObservation()->alerts();
-	if (test.size() > 0)
-	{
-		int a = 1;
-	}
 }
 
 void CCBot::OnUnitCreated(const sc2::Unit * unit)
@@ -178,6 +169,18 @@ void CCBot::OnDTdetected(const sc2::Point2D pos)
 
 void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 {
+	if (upgrade == sc2::UPGRADE_ID::SHIELDWALL && !underAttack())
+	{
+		m_gameCommander.attack(true);
+		for (const auto & b : UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER))
+		{
+			if (b->getCargoSpaceTaken() > 0)
+			{
+				Micro::SmartAbility(b, sc2::ABILITY_ID::UNLOADALL, *this);
+			}
+		}
+	}
+
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL3)
 	{
 		m_armorBio = 3;
@@ -216,7 +219,12 @@ void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 	}
 
 }
-// TODO: Figure out my race
+
+void CCBot::retreat()
+{
+	m_gameCommander.attack(false);
+}
+
 const sc2::Race & CCBot::GetPlayerRace(const int player) const
 {
 	BOT_ASSERT(player == Players::Self || player == Players::Enemy, "invalid player for GetPlayerRace");
@@ -334,8 +342,36 @@ int GetAgentRace()
 	return sc2::Race::Terran;
 }
 
+std::string ClientErrorToString(sc2::ClientError error)
+{
+	switch (error)
+	{
+	case(sc2::ClientError::ErrorSC2): return "ErrorSC2";
+	case(sc2::ClientError::InvalidAbilityRemap): return "InvalidAbilityRemap"; /*! An ability was improperly mapped to an ability id that doesn't exist. */
+	case(sc2::ClientError::InvalidResponse): return "InvalidResponse";     /*! The response does not contain a field that was expected. */
+	case(sc2::ClientError::NoAbilitiesForTag): return "NoAbilitiesForTag";   /*! The unit does not have any abilities. */
+	case(sc2::ClientError::ResponseNotConsumed): return "ResponseNotConsumed"; /*! A request was made without consuming the response from the previous request, that puts this library in an illegal state. */
+	case(sc2::ClientError::ResponseMismatch): return "ResponseMismatch";    /*! The response received from SC2 does not match the request. */
+	case(sc2::ClientError::ConnectionClosed): return "ConnectionClosed";    /*! The websocket connection has prematurely closed, this could mean starcraft crashed or a websocket timeout has occurred. */
+	case(sc2::ClientError::SC2UnknownStatus): return "SC2UnknownStatus";
+	case(sc2::ClientError::SC2AppFailure): return "SC2AppFailure";       /*! SC2 has either crashed or been forcibly terminated by this library because it was not responding to requests. */
+	case(sc2::ClientError::SC2ProtocolError): return "SC2ProtocolError";    /*! The response from SC2 contains errors, most likely meaning the API was not used in a correct way. */
+	case(sc2::ClientError::SC2ProtocolTimeout): return "SC2ProtocolTimeout";  /*! A request was made and a response was not received in the amount of time given by the timeout. */
+	case(sc2::ClientError::WrongGameVersion): return "WrongGameVersion";
+	}
+	return "Unknown ClientError";
+}
+
 
 void CCBot::OnError(const std::vector<sc2::ClientError> & client_errors, const std::vector<std::string> & protocol_errors)
 {
-	int a = 1;
+	for (const auto & error : protocol_errors)
+	{
+		std::cerr << "Protocol error: " << error << std::endl;
+	}
+	for (const auto & error : client_errors)
+	{
+		std::cerr << "Client error: " << ClientErrorToString(error) << std::endl;
+	}
+
 }

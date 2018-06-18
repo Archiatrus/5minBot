@@ -109,7 +109,6 @@ void BaseLocationManager::onStart()
 			for (auto & baseLocation : m_baseLocationData)
 			{
 				sc2::Point2D pos(x + 0.5f, y + 0.5f);
-
 				if (baseLocation.containsPosition(pos))
 				{
 					m_tileBaseLocations[(int)x][(int)y] = &baseLocation;
@@ -166,6 +165,8 @@ void BaseLocationManager::onFrame()
 		}
 
 		BaseLocation * baseLocation = getBaseLocation(unit->getPos());
+		//auto test = m_bot.Map().getHeight(baseLocation->getCenterOfBase());
+		//auto test2 = m_bot.Map().getHeight(unit->getPos());
 		if (baseLocation != nullptr && m_bot.Map().getHeight(baseLocation->getCenterOfBase()) == m_bot.Map().getHeight(unit->getPos()))
 		{
 			baseLocation->setPlayerOccupying(Players::Self, true);
@@ -279,8 +280,8 @@ void BaseLocationManager::drawBaseLocations()
 	// draw a purple sphere at the next expansion location
 	sc2::Point2D nextExpansionPosition = getNextExpansion(Players::Self);
 
-	Drawing::drawSphere(m_bot,nextExpansionPosition, 1, sc2::Colors::Purple);
-	Drawing::drawText(m_bot,nextExpansionPosition, "Next Expansion Location", sc2::Colors::Purple);
+	Drawing::drawSphere(m_bot, nextExpansionPosition, 1, sc2::Colors::Purple);
+	Drawing::drawText(m_bot, nextExpansionPosition, "Next Expansion Location", sc2::Colors::Purple);
 }
 
 const std::vector<const BaseLocation *> & BaseLocationManager::getBaseLocations() const
@@ -298,6 +299,27 @@ const BaseLocation * BaseLocationManager::getPlayerStartingBaseLocation(int play
 	return m_playerStartingBaseLocations.at(player);
 }
 
+const BaseLocation * BaseLocationManager::getNaturalExpansion(int player) const
+{
+	const BaseLocation * homeBase = getPlayerStartingBaseLocation(player);
+	if (!homeBase)
+	{
+		return nullptr;
+	}
+	const BaseLocation * naturalBase = nullptr;
+	int minDistance = std::numeric_limits<int>::max();
+	for (const auto & base : getBaseLocations())
+	{
+		int dist = homeBase->getGroundDistance(base->getCenterOfBase());
+		if (base->getBaseID() != homeBase->getBaseID() && minDistance > dist)
+		{
+			minDistance = dist;
+			naturalBase = base;
+		}
+	}
+	return naturalBase;
+}
+
 const std::set<const BaseLocation *> & BaseLocationManager::getOccupiedBaseLocations(int player) const
 {
 	return m_occupiedBaseLocations.at(player);
@@ -311,13 +333,13 @@ const bool BaseLocationManager::isOccupiedBy(int player, sc2::Point2D pos) const
 
 const sc2::Point2D BaseLocationManager::getBuildingLocation() const
 {
-	//First guess
+	// First guess
 	const BaseLocation * home = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
 	if (home && home->isOccupiedByPlayer(Players::Self))
 	{
 		return home->getCenterOfBase();
 	}
-	//uh oh
+	// uh oh
 	else
 	{
 		float maxDist = 0.0f;
@@ -343,9 +365,9 @@ const sc2::Point2D BaseLocationManager::getBuildingLocation() const
 }
 const sc2::Point2D BaseLocationManager::getRallyPoint() const
 {
-	//GET NEWEST EXPANSION
+	// GET NEWEST EXPANSION
 	sc2::Point2D fixpoint = getNewestExpansion(Players::Self);
-	//Or bunker
+	// Or bunker
 	const CUnits bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
 
 	std::vector<const BaseLocation *> startingBases = getStartingBaseLocations();
@@ -406,7 +428,7 @@ sc2::Point2D BaseLocationManager::getNextExpansion(int player) const
 
 		// the base's distance from our main nexus
 		int distanceFromHome = homeBase->getGroundDistance(tile);
-	
+
 		// if it is not connected, continue
 		if (distanceFromHome < 0)
 		{
@@ -467,13 +489,12 @@ sc2::Point2D BaseLocationManager::getNewestExpansion(int player) const
 	}
 	else
 	{
-		return sc2::Point2D(0.0f,0.0f);
+		return sc2::Point2D(0.0f, 0.0f);
 	}
 }
 
 void BaseLocationManager::assignTownhallToBase(const CUnit_ptr townHall) const
 {
-
 	BaseLocation * baseLocation = getBaseLocation(townHall->getPos());
 	if (baseLocation)
 	{

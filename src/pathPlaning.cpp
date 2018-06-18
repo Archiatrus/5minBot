@@ -31,40 +31,6 @@ const float pathPlaning::calcHeuristic(sc2::Point2D pos) const
 	return std::max(xDist, yDist) + (std::sqrt(2.0f) - 1.0f)*std::min(xDist, yDist);
 }
 
-/*
-const float pathPlaning::calcThreatLvl(sc2::Point2D pos) const
-{
-	float threatLvl = 0.0f;
-	for (const auto & enemy : m_bot.UnitInfo().getUnits(Players::Enemy))
-	{
-		// if it's a combat unit
-		if (enemy->isCombatUnit())
-		{
-			//Get its weapon
-			const sc2::Weapon weapon = enemy->getWeapon(sc2::Weapon::TargetType::Air);
-			float dps = 0.0f;
-			//float range = 0.0f;
-			float range = enemy->getSightRange();
-				//At the moment its only used for medivacs
-			if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
-			{
-				//I ignore bonus dmg for now.
-				dps = weapon.attacks * weapon.damage_ / weapon.speed;
-				//range = weapon.range + 2; //just to be sure +2
-			}
-
-			//If we are in range.
-			float dist = Util::Dist(enemy->getPos(), pos);
-			if (dist < range) 
-			{
-				threatLvl += std::max(0.0f,dps*(range - dist) / range);
-			}
-		}
-	}
-	return threatLvl;
-}
-*/
-
 std::vector<sc2::Point2D> pathPlaning::planPath()
 {
 	while (!m_openList.empty())

@@ -170,8 +170,9 @@ const bool Squad::needsToRegroup()
 		{
 			return false;
 		}
-		if (m_units.size() < 100 && m_units.size() < m_bot.UnitInfo().getNumCombatUnits(Players::Enemy))
+		if (m_units.size() < 100 && m_units.size() < 0.9f*m_bot.UnitInfo().getNumCombatUnits(Players::Enemy) || m_bot.Observation()->GetFoodUsed()>198 || m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER) < m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_COLOSSUS))
 		{
+			m_bot.retreat();
 			m_lastRetreatSwitchVal = true;
 			return m_lastRetreatSwitchVal;
 		}

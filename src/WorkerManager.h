@@ -48,6 +48,7 @@ public:
 	const CUnit_ptr getBuilder(Building & b,bool setJobAsBuilder = true) const;
 	const CUnits	getMineralWorkers() const;
 	int getNumAssignedWorkers(const CUnit_ptr unit) const;
+	const CUnits getCombatWorkers() const;
 	const CUnit_ptr getClosestDepot(const CUnit_ptr worker) const;
 	const CUnit_ptr getGasWorker(const CUnit_ptr refinery) const;
 	const CUnit_ptr getClosestMineralWorkerTo(const sc2::Point2D & pos) const;

@@ -38,8 +38,15 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 						{
 							if (b->getCargoSpaceTaken() != b->getCargoSpaceMax() && b->isCompleted())
 							{
-								Micro::SmartRightClick(unit, b, m_bot);
-								Micro::SmartAbility(b, sc2::ABILITY_ID::LOAD, unit,m_bot);
+								if (Util::DistSq(b->getPos(), unit->getPos()) < 4.0f)
+								{
+									Micro::SmartRightClick(unit, b, m_bot);
+									Micro::SmartAbility(b, sc2::ABILITY_ID::LOAD, unit, m_bot);
+								}
+								else
+								{
+									attackMoveUnits.push_back(unit);
+								}
 								bunkerTime = true;
 								break;
 							}
@@ -66,7 +73,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 		}
 		if (attackMoveUnits.size() > 0)
 		{
-			Micro::SmartAttackMove(attackMoveUnits, pos, m_bot);
+			Micro::SmartAttackMoveToPos(attackMoveUnits, pos, m_bot);
 		}
 	}
 

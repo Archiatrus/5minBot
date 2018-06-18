@@ -113,6 +113,7 @@ public:
 	const float getSightRange() const;
 	const sc2::Weapon & getWeapon(sc2::Weapon::TargetType type = sc2::Weapon::TargetType::Any) const;
 	const float getAttackRange(const std::shared_ptr<CUnit> &  target) const;
+	const float getAttackRange(const sc2::Weapon::TargetType & target) const;
 	const float getAttackRange() const;
 	std::shared_ptr<CUnit> getTarget();
 	const sc2::Unit * getUnit_ptr() const;

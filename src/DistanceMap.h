@@ -14,17 +14,20 @@ class DistanceMap
 
 	std::vector<std::vector<int>> m_dist;
 	std::vector<sc2::Point2D> m_sortedTilePositions;
+	std::vector<sc2::Point2D> m_sortedTilePositionsAir;
 	
 public:
 	
 	DistanceMap();
 	void computeDistanceMap(CCBot & m_bot, const sc2::Point2D & startTile);
+	void computeAirDistanceMap(CCBot & m_bot, const sc2::Point2D & startTile);
 
 	int getDistance(int tileX, int tileY) const;
 	int getDistance(const sc2::Point2D & pos) const;
 
 	// given a position, get the position we should move to to minimize distance
 	const std::vector<sc2::Point2D> & getSortedTiles() const;
+	const std::vector<sc2::Point2D> & getSortedTilesAir() const;
 	const sc2::Point2D & getStartTile() const;
 
 	void draw(CCBot & bot) const;

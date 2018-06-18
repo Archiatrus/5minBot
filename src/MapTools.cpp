@@ -17,14 +17,13 @@ typedef std::vector<std::vector<float>>  vvf;
 
 // constructor for MapTools
 MapTools::MapTools(CCBot & bot)
-	: m_bot (bot)
-	, m_width (0)
-	, m_height (0)
-	, m_maxZ (0.0f)
-	, m_frame (0)
-	, overseerMap ()
+	: m_bot(bot)
+	, m_width(0)
+	, m_height(0)
+	, m_maxZ(0.0f)
+	, m_frame(0)
+	, overseerMap()
 {
-
 }
 
 void MapTools::onStart()
@@ -45,7 +44,7 @@ void MapTools::onStart()
 		{
 			m_buildable[x][y]   = Util::Placement(m_bot.Observation()->GetGameInfo(), sc2::Point2D(x+0.5f, y+0.5f));
 			m_walkable[x][y]	= m_buildable[x][y] || Util::Pathable(m_bot.Observation()->GetGameInfo(), sc2::Point2D(x+0.5f, y+0.5f));
-			m_terrainHeight[x][y]   = Util::TerainHeight(m_bot.Observation()->GetGameInfo(), sc2::Point2D(x+0.5f, y+0.5f));
+			m_terrainHeight[x][y] = m_bot.Observation()->TerrainHeight(sc2::Point2D(x + 0.5f, y + 0.5f));  // Util::TerainHeight(m_bot.Observation()->GetGameInfo(), sc2::Point2D(x + 0.5f, y + 0.5f));
 			m_ramp[x][y] = m_walkable[x][y] || !m_buildable[x][y];
 		}
 	}
@@ -53,7 +52,7 @@ void MapTools::onStart()
 	{
 		m_maxZ = std::max(unit->pos.z, m_maxZ);
 	}
-	//RedShift..... -.-
+	// RedShift..... -.-
 	sc2::Units minerals = m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Neutral, sc2::IsUnits(Util::getMineralTypes()));
 	for (const auto & mineral : minerals)
 	{
@@ -67,26 +66,16 @@ void MapTools::onStart()
 	}
 	computeConnectivity();
 
-	//overseerMap.setBot(&m_bot); //ADD THIS LINE (OVERSEER)
-	//overseerMap.Initialize(); //ADD THIS LINE (OVERSEER)
-	std::cout << "Number of tiles on map: " << overseerMap.size() << std::endl; //ADD THIS LINE (OVERSEER)
-	std::cout << "Number of regions: " << overseerMap.getRegions().size() << std::endl; //ADD THIS LINE (OVERSEER)
+	// overseerMap.setBot(&m_bot); //ADD THIS LINE (OVERSEER)
+	// overseerMap.Initialize(); //ADD THIS LINE (OVERSEER)
+	std::cout << "Number of tiles on map: " << overseerMap.size() << std::endl;  // ADD THIS LINE (OVERSEER)
+	std::cout << "Number of regions: " << overseerMap.getRegions().size() << std::endl;  // ADD THIS LINE (OVERSEER)
 }
 
 void MapTools::onFrame()
 {
 	m_frame++;
 	return;
-	//for (int x=0; x<m_width; ++x)
-	//{
-	//	for (int y=0; y<m_height; ++y)
-	//	{
-	//		if (isVisible(sc2::Point2D((float)x, (float)y)))
-	//		{
-	//			m_lastSeen[x][y] = m_frame;
-	//		}
-	//	}
-	//}
 }
 
 void MapTools::computeConnectivity()
@@ -97,9 +86,9 @@ void MapTools::computeConnectivity()
 	int sectorNumber = 0;
 
 	// for every tile on the map, do a connected flood fill using BFS
-	for (int x=0; x<m_width; ++x)
+	for (int x=0; x < m_width; ++x)
 	{
-		for (int y=0; y<m_height; ++y)
+		for (int y=0; y < m_height; ++y)
 		{
 			// if the sector is not currently 0, or the map isn't walkable here, then we can skip this tile
 			if (getSectorNumber(x, y) != 0 || !isWalkable(x, y))
@@ -116,19 +105,19 @@ void MapTools::computeConnectivity()
 			m_sectorNumber[x][y] = sectorNumber;
 
 			// do the BFS, stopping when we reach the last element of the fringe
-			for (size_t fringeIndex=0; fringeIndex<fringe.size(); ++fringeIndex)
+			for (size_t fringeIndex=0; fringeIndex < fringe.size(); ++fringeIndex)
 			{
 				auto & tile = fringe[fringeIndex];
 
 				// check every possible child of this tile
-				for (size_t a=0; a<LegalActions; ++a)
+				for (size_t a = 0; a < LegalActions; ++a)
 				{
 					sc2::Point2D nextTile(tile.x + actionX[a], tile.y + actionY[a]);
 
 					// if the new tile is inside the map bounds, is walkable, and has not been assigned a sector, add it to the current sector and the fringe
 					if (isValid(nextTile) && isWalkable(nextTile) && (getSectorNumber(nextTile) == 0))
 					{
-						m_sectorNumber[(int)nextTile.x][(int)nextTile.y] = sectorNumber;
+						m_sectorNumber[static_cast<int>(nextTile.x)][static_cast<int>(nextTile.y)] = sectorNumber;
 						fringe.push_back(nextTile);
 					}
 				}
@@ -167,18 +156,13 @@ bool MapTools::isPowered(const sc2::Point2D & pos) const
 
 float MapTools::terrainHeight(float x, float y) const
 {
-	return m_terrainHeight[(int)x][(int)y];
+	return m_terrainHeight[static_cast<int>(x)][static_cast<int>(y)];
 }
 
 float MapTools::terrainHeight(sc2::Point2D pos) const
 {
 	return m_terrainHeight[static_cast<int>(pos.x)][static_cast<int>(pos.y)];
 }
-
-//int MapTools::getGroundDistance(const sc2::Point2D & src, const sc2::Point2D & dest) const
-//{
-//	return (int)Util::Dist(src, dest);
-//}
 
 int MapTools::getGroundDistance(const sc2::Point2D & src, const sc2::Point2D & dest) const
 {
@@ -192,7 +176,7 @@ int MapTools::getGroundDistance(const sc2::Point2D & src, const sc2::Point2D & d
 
 const DistanceMap & MapTools::getDistanceMap(const sc2::Point2D & tile) const
 {
-	std::pair<int, int> intTile((int)tile.x, (int)tile.y);
+	std::pair<int, int> intTile(static_cast<int>(tile.x), static_cast<int>(tile.y));
 
 	if (_allMaps.find(intTile) == _allMaps.end())
 	{
@@ -201,6 +185,19 @@ const DistanceMap & MapTools::getDistanceMap(const sc2::Point2D & tile) const
 	}
 
 	return _allMaps[intTile];
+}
+
+const DistanceMap & MapTools::getAirDistanceMap(const sc2::Point2D & tile) const
+{
+	std::pair<int, int> intTile(static_cast<int>(tile.x), static_cast<int>(tile.y));
+
+	if (_allAirMaps.find(intTile) == _allAirMaps.end())
+	{
+		_allAirMaps[intTile] = DistanceMap();
+		_allAirMaps[intTile].computeAirDistanceMap(m_bot, tile);
+	}
+
+	return _allAirMaps[intTile];
 }
 
 int MapTools::getSectorNumber(int x, int y) const
@@ -215,7 +212,7 @@ int MapTools::getSectorNumber(int x, int y) const
 
 int MapTools::getSectorNumber(const sc2::Point2D & pos) const
 {
-	return getSectorNumber((int)pos.x, (int)pos.y);
+	return getSectorNumber(static_cast<int>(pos.x), static_cast<int>(pos.y));
 }
 
 bool MapTools::isValid(int x, int y) const
@@ -225,7 +222,7 @@ bool MapTools::isValid(int x, int y) const
 
 bool MapTools::isValid(const sc2::Point2D & pos) const
 {
-	return isValid((int)pos.x, (int)pos.y);
+	return isValid(static_cast<int>(pos.x), static_cast<int>(pos.y));
 }
 
 
@@ -245,7 +242,7 @@ bool MapTools::isConnected(int x1, int y1, int x2, int y2) const
 
 bool MapTools::isConnected(const sc2::Point2D & p1, const sc2::Point2D & p2) const
 {
-	return isConnected((int)p1.x, (int)p1.y, (int)p2.x, (int)p2.y);
+	return isConnected(static_cast<int>(p1.x), static_cast<int>(p1.y), static_cast<int>(p2.x), static_cast<int>(p2.y));
 }
 
 bool MapTools::isBuildable(int x, int y) const
@@ -260,12 +257,12 @@ bool MapTools::isBuildable(int x, int y) const
 
 bool MapTools::canBuildTypeAtPosition(int x, int y, sc2::UnitTypeID type) const
 {
-	return m_bot.Query()->Placement(m_bot.Data(type).buildAbility, sc2::Point2D((float)x, (float)y));
+	return m_bot.Query()->Placement(m_bot.Data(type).buildAbility, sc2::Point2D(static_cast<float>(x), static_cast<float>(y)));
 }
 
 bool MapTools::isBuildable(const sc2::Point2D & tile) const
 {
-	return isBuildable((int)tile.x, (int)tile.y);
+	return isBuildable(static_cast<int>(tile.x), static_cast<int>(tile.y));
 }
 
 bool MapTools::isDepotBuildableTile(const sc2::Point2D & tile) const
@@ -275,7 +272,7 @@ bool MapTools::isDepotBuildableTile(const sc2::Point2D & tile) const
 		return false;
 	}
 
-	return m_ramp[(int)tile.x][(int)tile.y];
+	return m_ramp[static_cast<int>(tile.x)][static_cast<int>(tile.y)];
 }
 
 bool MapTools::isWalkable(int x, int y) const
@@ -290,7 +287,7 @@ bool MapTools::isWalkable(int x, int y) const
 
 bool MapTools::isWalkable(const sc2::Point2D & tile) const
 {
-	return isWalkable((int)tile.x, (int)tile.y);
+	return isWalkable(static_cast<int>(tile.x), static_cast<int>(tile.y));
 }
 
 int MapTools::width() const
@@ -308,18 +305,25 @@ const std::vector<sc2::Point2D> & MapTools::getClosestTilesTo(const sc2::Point2D
 	return getDistanceMap(pos).getSortedTiles();
 }
 
+const std::vector<sc2::Point2D> & MapTools::getClosestTilesToAir(const sc2::Point2D & pos) const
+{
+	return getAirDistanceMap(pos).getSortedTilesAir();
+}
+
+
 const sc2::Point2D MapTools::getClosestWalkableTo(const sc2::Point2D & pos) const
 {
 	// get the precomputed vector of tile positions which are sorted closes to this location
 	// iterate through the list until we've found a suitable location
-	for (const auto & closestToPos : getClosestTilesTo(pos))
+	sc2::Point2D validPos = { std::max(0.0f, std::min(pos.x, static_cast<float>(m_width))), std::max(0.0f, std::min(pos.y, static_cast<float>(m_height))) };
+	for (const auto & closestToPos : getClosestTilesTo(validPos))
 	{
 		if (isWalkable(closestToPos))
 		{
 			return closestToPos;
 		}
 	}
-	return sc2::Point2D(0,0);
+	return sc2::Point2D(0, 0);
 }
 
 sc2::Point2D MapTools::getLeastRecentlySeenPosition() const
@@ -332,7 +336,7 @@ sc2::Point2D MapTools::getLeastRecentlySeenPosition() const
 	{
 		BOT_ASSERT(isValid(tile), "How is this tile not valid?");
 
-		int lastSeen = m_lastSeen[(int)tile.x][(int)tile.y];
+		int lastSeen = m_lastSeen[static_cast<int>(tile.x)][static_cast<int>(tile.y)];
 		if (lastSeen < minSeen)
 		{
 			minSeen = lastSeen;
@@ -343,10 +347,11 @@ sc2::Point2D MapTools::getLeastRecentlySeenPosition() const
 	return leastSeen;
 }
 
-sc2::Point2D MapTools::getWallPosition(sc2::UnitTypeID type) const
+sc2::Point2D MapTools::getRampPoint(const BaseLocation * base) const
 {
-	const sc2::Point2D startPoint = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase()+Util::normalizeVector(m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase()-m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfMinerals(),5.0f);
+	const sc2::Point2D startPoint = base->getCenterOfBase() + Util::normalizeVector(base->getCenterOfBase() - base->getCenterOfMinerals(), 5.0f);
 	const float startHeight = m_bot.Observation()->TerrainHeight(startPoint);
+
 	sc2::Point2D currentPos = sc2::Point2D(std::round(startPoint.x) + 0.5f, std::round(startPoint.y) + 0.5f);
 	const sc2::Point2D enemyPoint = m_bot.Observation()->GetGameInfo().enemy_start_locations.front();
 	BaseLocation * const enemyBaseLocation = m_bot.Bases().getBaseLocation(enemyPoint);
@@ -366,34 +371,38 @@ sc2::Point2D MapTools::getWallPosition(sc2::UnitTypeID type) const
 				{
 					const sc2::Point2D newPos = currentPos + i*xMove + j*yMove;
 					const int dist = enemyBaseLocation->getGroundDistance(newPos);
-					if (m_bot.Observation()->TerrainHeight(newPos) == startHeight && dist > 0 && m_bot.Observation()->IsPathable(newPos))
+					if (m_bot.Observation()->TerrainHeight(newPos) == startHeight && dist > 0 && m_bot.Observation()->IsPathable(newPos) && (m_bot.Observation()->IsPlacable(currentPos) || m_bot.Observation()->IsPlacable(newPos)))
 					{
-						bool newPosBetter = false;
-						if (currentWalkingDistance > dist)//easy
+						if ((m_bot.Observation()->IsPlacable(newPos + sc2::Point2D(0.0f, 1.0f)) || m_bot.Observation()->IsPlacable(newPos - sc2::Point2D(0.0f, 1.0f)))
+							&& (m_bot.Observation()->IsPlacable(newPos + sc2::Point2D(1.0f, 0.0f)) || m_bot.Observation()->IsPlacable(newPos - sc2::Point2D(1.0f, 0.0f))))
 						{
-							newPosBetter = true;
-						}
-						else if (currentWalkingDistance == dist && m_bot.Observation()->IsPlacable(currentPos))//Now it gets complicated
-						{
-							if (!m_bot.Observation()->IsPlacable(newPos))
+							bool newPosBetter = false;
+							if (currentWalkingDistance > dist)  // easy
 							{
 								newPosBetter = true;
 							}
-							else
+							else if (currentWalkingDistance == dist && m_bot.Observation()->IsPlacable(currentPos))  // Now it gets complicated
 							{
-								const std::vector<float> dists = m_bot.Query()->PathingDistance({ { sc2::NullTag,currentPos,enemyBaseLocation->getCenterOfMinerals() },{ sc2::NullTag,newPos,enemyBaseLocation->getCenterOfMinerals() } });
-								if (dists.front() > dists.back())
+								if (!m_bot.Observation()->IsPlacable(newPos))
 								{
 									newPosBetter = true;
 								}
+								else
+								{
+									const std::vector<float> dists = m_bot.Query()->PathingDistance({ { sc2::NullTag, currentPos, enemyBaseLocation->getCenterOfMinerals() }, { sc2::NullTag, newPos, enemyBaseLocation->getCenterOfMinerals() } });
+									if (dists.front() > dists.back())
+									{
+										newPosBetter = true;
+									}
+								}
 							}
-						}
-						if (newPosBetter)
-						{
-							currentWalkingDistance = dist;
-							currentPos = newPos;
-							foundNewPos = true;
-							break;
+							if (newPosBetter)
+							{
+								currentWalkingDistance = dist;
+								currentPos = newPos;
+								foundNewPos = true;
+								break;
+							}
 						}
 					}
 				}
@@ -404,80 +413,274 @@ sc2::Point2D MapTools::getWallPosition(sc2::UnitTypeID type) const
 			}
 		}
 	}
-	int rampType=0;
-	if (!m_bot.Observation()->IsPlacable(currentPos + sc2::Point2D{ 0, 1 }))  //North
+	if (Util::Dist(startPoint, currentPos) < 20.0f)
+	{
+		return currentPos;
+	}
+	else
+	{
+		return sc2::Point2D(0.0f, 0.0f);
+	}
+}
+
+sc2::Point2D MapTools::getWallPositionBunker() const
+{
+	if (hasPocketBase())
+	{
+		return sc2::Point2D{0.0f, 0.0f};
+	}
+	sc2::Point2D rampPoint = getRampPoint(m_bot.Bases().getNaturalExpansion(Players::Self));
+	if (rampPoint == sc2::Point2D{ 0.0f, 0.0f })
+	{
+		return rampPoint;
+	}
+	int rampType = 0;
+	if (!m_bot.Observation()->IsPlacable(rampPoint + sc2::Point2D{ 0, 1 }))  // North
 	{
 		rampType += 10;
 	}
-	if (!m_bot.Observation()->IsPlacable(currentPos + sc2::Point2D{ 1, 0 })) //East
+	if (!m_bot.Observation()->IsPlacable(rampPoint + sc2::Point2D{ 1, 0 }))  // East
+	{
+		rampType += 1;
+	}
+	sc2::Point2D bunkerPosition = sc2::Point2D{0.0f, 0.0f};
+	switch (rampType)
+	{
+	case(0):  // SW
+	{
+		while (!m_bot.Observation()->IsPlacable(rampPoint + sc2::Point2D{ 1.0f, -1.0f }))
+		{
+			rampPoint += sc2::Point2D{ 1.0f, -1.0f };
+		}
+		int rampLength = 1;
+		while (!m_bot.Observation()->IsPlacable(rampPoint - static_cast<float>(rampLength)*sc2::Point2D{ 1.0f, -1.0f }))
+		{
+			++rampLength;
+		}
+		if (rampLength == 6)
+		{
+			bunkerPosition = rampPoint + sc2::Point2D(-1.0f, 4.0f);
+		}
+		break;
+	}
+	case(1):  // SE
+	{
+		while (!m_bot.Observation()->IsPlacable(rampPoint + sc2::Point2D{ 1.0f, 1.0f }))
+		{
+			rampPoint += sc2::Point2D{ 1.0f, 1.0f };
+		}
+		int rampLength = 1;
+		while (!m_bot.Observation()->IsPlacable(rampPoint - static_cast<float>(rampLength)*sc2::Point2D{ 1.0f, 1.0f }))
+		{
+			++rampLength;
+		}
+		if (rampLength == 4)
+		{
+			bunkerPosition = rampPoint + sc2::Point2D(-4.0f, 1.0f);
+		}
+		else if (rampLength == 6)
+		{
+			bunkerPosition = rampPoint + sc2::Point2D(-4.0f, -1.0f);
+		}
+		break;
+	}
+	case(10):  // NW
+	{
+		while (!m_bot.Observation()->IsPlacable(rampPoint + sc2::Point2D{ -1.0f, -1.0f }))
+		{
+			rampPoint += sc2::Point2D{ -1.0f, -1.0f };
+		}
+		int rampLength = 1;
+		while (!m_bot.Observation()->IsPlacable(rampPoint - static_cast<float>(rampLength)*sc2::Point2D{ -1.0f, -1.0f }))
+		{
+			++rampLength;
+		}
+		if (rampLength == 4)
+		{
+			bunkerPosition = rampPoint + sc2::Point2D(4.0f, -1.0f);
+		}
+		else if (rampLength == 6)
+		{
+			bunkerPosition = rampPoint + sc2::Point2D(4.0f, 1.0f);
+		}
+		break;
+	}
+	case(11):  // NE
+	{
+		while (!m_bot.Observation()->IsPlacable(rampPoint + sc2::Point2D{ -1.0f, 1.0f }))
+		{
+			rampPoint += sc2::Point2D{ -1.0f, 1.0f };
+		}
+		int rampLength = 1;
+		while (!m_bot.Observation()->IsPlacable(rampPoint - static_cast<float>(rampLength)*sc2::Point2D{ -1.0f, 1.0f }))
+		{
+			++rampLength;
+		}
+		if (rampLength == 6)
+		{
+			bunkerPosition = rampPoint + sc2::Point2D(1.0f, -4.0f);
+		}
+		break;
+	}
+	}
+	return bunkerPosition;
+}
+
+sc2::Point2D MapTools::getWallPositionDepot() const
+{
+	sc2::Point2D firstWall = getWallPositionDepot(m_bot.Bases().getPlayerStartingBaseLocation(Players::Self));
+	if (firstWall == sc2::Point2D{0.0f, 0.0f} && !hasPocketBase())
+	{
+		return getWallPositionDepot(m_bot.Bases().getNaturalExpansion(Players::Self));
+	}
+	return firstWall;
+}
+
+sc2::Point2D MapTools::getWallPositionDepot(const BaseLocation * base) const
+{
+	if (!base || !base->getTownHall() || !base->getTownHall()->isAlive())
+	{
+		return sc2::Point2D{ 0.0f, 0.0f };
+	}
+	sc2::Point2D rampPoint = getRampPoint(base);
+	if (rampPoint == sc2::Point2D{ 0.0f, 0.0f })
+	{
+		return rampPoint;
+	}
+	int rampType = 0;
+	if (!m_bot.Observation()->IsPlacable(rampPoint + sc2::Point2D{ 0, 1 }))  // North
+	{
+		rampType += 10;
+	}
+	if (!m_bot.Observation()->IsPlacable(rampPoint + sc2::Point2D{ 1, 0 }))  // East
 	{
 		rampType += 1;
 	}
 	std::vector<sc2::Point2D> positions;
 	switch (rampType)
 	{
-		case(0):  //SW
+		case(0):  // SW
 		{
-			if (!m_bot.Observation()->IsPlacable(currentPos + sc2::Point2D{ 1.0f, -1.0f }))
+			while (!m_bot.Observation()->IsPlacable(rampPoint + sc2::Point2D{ 1.0f, -1.0f }))
 			{
-				currentPos += sc2::Point2D{ 1.0f, -1.0f };
+				rampPoint += sc2::Point2D{ 1.0f, -1.0f };
 			}
-			positions = { currentPos + sc2::Point2D(0.5f, 1.5f), currentPos + sc2::Point2D(1.5f, -0.5f), currentPos + sc2::Point2D(-1.5f, 2.5f) };
+			int rampLength = 1;
+			while (!m_bot.Observation()->IsPlacable(rampPoint - static_cast<float>(rampLength)*sc2::Point2D{ 1.0f, -1.0f }))
+			{
+				++rampLength;
+			}
+			if (rampLength == 2)
+			{
+				positions = { rampPoint + sc2::Point2D(0.5f, 1.5f), rampPoint + sc2::Point2D(1.5f, -0.5f), rampPoint + sc2::Point2D(-1.5f, 2.5f) };
+			}
+			else if (rampLength == 6)
+			{
+				positions = { rampPoint + sc2::Point2D(0.5f, 1.5f), rampPoint + sc2::Point2D(1.5f, -0.5f), rampPoint + sc2::Point2D(-3.5f, 5.5f), rampPoint + sc2::Point2D(-5.5f, 6.5f) };
+			}
 			break;
 		}
 		case(1):  // SE
 		{
-			if (!m_bot.Observation()->IsPlacable(currentPos + sc2::Point2D{ 1.0f, 1.0f }))
+			while (!m_bot.Observation()->IsPlacable(rampPoint + sc2::Point2D{ 1.0f, 1.0f }))
 			{
-				currentPos += sc2::Point2D{ 1.0f, 1.0f };
+				rampPoint += sc2::Point2D{ 1.0f, 1.0f };
 			}
-			positions = { currentPos + sc2::Point2D(0.5f, 1.5f), currentPos + sc2::Point2D(-1.5f, 0.5f), currentPos + sc2::Point2D(-2.5f, -1.5f) };
+			int rampLength = 1;
+			while (!m_bot.Observation()->IsPlacable(rampPoint - static_cast<float>(rampLength)*sc2::Point2D{ 1.0f, 1.0f }))
+			{
+				++rampLength;
+			}
+			if (rampLength == 2)
+			{
+				positions = { rampPoint + sc2::Point2D(0.5f, 1.5f), rampPoint + sc2::Point2D(-1.5f, 0.5f), rampPoint + sc2::Point2D(-2.5f, -1.5f) };
+			}
+			else if (rampLength == 4)
+			{
+				positions = { rampPoint + sc2::Point2D(0.5f, 1.5f), rampPoint + sc2::Point2D(-1.5f, 0.5f), rampPoint + sc2::Point2D(-3.5f, -1.5f), rampPoint + sc2::Point2D(-4.5f, -3.5f) };
+			}
+			else if (rampLength == 6)
+			{
+				positions = { rampPoint + sc2::Point2D(0.5f, 1.5f), rampPoint + sc2::Point2D(-1.5f, 0.5f), rampPoint + sc2::Point2D(-5.5f, -3.5f), rampPoint + sc2::Point2D(-6.5f, -5.5f) };
+			}
 			break;
 		}
 		case(10):  // NW
 		{
-			if (!m_bot.Observation()->IsPlacable(currentPos + sc2::Point2D{ -1.0f, -1.0f }))
+			while (!m_bot.Observation()->IsPlacable(rampPoint + sc2::Point2D{ -1.0f, -1.0f }))
 			{
-				currentPos += sc2::Point2D{ -1.0f, -1.0f };
+				rampPoint += sc2::Point2D{ -1.0f, -1.0f };
 			}
-			positions = { currentPos + sc2::Point2D(-0.5f,-1.5f),currentPos + sc2::Point2D(1.5f,-0.5f), currentPos + sc2::Point2D(2.5f, 1.5f) };
+			int rampLength = 1;
+			while (!m_bot.Observation()->IsPlacable(rampPoint - static_cast<float>(rampLength)*sc2::Point2D{ -1.0f, -1.0f }))
+			{
+				++rampLength;
+			}
+			if (rampLength == 2)
+			{
+				positions = { rampPoint + sc2::Point2D(-0.5f, -1.5f), rampPoint + sc2::Point2D(1.5f, -0.5f), rampPoint + sc2::Point2D(2.5f, 1.5f) };
+			}
+			else if (rampLength == 4)
+			{
+				positions = { rampPoint + sc2::Point2D(-0.5f, -1.5f), rampPoint + sc2::Point2D(1.5f, -0.5f), rampPoint + sc2::Point2D(3.5f, 1.5f), rampPoint + sc2::Point2D(4.5f, 3.5f) };
+			}
+			else if (rampLength == 6)
+			{
+				positions = { rampPoint + sc2::Point2D(-0.5f, -1.5f), rampPoint + sc2::Point2D(1.5f, -0.5f), rampPoint + sc2::Point2D(5.5f, 3.5f), rampPoint + sc2::Point2D(6.5f, 5.5f) };
+			}
 			break;
 		}
 		case(11):  // NE
 		{
-			if (!m_bot.Observation()->IsPlacable(currentPos + sc2::Point2D{ -1.0f, 1.0f }))
+			while (!m_bot.Observation()->IsPlacable(rampPoint + sc2::Point2D{ -1.0f, 1.0f }))
 			{
-				currentPos += sc2::Point2D{ -1.0f, 1.0f };
+				rampPoint += sc2::Point2D{ -1.0f, 1.0f };
 			}
-			positions = { currentPos + sc2::Point2D(-0.5f, -1.5f), currentPos + sc2::Point2D(-1.5f, 0.5f), currentPos + sc2::Point2D(1.5f,-2.5f) };
+			int rampLength = 1;
+			while (!m_bot.Observation()->IsPlacable(rampPoint - static_cast<float>(rampLength)*sc2::Point2D{ -1.0f, 1.0f }))
+			{
+				++rampLength;
+			}
+			if (rampLength == 2)
+			{
+				positions = { rampPoint + sc2::Point2D(-0.5f, -1.5f), rampPoint + sc2::Point2D(-1.5f, 0.5f), rampPoint + sc2::Point2D(1.5f, -2.5f) };
+			}
+			if (rampLength == 6)
+			{
+				positions = { rampPoint + sc2::Point2D(-0.5f, -1.5f), rampPoint + sc2::Point2D(-1.5f, 0.5f), rampPoint + sc2::Point2D(3.5f, -5.5f), rampPoint + sc2::Point2D(5.5f, -6.5f) };
+			}
 			break;
 		}
 	}
 	const sc2::ABILITY_ID depotID = sc2::ABILITY_ID::BUILD_SUPPLYDEPOT;
-	std::vector<bool> result = m_bot.Query()->Placement({ { depotID, positions[0]},{ depotID, positions[1] },{ depotID, positions[2] } });
+	std::vector<sc2::QueryInterface::PlacementQuery> placementBatched;
+	for (const auto & pos : positions)
+	{
+		placementBatched.push_back({ depotID, pos });
+	}
+	std::vector<bool> result = m_bot.Query()->Placement(placementBatched);
 	for (int i = 0; i < result.size(); ++i)
 	{
 		if (result[i])
 		{
-			Drawing::drawSphere(m_bot, positions[i], 1.0f, sc2::Colors::Green);
 			return positions[i];
 		}
 	}
-	return sc2::Point2D();
+	return sc2::Point2D{0.0f, 0.0f};
 }
 
 bool MapTools::isNextToRamp(int x, int y) const
 {
-	if (m_ramp[x][y + 1]) { return true; } //above
-	if (m_ramp[x][y - 1]) { return true; }//Below
-	if (m_ramp[x - 1][y]) { return true; }//left
-	if (m_ramp[x + 1][y]) { return true; }//right
+	if (m_ramp[x][y + 1]) { return true; }  // above
+	if (m_ramp[x][y - 1]) { return true; }  // Below
+	if (m_ramp[x - 1][y]) { return true; }  // left
+	if (m_ramp[x + 1][y]) { return true; }  // right
 	return false;
 }
 
-std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const sc2::Point2D posEnd) const
+std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart, const sc2::Point2D posEnd) const
 {
-	//WAYPOINTS QUEUE
+	// WAYPOINTS QUEUE
 	std::queue<sc2::Point2D> wayPoints;
 	const int margin = 5;
 	const sc2::Point2D posA = m_bot.Map().getClosestBorderPoint(posStart, margin);
@@ -489,15 +692,15 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 	float y_min = m_bot.Observation()->GetGameInfo().playable_min.y + margin;
 	float y_max = m_bot.Observation()->GetGameInfo().playable_max.y - margin;
 
-	//we are at the same side
+	// we are at the same side
 	if (posA.x == posB.x || posA.y == posB.y)
 	{
 		wayPoints.push(posA);
 	}
-	//other side
+	// other side
 	else if (posA.x == x_min && posB.x == x_max || posA.x == x_max && posB.x == x_min || posA.y == y_min && posB.y == y_max || posA.y == y_max && posB.y == y_min)
 	{
-		//Left to right
+		// Left to right
 		if (posA.x == x_min)
 		{
 			wayPoints.push(sc2::Point2D(x_min, posStart.y));
@@ -512,7 +715,7 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 				wayPoints.push(sc2::Point2D(x_max, y_max));
 			}
 		}
-		//Right to left
+		// Right to left
 		else if (posA.x == x_max)
 		{
 			wayPoints.push(sc2::Point2D(x_max, posStart.y));
@@ -527,7 +730,7 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 				wayPoints.push(sc2::Point2D(x_min, y_max));
 			}
 		}
-		//Down to up
+		// Down to up
 		else if (posA.y == y_min)
 		{
 			wayPoints.push(sc2::Point2D(posStart.x, y_min));
@@ -542,7 +745,7 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 				wayPoints.push(sc2::Point2D(x_max, y_max));
 			}
 		}
-		//Up down
+		// Up down
 		else if (posA.y == y_max)
 		{
 			wayPoints.push(sc2::Point2D(posStart.x, y_max));
@@ -561,8 +764,8 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 	else
 	{
 		wayPoints.push(posA);
-		//Over an Edge
-		//left to up
+		// Over an Edge
+		// left to up
 		if (posA.x == x_min && posB.y == y_max)
 		{
 			if (forbiddenCorner.x != x_min || forbiddenCorner.y != y_max)
@@ -576,7 +779,7 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 				wayPoints.push(sc2::Point2D(x_max, y_max));
 			}
 		}
-		//left to down
+		// left to down
 		else if (posA.x == x_min && posB.y == y_min)
 		{
 			if (forbiddenCorner.x != x_min || forbiddenCorner.y != y_min)
@@ -590,7 +793,7 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 				wayPoints.push(sc2::Point2D(x_max, y_min));
 			}
 		}
-		//right to up
+		// right to up
 		else if (posA.x == x_max && posB.y == y_max)
 		{
 			if (forbiddenCorner.x != x_max || forbiddenCorner.y != y_max)
@@ -604,7 +807,7 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 				wayPoints.push(sc2::Point2D(x_min, y_max));
 			}
 		}
-		//right to down
+		// right to down
 		else if (posA.x == x_max && posB.y == y_min)
 		{
 			if (forbiddenCorner.x != x_max || forbiddenCorner.y != y_min)
@@ -618,7 +821,7 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 				wayPoints.push(sc2::Point2D(x_min, y_min));
 			}
 		}
-		//down to left
+		// down to left
 		else if (posA.y == y_min && posB.x == x_min)
 		{
 			if (forbiddenCorner.x != x_min || forbiddenCorner.y != y_min)
@@ -632,7 +835,7 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 				wayPoints.push(sc2::Point2D(x_min, y_max));
 			}
 		}
-		//down to right
+		// down to right
 		else if (posA.y == y_min && posB.x == x_max)
 		{
 			if (forbiddenCorner.x != x_max || forbiddenCorner.y != y_min)
@@ -646,7 +849,7 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 				wayPoints.push(sc2::Point2D(x_max, y_max));
 			}
 		}
-		//up to left
+		// up to left
 		else if (posA.y == y_max && posB.x == x_min)
 		{
 			if (forbiddenCorner.x != x_min || forbiddenCorner.y != y_max)
@@ -660,7 +863,7 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 				wayPoints.push(sc2::Point2D(x_min, y_min));
 			}
 		}
-		//up to right
+		// up to right
 		else if (posA.y == y_max && posB.x == x_max)
 		{
 			if (forbiddenCorner.x != x_max || forbiddenCorner.y != y_max)
@@ -674,22 +877,17 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 				wayPoints.push(sc2::Point2D(x_max, y_min));
 			}
 		}
-
 	}
 	if (m_bot.Bases().isOccupiedBy(Players::Enemy, posEnd))
 	{
-		CUnits staticDs = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON,sc2::UNIT_TYPEID::ZERG_SPORECRAWLER,sc2::UNIT_TYPEID::TERRAN_MISSILETURRET }));
+		CUnits staticDs = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON, sc2::UNIT_TYPEID::ZERG_SPORECRAWLER, sc2::UNIT_TYPEID::TERRAN_MISSILETURRET }));
 		staticDs.erase(std::remove_if(staticDs.begin(), staticDs.end(), [posEnd](const auto & staticD) {
-			return Util::Dist(staticD->getPos(), posEnd) > 20.0f;
+			return Util::DistSq(staticD->getPos(), posEnd) > 400.0f;
 		}), staticDs.end());
 		sc2::Point2D saveDirection;
-		if (wayPoints.back() - posB != sc2::Point2D())
+		if (wayPoints.back() - posB != sc2::Point2D{0.0f, 0.0f})
 		{
 			saveDirection = Util::normalizeVector(wayPoints.back() - posB);
-		}
-		else if (posStart - posB != sc2::Point2D())
-		{
-			saveDirection = Util::normalizeVector(posStart - posB);
 		}
 		else
 		{
@@ -704,29 +902,34 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 				posB += saveDirection;
 				inRange = true;
 			}
-
 		}
 		wayPoints.push(posB);
 
 		if (staticDs.empty())
 		{
-			wayPoints.push(posB);
 			wayPoints.push(posEnd);
 		}
 		else
 		{
 			pathPlaning escapePlan(m_bot, posB, posEnd, m_bot.Map().width(), m_bot.Map().height(), 1.0f);
 			std::vector<sc2::Point2D> escapePath = escapePlan.planPath();
-			for (size_t i = 0;i<escapePath.size()-1;++i)
+			if (escapePath.size() > 0)
 			{
-				const sc2::Point2D directionNext = escapePath[i] - wayPoints.back();
-				const sc2::Point2D directionNextNext = escapePath[i + 1] - wayPoints.back();
-				if (directionNext.x*directionNextNext.y != directionNext.y*directionNextNext.x)
+				for (int i = 0; i < static_cast<int>(escapePath.size()) - 1; ++i)
 				{
-					wayPoints.push(escapePath[i]);
+					const sc2::Point2D directionNext = escapePath[i] - wayPoints.back();
+					const sc2::Point2D directionNextNext = escapePath[i + 1] - wayPoints.back();
+					if (directionNext.x*directionNextNext.y != directionNext.y*directionNextNext.x)
+					{
+						wayPoints.push(escapePath[i]);
+					}
 				}
+				wayPoints.push(escapePath.back());
 			}
-			wayPoints.push(escapePath.back());
+			else
+			{
+				wayPoints.push(posEnd);
+			}
 		}
 	}
 	else
@@ -739,27 +942,31 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart,const
 
 sc2::Point2D MapTools::findLandingZone(sc2::Point2D pos) const
 {
-	CUnits staticDs=m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON,sc2::UNIT_TYPEID::ZERG_SPORECRAWLER,sc2::UNIT_TYPEID::TERRAN_MISSILETURRET }));
+	CUnits staticDs = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON, sc2::UNIT_TYPEID::ZERG_SPORECRAWLER, sc2::UNIT_TYPEID::TERRAN_MISSILETURRET }));
 	staticDs.erase(std::remove_if(staticDs.begin(), staticDs.end(), [pos](const auto & staticD) {
-		return Util::Dist(staticD->getPos(), pos) > 20.0f;
+		return Util::DistSq(staticD->getPos(), pos) > 400.0f;
 	}), staticDs.end());
 
 	const std::vector<sc2::Point2D> & tiles = getClosestTilesTo(pos);
 
 	for (const auto & tile : tiles)
 	{
-		float threatLvl = 0.0f;
+		bool tooClose = false;
 		for (const auto & staticD : staticDs)
 		{
 			const float range = staticD->getAttackRange();
 			const float dist = Util::Dist(staticD->getPos(), tile);
-			threatLvl +=std::max(3.0f + range - dist,0.0f);
+			if (dist < 3.0f + range)
+			{
+				tooClose = true;
+				break;
+			}
 		}
-		if (threatLvl == 0.0f)
+		if (!tooClose)
 		{
 			return tile;
 		}
-		if (Util::Dist(pos, tile) > 25.0f)
+		if (Util::DistSq(pos, tile) > 400.0f)
 		{
 			break;
 		}
@@ -804,7 +1011,7 @@ const sc2::Point2D MapTools::getForbiddenCorner(const int margin, const int play
 	}
 }
 
-const sc2::Point2D MapTools::getClosestBorderPoint(sc2::Point2D pos,int margin) const
+const sc2::Point2D MapTools::getClosestBorderPoint(sc2::Point2D pos, int margin) const
 {
 	const float x_min = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_min.x + margin);
 	const float x_max = static_cast<float>(m_bot.Observation()->GetGameInfo().playable_max.x - margin);
@@ -885,7 +1092,7 @@ const bool MapTools::hasPocketBase() const
 			minDistance = distanceFromHome;
 		}
 	}
-	//Any enemy base is fine
+	// Any enemy base is fine
 	const sc2::Point2D enemyStartBase = m_bot.Observation()->GetGameInfo().enemy_start_locations.front();
 	return firstExe ? homeBase->getGroundDistance(enemyStartBase) <= firstExe->getGroundDistance(enemyStartBase) : false;
 }
@@ -914,7 +1121,7 @@ const float MapTools::getHeight(const sc2::Point2D pos) const
 }
 const float MapTools::getHeight(const float x, const float y) const
 {
-	return m_bot.Observation()->TerrainHeight(sc2::Point2D(x,y));
+	return m_bot.Observation()->TerrainHeight(sc2::Point2D(x, y));
 }
 
 void MapTools::draw() const
@@ -924,7 +1131,7 @@ void MapTools::draw() const
 	{
 		for (float y = camera.y - 16.0f; y < camera.y + 16.0f; ++y)
 		{
-			if (!isValid((int)x, (int)y))
+			if (!isValid(static_cast<int>(x), static_cast<int>(y)))
 			{
 				continue;
 			}
@@ -932,19 +1139,19 @@ void MapTools::draw() const
 			if (m_bot.Config().DrawWalkableSectors)
 			{
 				std::stringstream ss;
-				ss << getSectorNumber((int)x, (int)y);
-				Drawing::drawTextScreen(m_bot,sc2::Point3D(x + 0.5f, y + 0.5f, m_maxZ + 0.1f), ss.str(), sc2::Colors::Yellow);
+				ss << getSectorNumber(static_cast<int>(x), static_cast<int>(y));
+				Drawing::drawTextScreen(m_bot, sc2::Point3D(x + 0.5f, y + 0.5f, m_maxZ + 0.1f), ss.str(), sc2::Colors::Yellow);
 			}
 
 			if (m_bot.Config().DrawTileInfo)
 			{
-				sc2::Color color = isWalkable((int)x, (int)y) ? sc2::Colors::Green : sc2::Colors::Red;
-				if (isWalkable((int)x, (int)y) && !isBuildable((int)x, (int)y))
+				sc2::Color color = isWalkable(static_cast<int>(x), static_cast<int>(y)) ? sc2::Colors::Green : sc2::Colors::Red;
+				if (isWalkable(static_cast<int>(x), static_cast<int>(y)) && !isBuildable(static_cast<int>(x), static_cast<int>(y)))
 				{
 					color = sc2::Colors::Yellow;
 				}
 
-				Drawing::drawSquare(m_bot,x, y, x + 1, y + 1, color);
+				Drawing::drawSquare(m_bot, x, y, x + 1, y + 1, color);
 			}
 		}
 	}
@@ -958,23 +1165,28 @@ const float MapTools::calcThreatLvl(sc2::Point2D pos, const sc2::Weapon::TargetT
 		// if it's a combat unit
 		if (enemy->isCombatUnit())
 		{
-			//If we are in range.
-			float range = enemy->getSightRange();
+			// If we are in range.
+			float sightRange = enemy->getSightRange();
+			float attackRange = enemy->getAttackRange(targetType);
 			float dist = Util::Dist(enemy->getPos(), pos);
-			if (dist < range)
+			if (dist < sightRange)
 			{
-				//Get its weapon
+				// Get its weapon
 				const sc2::Weapon weapon = enemy->getWeapon(targetType);
-				//I ignore bonus dmg for now.
+				// I ignore bonus dmg for now.
 				float dps = weapon.attacks * weapon.damage_ / weapon.speed;
-				threatLvl += std::max(0.0f, dps*(range - dist) / range);
+				threatLvl += std::max(0.0f, dps*(sightRange - dist) / sightRange);
+				if (dist < attackRange)
+				{
+					threatLvl += 10;
+				}
 			}
 		}
 	}
 	return threatLvl;
 }
 
-void MapTools::printMap() const 
+void MapTools::printMap() const
 {
 	std::stringstream ss;
 	for (int y(0); y < m_height; ++y)

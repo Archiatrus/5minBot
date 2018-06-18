@@ -65,6 +65,7 @@ public:
 	// returns a build location near a building's desired location
 	sc2::Point2D	getBuildLocationNear(const Building & b, int buildDist);
 	sc2::Point2D	getTownHallLocationNear(const Building & b);
+	sc2::Point2D	getBunkerPosition() const;
 
 	void			drawReservedTiles();
 
