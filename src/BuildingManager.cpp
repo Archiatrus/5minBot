@@ -598,14 +598,6 @@ sc2::Point2D BuildingManager::getBuildingLocation(const Building & b)
 			return testPoint;
 		}
 	}
-	if (b.m_type == sc2::UNIT_TYPEID::TERRAN_BUNKER)
-	{
-		sc2::Point2D testPoint = m_buildingPlacer.getBunkerPosition();
-		if (testPoint != sc2::Point2D(0, 0))
-		{
-			return testPoint;
-		}
-	}
 	if (b.m_type == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
 	{
 		if (m_bot.Query()->Placement(sc2::ABILITY_ID::BUILD_MISSILETURRET, b.desiredPosition))

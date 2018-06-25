@@ -87,6 +87,7 @@ namespace Util
 	std::vector<sc2::UNIT_TYPEID> getMineralTypes();
 	std::vector<sc2::UNIT_TYPEID> getGeyserTypes();
 	std::vector<sc2::UNIT_TYPEID> getTownHallTypes();
+	std::vector<sc2::UNIT_TYPEID> getAntiMedivacTypes();
 	std::vector<sc2::UNIT_TYPEID> getWorkerTypes();
 	const sc2::UpgradeID abilityIDToUpgradeID(const sc2::ABILITY_ID id);
 

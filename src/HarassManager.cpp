@@ -162,7 +162,7 @@ bool Hitsquad::harass(const BaseLocation * target)
 	switch (m_status)
 	{
 	case HarassStatus::Idle:
-		if (haveNoTarget() || m_bot.underAttack())
+		if (haveNoTarget() || m_bot.underAttack() || m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) > 5)
 		{
 			if (m_medivac && m_medivac->getCargoSpaceTaken() > 0)
 			{
@@ -237,7 +237,7 @@ bool Hitsquad::harass(const BaseLocation * target)
 			m_status = HarassStatus::Harass;
 		}
 		const CUnits enemies = getNearbyEnemyUnits();
-		if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || shouldWeFlee(enemies, static_cast<int>(m_marines.size())))
+		if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || shouldWeFlee(enemies, static_cast<int>(m_marines.size())) || m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) > 5)
 		{
 			while (!m_wayPoints.empty())
 			{
@@ -388,20 +388,8 @@ bool Hitsquad::harass(const BaseLocation * target)
 	}
 	case HarassStatus::Fleeing:
 	{
-		// nearby enemies
-		CUnits targetUnits = getNearbyEnemyUnits();
-		for (const auto & enemy : targetUnits)
-		{
-			if (enemy->isCompleted() && (enemy->isType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET) || enemy->isType(sc2::UNIT_TYPEID::ZERG_SPORECRAWLER)))
-			{
-				if (Util::Dist(m_medivac->getPos(), enemy->getPos()) <= enemy->getAttackRange() + 2.0f)
-				{
-					sc2::Point2D fleeingVector = Util::normalizeVector(m_medivac->getPos() - enemy->getPos(), enemy->getAttackRange() + 2.5f);
-					Micro::SmartMove(m_medivac, enemy->getPos() + fleeingVector, m_bot);
-				}
-			}
-		}
 		// Pick everybody up
+
 		if (m_medivac->getCargoSpaceTaken() < m_marines.size())
 		{
 			Micro::SmartRightClick(m_marines, m_medivac, m_bot);
@@ -409,6 +397,8 @@ bool Hitsquad::harass(const BaseLocation * target)
 			Micro::SmartCDAbility(m_medivac, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
 			return true;
 		}
+		// nearby enemies
+		CUnits targetUnits = getNearbyEnemyUnits();
 		// The ones that can hit our medivac
 		CUnits targetUnitsCanHitMedivac;
 		for (const auto & unit : targetUnits)
@@ -490,7 +480,7 @@ bool Hitsquad::harass(const BaseLocation * target)
 			{
 				Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::STOP, m_bot);
 			}
-			if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || m_marines.size() < 6 || haveNoTarget())
+			if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || m_marines.size() < 6 || haveNoTarget() || m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) > 5)
 			{
 				m_status = HarassStatus::GoingHome;
 			}
@@ -522,6 +512,12 @@ bool Hitsquad::harass(const BaseLocation * target)
 			Micro::SmartCDAbility(m_medivac, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
 			return true;
 		}
+		CUnits targetUnits = getNearbyEnemyUnits();
+		if (shouldWeFlee(targetUnits, static_cast<int>(m_marines.size())))
+		{
+			m_status = HarassStatus::Fleeing;
+			return true;
+		}
 		const CUnit_ptr worker = m_bot.Workers().getClosestMineralWorkerTo(m_medivac->getPos());
 		if (worker)
 		{
@@ -544,6 +540,10 @@ bool Hitsquad::harass(const BaseLocation * target)
 
 const bool Hitsquad::haveNoTarget() const
 {
+	if (!m_target)
+	{
+		return true;
+	}
 	for (const auto & base : m_bot.Bases().getOccupiedBaseLocations(Players::Enemy))
 	{
 		if (base->getBaseID() == m_target->getBaseID())
@@ -556,6 +556,11 @@ const bool Hitsquad::haveNoTarget() const
 
 const BaseLocation * Hitsquad::getSavePosition() const
 {
+	if (m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) > 5)
+	{
+		std::set<const BaseLocation *> bases = m_bot.Bases().getOccupiedBaseLocations(Players::Self);
+		return bases.empty() ? m_bot.Bases().getPlayerStartingBaseLocation(Players::Self) : *bases.begin();
+	}
 	sc2::Point2D pos = m_medivac->getPos();
 	std::vector<const BaseLocation *> bases = m_bot.Bases().getBaseLocations();
 	// We use that it is ordered
@@ -862,7 +867,7 @@ void WMHarass::harass(const sc2::Point2D pos)
 		{
 			if (Util::Dist(m_widowmine->getPos(), pos) < 1.0f)
 			{
-				if (m_widowmine->getUnitType().ToType() != sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
+				if (m_widowmine->isType(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE))
 				{
 					Micro::SmartAbility(m_widowmine, sc2::ABILITY_ID::BURROWDOWN, m_bot);
 				}
@@ -882,7 +887,7 @@ void WMHarass::harass(const sc2::Point2D pos)
 			{
 				if (enemy->isCombatUnit() || (enemy->isWorker() && Util::Dist(m_widowmine->getPos(), enemy->getPos()) < 5.0f))
 				{
-					if (m_widowmine->getUnitType().ToType() != sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
+					if (m_widowmine->isType(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE))
 					{
 						Micro::SmartAbility(m_widowmine, sc2::ABILITY_ID::BURROWDOWN, m_bot);
 					}
@@ -891,7 +896,7 @@ void WMHarass::harass(const sc2::Point2D pos)
 				}
 			}
 			// Nobody in sight
-			if (m_widowmine->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED)
+			if (m_widowmine->isType(sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED))
 			{
 				const uint32_t currentLoop = m_bot.Observation()->GetGameLoop();
 				// wait a bit before unburrowing
@@ -1026,6 +1031,10 @@ void HarassManager::handleHitSquads()
 std::vector<const BaseLocation *> HarassManager::getHitSquadTargets() const
 {
 	std::vector<const BaseLocation *> targetBases = { nullptr, nullptr };
+	if (m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) > 5)
+	{
+		return targetBases;
+	}
 	std::set<const BaseLocation *> bases = m_bot.Bases().getOccupiedBaseLocations(Players::Enemy);
 	if (bases.empty())
 	{

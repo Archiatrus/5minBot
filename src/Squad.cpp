@@ -170,7 +170,8 @@ const bool Squad::needsToRegroup()
 		{
 			return false;
 		}
-		if (m_units.size() < 100 && m_units.size() < 0.9f*m_bot.UnitInfo().getNumCombatUnits(Players::Enemy) || m_bot.Observation()->GetFoodUsed()>198 || m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER) < m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_COLOSSUS))
+		std::cout << "Combat: " << m_units.size()*2 << " < " << m_bot.UnitInfo().getFoodCombatUnits(Players::Enemy) << std::endl;
+		if (m_units.size() < 100 && m_units.size() * 2 < m_bot.UnitInfo().getFoodCombatUnits(Players::Enemy) || m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER) < m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_COLOSSUS))
 		{
 			m_bot.retreat();
 			m_lastRetreatSwitchVal = true;
@@ -198,7 +199,7 @@ const bool Squad::needsToRegroup()
 		//if we are retreating, we want to do it for a while
 		if (m_lastRetreatSwitchVal)
 		{
-			if (scattering < 1)
+			if (scattering < 1.0f)
 			{
 				m_lastRetreatSwitchVal = false;
 			}

@@ -105,6 +105,18 @@ void ProductionManager::create(BuildOrderItem item)
 			}
 		}
 	}
+	else if (item.m_type.getUnitTypeID().ToType() == sc2::UNIT_TYPEID::TERRAN_BUNKER)
+	{
+		sc2::Point2D testPoint = m_bot.Map().getBunkerPosition();
+		if (testPoint != sc2::Point2D(0, 0))
+		{
+			m_buildingManager.addBuildingTask(item.m_type.getUnitTypeID(), testPoint);
+		}
+		else
+		{
+			m_buildingManager.addBuildingTask(item.m_type.getUnitTypeID(), m_bot.Bases().getBuildingLocation());
+		}
+	}
 	else
 	{
 		m_buildingManager.addBuildingTask(item.m_type.getUnitTypeID(), m_bot.Bases().getBuildingLocation());
@@ -319,14 +331,14 @@ void ProductionManager::defaultMacro()
 		}
 	}
 	// turrets
-	if (m_turretsRequested)
+	if (m_turretsRequested && numEngibaysFinished > 0)
 	{
 		if (numBasesFinished > static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_MISSILETURRET, false)) + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET))
 		{
 			if (howOftenQueued(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET) == 0 && minerals >= 100)
 			{
 				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET), BUILDING, false));
-				std::cout << "MISSILETURRET " << numBasesFinished << " > " << static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_MISSILETURRET, false)) << " + " << howOftenQueued(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET) << std::endl;
+				std::cout << "MISSILETURRET " << std::endl;
 			}
 			return;
 		}
@@ -742,7 +754,7 @@ void ProductionManager::defaultMacro()
 	// Engineering bay
 	// We start with one. We want to built it after the starport has finished
 	if (minerals >= 125
-		&& ((numStarportFinished == 1 && numEngibays + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY) == 0)
+		&& (((numStarportFinished == 1 || m_turretsRequested) && numEngibays + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY) == 0)
 		|| (numEngibays + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY) == 1 && numArmoriesFinished == 1)))
 	{
 		m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY), BUILDING, false));

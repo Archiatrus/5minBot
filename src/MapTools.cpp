@@ -669,6 +669,76 @@ sc2::Point2D MapTools::getWallPositionDepot(const BaseLocation * base) const
 	return sc2::Point2D{0.0f, 0.0f};
 }
 
+sc2::Point2D MapTools::getBunkerPosition() const
+{
+	if (m_bot.Map().hasPocketBase())
+	{
+		const sc2::Point2D startPoint(m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase());
+		const float startHeight = m_bot.Observation()->TerrainHeight(startPoint);
+		sc2::Point2D currentPos = startPoint;
+		const sc2::Point2D enemyPoint = m_bot.Observation()->GetGameInfo().enemy_start_locations.front();
+		BaseLocation * const enemyBaseLocation = m_bot.Bases().getBaseLocation(enemyPoint);
+		const float stepSize = 2.0;
+		const sc2::Point2D xMove(stepSize, 0.0f);
+		const sc2::Point2D yMove(0.0f, stepSize);
+		int currentWalkingDistance = enemyBaseLocation->getGroundDistance(startPoint);
+		bool foundNewPos = true;
+		while (foundNewPos)
+		{
+			foundNewPos = false;
+			for (float i = -1.0f; i <= 1.0f; ++i)
+			{
+				for (float j = -1.0f; j <= 1.0f; ++j)
+				{
+					if (i != 0.0f || j != 0.0f)
+					{
+						const sc2::Point2D newPos = currentPos + i*xMove + j*yMove;
+						const int dist = enemyBaseLocation->getGroundDistance(newPos);
+						if (m_bot.Observation()->TerrainHeight(newPos) == startHeight && dist > 0 && currentWalkingDistance > dist)
+						{
+							currentWalkingDistance = dist;
+							currentPos = newPos;
+							foundNewPos = true;
+							break;
+						}
+					}
+				}
+				if (foundNewPos)
+				{
+					break;
+				}
+			}
+		}
+		return currentPos;
+	}
+	else
+	{
+		sc2::Point2D bPoint = m_bot.Map().getWallPositionBunker();
+		if (bPoint == sc2::Point2D{ 0.0f, 0.0f })
+		{
+			if (m_bot.UnitInfo().getUnits(Players::Self, Util::getTownHallTypes()).size() == 1)
+			{
+				sc2::Point2D fixpoint = m_bot.Bases().getNextExpansion(Players::Self);
+
+				std::vector<const BaseLocation *> startingBases = m_bot.Bases().getStartingBaseLocations();
+				sc2::Point2D targetPos(0.0f, 0.0f);
+				for (const auto & base : startingBases)
+				{
+					targetPos += base->getCenterOfBase();
+				}
+				targetPos /= static_cast<float>(startingBases.size());
+
+				bPoint = fixpoint + Util::normalizeVector(targetPos - fixpoint, 5.0f);
+			}
+			else
+			{
+				bPoint = m_bot.Bases().getRallyPoint();
+			}
+		}
+		return bPoint;
+	}
+}
+
 bool MapTools::isNextToRamp(int x, int y) const
 {
 	if (m_ramp[x][y + 1]) { return true; }  // above

@@ -52,13 +52,31 @@ const size_t UnitInfoManager::getNumCombatUnits(int player) const
 	size_t numCombatUnits = 0;
 
 	for (const auto & units : m_unitDataBase.at(player))
-		{
-		if (Util::IsCombatUnitType(units.first,m_bot))
+	{
+		if (Util::IsCombatUnitType(units.first, m_bot))
 		{
 			numCombatUnits += units.second.getUnits().size();
 		}
 	}
 	return numCombatUnits;
+}
+
+const size_t UnitInfoManager::getFoodCombatUnits(int player) const
+{
+	if (m_unitDataBase.find(player) == m_unitDataBase.end())
+	{
+		return 0;
+	}
+	size_t numFoodCombatUnits = 0;
+	const sc2::UnitTypes & data = m_bot.Observation()->GetUnitTypeData();
+	for (const auto & units : m_unitDataBase.at(player))
+	{
+		if (Util::IsCombatUnitType(units.first, m_bot))
+		{
+			numFoodCombatUnits += units.second.getUnits().size()*static_cast<size_t>(std::ceil(data[units.first].food_required));
+		}
+	}
+	return numFoodCombatUnits;
 }
 
 static std::string GetAbilityText(sc2::AbilityID ability_id) {

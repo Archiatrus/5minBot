@@ -471,7 +471,15 @@ void CombatCommander::drawSquadInformation()
 
 sc2::Point2D CombatCommander::getMainAttackLocation()
 {
-	const BaseLocation * enemyBaseLocation = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
+	const BaseLocation * enemyBaseLocation;
+	if (m_combatUnits.size() < 50)
+	{
+		enemyBaseLocation = m_bot.Bases().getBaseLocation(m_bot.Bases().getNewestExpansion(Players::Enemy));
+	}
+	else
+	{
+		enemyBaseLocation = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
+	}
 
 	// First choice: Attack an enemy region if we can see units inside it
 	if (enemyBaseLocation)

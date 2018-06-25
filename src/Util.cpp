@@ -741,15 +741,24 @@ std::vector<sc2::UNIT_TYPEID> Util::getGeyserTypes()
 std::vector<sc2::UNIT_TYPEID> Util::getTownHallTypes()
 {
 	std::vector<sc2::UNIT_TYPEID> townHalls = {
-        sc2::UNIT_TYPEID::ZERG_HATCHERY,
+		sc2::UNIT_TYPEID::ZERG_HATCHERY,
 		sc2::UNIT_TYPEID::ZERG_LAIR,
 		sc2::UNIT_TYPEID::ZERG_HIVE,
 		sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER,
 		sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND,
 		sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMANDFLYING,
 		sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS,
-		sc2::UNIT_TYPEID::PROTOSS_NEXUS};
+		sc2::UNIT_TYPEID::PROTOSS_NEXUS };
 	return townHalls;
+}
+
+std::vector<sc2::UNIT_TYPEID> Util::getAntiMedivacTypes()
+{
+	std::vector<sc2::UNIT_TYPEID> anitAir = {
+		sc2::UNIT_TYPEID::ZERG_MUTALISK,
+		sc2::UNIT_TYPEID::ZERG_CORRUPTOR,
+		sc2::UNIT_TYPEID::PROTOSS_PHOENIX };
+	return anitAir;
 }
 
 std::vector<sc2::UNIT_TYPEID> Util::getWorkerTypes()

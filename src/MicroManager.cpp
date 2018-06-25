@@ -28,7 +28,14 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 		{
 			if (Util::DistSq(unit->getPos(), pos) > 25.0f)
 			{
-				if (unit->isCombatUnit())
+
+				if (unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC))
+				{
+					Micro::SmartCDAbility(unit, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
+					moveUnits.push_back(unit);
+					continue;
+				}
+				else if (unit->isCombatUnit())
 				{
 					CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
 					bool bunkerTime = false;
@@ -38,7 +45,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 						{
 							if (b->getCargoSpaceTaken() != b->getCargoSpaceMax() && b->isCompleted())
 							{
-								if (Util::DistSq(b->getPos(), unit->getPos()) < 4.0f)
+								if (Util::DistSq(b->getPos(), unit->getPos()) < 36.0f)
 								{
 									Micro::SmartRightClick(unit, b, m_bot);
 									Micro::SmartAbility(b, sc2::ABILITY_ID::LOAD, unit, m_bot);
@@ -56,10 +63,6 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 					{
 						attackMoveUnits.push_back(unit);
 					}
-					if (unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC))
-					{
-						Micro::SmartCDAbility(unit, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
-					}
 				}
 				else
 				{
@@ -75,6 +78,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 		{
 			Micro::SmartAttackMoveToPos(attackMoveUnits, pos, m_bot);
 		}
+		return;
 	}
 
 	if (!(inputOrder.getType() == SquadOrderTypes::Attack || inputOrder.getType() == SquadOrderTypes::Defend || inputOrder.getType() == SquadOrderTypes::GuardDuty))

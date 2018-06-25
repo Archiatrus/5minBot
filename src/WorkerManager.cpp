@@ -250,7 +250,12 @@ void WorkerManager::handleRepairWorkers()
 		{
 			if (b->isCompleted() && b->getHealth() < b->getHealthMax())
 			{
-				if (b->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER) || b->isType(sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS) || b->isType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET))
+				if (b->isType(sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS))
+				{
+					int numOfWorkers = std::min(6, b->getAssignedHarvesters());
+					setRepairWorker(b, numOfWorkers);
+				}
+				if (b->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER) || b->isType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET))
 				{
 					setRepairWorker(b, 6);
 				}

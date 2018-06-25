@@ -78,6 +78,7 @@ public:
 
 	sc2::Point2D getWallPositionDepot() const;
 	sc2::Point2D getWallPositionDepot(const BaseLocation * base) const;
+	sc2::Point2D getBunkerPosition() const;
 	// returns a list of all tiles on the map, sorted by 4-direcitonal walk distance from the given position
 	const std::vector<sc2::Point2D> & getClosestTilesTo(const sc2::Point2D & pos) const;
 	const std::vector<sc2::Point2D>& getClosestTilesToAir(const sc2::Point2D & pos) const;

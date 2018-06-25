@@ -37,6 +37,8 @@ public:
     //bool                  enemyHasCloakedUnits() const;
 	const size_t getNumCombatUnits(int player) const;
 
+	const size_t getFoodCombatUnits(int player) const;
+
 	const CUnit_ptr OnUnitCreate(const sc2::Unit * unit);
 	const std::shared_ptr<CUnit> getUnit(sc2::Tag unitTag);
 	const std::shared_ptr<CUnit> getUnit(const sc2::Unit * unit);
