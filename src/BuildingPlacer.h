@@ -19,7 +19,7 @@ struct buildingPlace
 	{
 	}
 
-	buildingPlace(const sc2::Point2D seed, const int footPrintArea) :m_seed(seed), m_footPrintArea(footPrintArea)
+	buildingPlace(const sc2::Point2D seed, const int footPrintArea) :m_seed(seed), m_footPrintArea(footPrintArea), m_idx(0), m_canBuildHere(false)
 	{
 	}
 
@@ -50,9 +50,8 @@ class BuildingPlacer
 	bool			tileOverlapsBaseLocation(int x, int y, sc2::UnitTypeID type) const;
 
 
-public:
-
-	BuildingPlacer(CCBot & bot);
+ public:
+	explicit BuildingPlacer(CCBot & bot);
 
 	void onStart();
 

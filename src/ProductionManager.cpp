@@ -261,13 +261,13 @@ void ProductionManager::defaultMacro()
 		return;
 	}
 
-	if (supplyCap < 200 && (supplyCap - supply < (numBasesFinished + 2 * numRaxFinished) || (numDepots == 0 && minerals > 100)))
+	if (supplyCap < 200 && (supplyCap - supply < (numBasesFinished + 2 * numRaxFinished) || (numDepots == 0 && minerals >= 50 && m_bot.Observation()->GetFoodWorkers() == 13)))
 	{
 		// count the building and requested
 		const int numBuildingDepots = numDepots-numDepotsFinished;
 		if (numBuildingDepots + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT) < numBasesFinished)
 		{
-			if (minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT).mineralCost)
+			if (minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT).mineralCost || (numDepots == 0 && minerals >= 50 && m_bot.Observation()->GetFoodWorkers()==13))
 			{
 				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT), BUILDING, false));
 				std::cout << "Depot" << std::endl;
@@ -644,7 +644,7 @@ void ProductionManager::defaultMacro()
 				if (!addon)
 				{
 					// The second barracks gets a lab
-					if (bTechLab.size() == 1 || bReactor.size() == 0)
+					if (bReactor.size() == 0 || bTechLab.size() == 1)
 					{
 						if (minerals >= 50 && gas >= 50)
 						{

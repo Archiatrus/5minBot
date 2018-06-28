@@ -13,11 +13,11 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 	, m_centerOfBase(0.0f, 0.0f)
 	, m_townhall(nullptr)
 	, m_baseID(baseID)
-	, m_isStartLocation(false)
 	, m_left(std::numeric_limits<float>::max())
 	, m_right(std::numeric_limits<float>::lowest())
 	, m_top(std::numeric_limits<float>::lowest())
 	, m_bottom(std::numeric_limits<float>::max())
+	, m_isStartLocation(false)
 	, m_numEnemyCombatUnits(0)
 {
 	m_isPlayerStartLocation[Players::Self] = false;
@@ -193,7 +193,6 @@ bool BaseLocation::containsPosition(const sc2::Point2D & pos) const
 	{
 		return false;
 	}
-	//return getGroundDistance(pos) < NearBaseLocationTileDistance && m_bot.Map().terrainHeight(m_centerOfResources) == m_bot.Map().terrainHeight(pos);
 	if (sc2::Point2D{0.0f, 0.0f} != m_centerOfBase)
 	{
 		return Util::DistSq(m_centerOfBase, pos) < 400 && m_bot.Map().terrainHeight(m_centerOfBase) == m_bot.Map().terrainHeight(pos);
@@ -218,9 +217,9 @@ const sc2::Point2D & BaseLocation::getCenterOfRessources() const
 
 int BaseLocation::getGroundDistance(const sc2::Point2D & pos) const
 {
-	//return Util::Dist(pos, m_centerOfResources);
-	//return m_bot.Query()->PathingDistance(pos, m_centerOfResources);
-	//return m_distanceMap.getDistance(pos);
+	// return Util::Dist(pos, m_centerOfResources);
+	// return m_bot.Query()->PathingDistance(pos, m_centerOfResources);
+	// return m_distanceMap.getDistance(pos);
 	const int dist = m_distanceMap.getDistance(pos);
 	return dist > 0 ? dist : static_cast<int>(Util::Dist(pos, m_centerOfResources));
 }
@@ -243,15 +242,15 @@ const CUnit_ptr BaseLocation::getTownHall() const
 void BaseLocation::setTownHall(const CUnit_ptr townHall)
 {
 	m_townhall = townHall;
-	//it seems we have a new base. Time to update the mineral nodes.
+	// it seems we have a new base. Time to update the mineral nodes.
 	CUnits resources = m_bot.UnitInfo().getUnits(Players::Neutral, Util::getMineralTypes());
 	m_minerals.clear();
-	CUnit_ptr closestMineral=nullptr;
+	CUnit_ptr closestMineral = nullptr;
 	float minDist = 10.0f;
 	for (const auto & resource : resources)
 	{
 		float dist = Util::Dist(townHall->getPos(), resource->getPos());
-		if (dist<10.0f)
+		if (dist < 10.0f)
 		{
 			m_minerals.push_back(resource);
 			if (minDist > dist)
@@ -263,13 +262,13 @@ void BaseLocation::setTownHall(const CUnit_ptr townHall)
 	}
 	if (closestMineral)
 	{
-		Micro::SmartAbility(townHall, sc2::ABILITY_ID::RALLY_BUILDING, closestMineral,m_bot);
+		Micro::SmartAbility(townHall, sc2::ABILITY_ID::RALLY_BUILDING, closestMineral, m_bot);
 	}
 }
 
 void BaseLocation::draw()
 {
-	Drawing::drawSphere(m_bot,m_centerOfResources, 1.0f, sc2::Colors::Yellow);
+	Drawing::drawSphere(m_bot, m_centerOfResources, 1.0f, sc2::Colors::Yellow);
 
 	std::stringstream ss;
 	ss << "BaseLocation: " << m_baseID << "\n";
@@ -290,47 +289,47 @@ void BaseLocation::draw()
 
 	ss << "\n Position:	( " << m_centerOfBase.x << " , " << m_centerOfBase.y << " )\n";
 
-	Drawing::drawText(m_bot,sc2::Point2D(m_left, m_top+3), ss.str().c_str());
-	Drawing::drawText(m_bot,sc2::Point2D(m_left, m_bottom), ss.str().c_str());
+	Drawing::drawText(m_bot, sc2::Point2D(m_left, m_top+3), ss.str().c_str());
+	Drawing::drawText(m_bot, sc2::Point2D(m_left, m_bottom), ss.str().c_str());
 
 	// draw the base bounding box
-	Drawing::drawBox(m_bot,m_left, m_top, m_right, m_bottom);
+	Drawing::drawBox(m_bot, m_left, m_top, m_right, m_bottom);
 
 	for (float x=m_left; x < m_right; ++x)
 	{
-		Drawing::drawLine(m_bot,x, m_top, x, m_bottom, sc2::Color(160, 160, 160));
+		Drawing::drawLine(m_bot, x, m_top, x, m_bottom, sc2::Color(160, 160, 160));
 	}
 
-	for (float y=m_bottom; y<m_top; ++y)
+	for (float y = m_bottom; y < m_top; ++y)
 	{
-		Drawing::drawLine(m_bot,m_left, y, m_right, y, sc2::Color(160, 160, 160));
+		Drawing::drawLine(m_bot, m_left, y, m_right, y, sc2::Color(160, 160, 160));
 	}
 
 	for (const auto & mineralPos : m_mineralPositions)
 	{
-		Drawing::drawSphere(m_bot,mineralPos, 1.0f, sc2::Colors::Teal);
+		Drawing::drawSphere(m_bot, mineralPos, 1.0f, sc2::Colors::Teal);
 	}
 
 	for (const auto & geyserPos : m_geyserPositions)
 	{
-		Drawing::drawSphere(m_bot,geyserPos, 1.0f, sc2::Colors::Green);
+		Drawing::drawSphere(m_bot, geyserPos, 1.0f, sc2::Colors::Green);
 	}
 
 	if (m_isStartLocation)
 	{
 		Drawing::drawSphere(m_bot, m_centerOfBase, 1.0f, sc2::Colors::Red);
 	}
-	
+
 	float ccWidth = 5;
 	float ccHeight = 4;
 	sc2::Point2D boxtl = m_centerOfBase - sc2::Point2D(ccWidth/2, -ccHeight/2);
 	sc2::Point2D boxbr = m_centerOfBase + sc2::Point2D(ccWidth/2, -ccHeight/2);
 
-	Drawing::drawBox(m_bot,boxtl.x, boxtl.y, boxbr.x, boxbr.y, sc2::Colors::Red);
+	Drawing::drawBox(m_bot, boxtl.x, boxtl.y, boxbr.x, boxbr.y, sc2::Colors::Red);
 
 	sc2::Point2D posEnd = getCenterOfRessources() + 1.2f*(getCenterOfRessources() - getCenterOfBase());
-	Drawing::drawLine(m_bot, m_bot.Map().getClosestBorderPoint(posEnd,0), posEnd);
-	//m_distanceMap.draw(m_bot);
+	Drawing::drawLine(m_bot, m_bot.Map().getClosestBorderPoint(posEnd, 0), posEnd);
+	// m_distanceMap.draw(m_bot);
 }
 
 bool BaseLocation::isMineralOnly() const
