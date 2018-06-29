@@ -6,8 +6,7 @@ class CCBot;
 
 class CUnit
 {
-public:
-
+ public:
 	enum class Occupation
 	{
 		None = 0,
@@ -19,10 +18,10 @@ public:
 		Building = 6
 	};
 
-private:
+ private:
 	CCBot * m_bot;
 	const sc2::Unit * m_unit;
-	
+
 	const sc2::UnitTypeID m_unitTypeId;
 	float	m_healthPointsMax;
 	const float m_shieldMax;
@@ -47,11 +46,12 @@ private:
 
 	std::pair<Occupation, int> m_occupation;
 
-public:
+	size_t m_maybeBanshee;  // -.-
 
-	CUnit(const sc2::Unit * unit,CCBot * bot);
+ public:
+	CUnit(const sc2::Unit * unit, CCBot * bot);
 
-	//These are always set or stay frozen
+	// These are always set or stay frozen
 	sc2::Unit::DisplayType getDisplayType() const;
 	sc2::Unit::Alliance getAlliance() const;
 	sc2::Tag getTag() const;
@@ -68,7 +68,7 @@ public:
 	bool isOnScreen() const;
 	bool isBlip() const;
 
-	//These are set to zero(?). So we need to remember
+	// These are set to zero(?). So we need to remember
 	float getHealthPoints() const;
 	float getHealthPointsMax() const;
 	float getShield() const;
@@ -81,7 +81,7 @@ public:
 	bool isBurrowed() const;
 	float getWeaponCooldown() const;
 
-	//Only for our units
+	// Only for our units
 	std::vector<sc2::UnitOrder> getOrders() const;
 	sc2::Tag getAddOnTag() const;
 	std::vector<sc2::PassengerUnit> getPassengers() const;
@@ -96,7 +96,7 @@ public:
 	bool isAlive() const;
 	uint32_t getLastSeenGameLoop() const;
 
-	//Convinence
+	// Convinence
 	void update();
 	bool changedUnitType();
 	float getHealth() const;
@@ -137,7 +137,7 @@ class CUnitsData
 {
 	std::vector<std::shared_ptr<CUnit>> m_units;
 
-public:
+ public:
 	const std::shared_ptr<CUnit> insert(const sc2::Unit * unit, CCBot & bot);
 	void removeDead(CCBot & bot);
 	const std::vector<std::shared_ptr<CUnit>>& getUnits() const;

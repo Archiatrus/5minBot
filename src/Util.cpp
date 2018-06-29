@@ -702,6 +702,7 @@ const CUnit_ptr Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 			// Bad things happen if it is not alive or just snapshot
 			if (mineralPatch->isAlive() && mineralPatch->getDisplayType() == sc2::Unit::DisplayType::Visible && mineralPatch->getMineralContents() > 200)
 			{
+				bot.Production().needCC();
 				return mineralPatch;
 			}
 		}

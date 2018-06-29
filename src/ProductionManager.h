@@ -21,6 +21,7 @@ class ProductionManager
 	int m_defaultMacroSleep;
 	const int m_defaultMacroSleepMax;
 	bool m_turretsRequested;
+	bool m_needCC;
 
 	bool    detectBuildOrderDeadlock();
 	void    create(BuildOrderItem item);
@@ -48,5 +49,6 @@ public:
 	void requestScan();
 	void usedScan(const int i=1);
 	int buildingsFinished(const CUnits units) const;
+	void needCC();
 	int howOftenQueued(sc2::UnitTypeID type);
 };

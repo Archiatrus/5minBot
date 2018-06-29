@@ -3,6 +3,8 @@
 #include "Common.h"
 #include "Squad.h"
 #include "SquadData.h"
+#include <queue>
+#include <tuple>
 
 class CCBot;
 
@@ -18,6 +20,8 @@ class CombatCommander
 	bool			m_needGuards;
 	bool			m_underAttack;
 	bool			m_attack;
+	std::vector<std::tuple<uint32_t, sc2::UNIT_TYPEID, sc2::Point2D> > m_cloakedUnits;
+
 	void			updateScoutDefenseSquad();
 	void			updateDefenseSquads();
 	void			updateAttackSquads();
@@ -40,9 +44,10 @@ class CombatCommander
 	void checkForLostWorkers();
 
 	void handlePlanetaries() const;
+	void handleCloakedUnits();
 
-public:
 
+ public:
 	CombatCommander(CCBot & bot);
 
 
@@ -53,4 +58,5 @@ public:
 	const bool underAttack() const;
 	void attack(const bool attack);
 	void requestGuards(const bool req);
+	void addCloakedUnit(const sc2::UNIT_TYPEID & type, const sc2::Point2D & pos);
 };

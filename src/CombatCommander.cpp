@@ -66,7 +66,9 @@ void CombatCommander::onFrame(const CUnits & combatUnits)
 	}
 	checkForProxyOrCheese();
 	checkDepots();
+	handlePlanetaries();
 	checkForLostWorkers();  // This shouldn't be neccessary. I really don't know how they get lost.
+	handleCloakedUnits();
 	m_squadData.onFrame();
 }
 
@@ -91,7 +93,6 @@ void CombatCommander::updateIdleSquad()
 
 void CombatCommander::updateAttackSquads()
 {
-
 	Squad & mainAttackSquad = m_squadData.getSquad("MainAttack");
 
 	if (!(m_attackStarted || m_attack))
@@ -245,7 +246,7 @@ void CombatCommander::updateDefenseSquads()
 				continue;
 			}
 
-			if (Util::Dist(basePosition, unit->getPos()) < 25 + unit->getAttackRange())
+			if (Util::DistSq(basePosition, unit->getPos()) < std::pow(25.0f + unit->getAttackRange(), 2))
 			{
 				enemyUnitsInRegion.push_back(unit);
 			}
@@ -291,12 +292,27 @@ void CombatCommander::updateDefenseSquads()
 			}
 		}
 
+		// Cloaked units
+		for (const auto & unit : m_cloakedUnits)
+		{
+			if (Util::DistSq(basePosition, std::get<2>(unit)) < 625.0f)
+			{
+				if (std::get<1>(unit) == sc2::UNIT_TYPEID::TERRAN_BANSHEE)
+				{
+					numEnemyFlyingInRegion++;
+				}
+				else
+				{
+					numEnemyGroundInRegion++;
+				}
+			}
+		}
 
 		std::stringstream squadName;
 		squadName << "Base Defense " << basePosition.x << " " << basePosition.y;
 
 		// if there's nothing in this region to worry about
-		if (enemyUnitsInRegion.empty())
+		if (numEnemyFlyingInRegion + numEnemyGroundInRegion == 0)
 		{
 			// if a defense squad for this region exists, remove it
 			if (m_squadData.squadExists(squadName.str()))
@@ -324,7 +340,15 @@ void CombatCommander::updateDefenseSquads()
 
 			// figure out how many units we need on defense
 			int flyingDefendersNeeded = numDefendersPerEnemyUnit * numEnemyFlyingInRegion;
-			int groundDefensersNeeded = numDefendersPerEnemyUnit * numEnemyGroundInRegion;
+			int groundDefensersNeeded;
+			if (enemyUnitsInRegion.size() == 1 && (enemyUnitsInRegion.front()->isType(sc2::UNIT_TYPEID::TERRAN_SCV) || enemyUnitsInRegion.front()->isType(sc2::UNIT_TYPEID::ZERG_DRONE)))
+			{
+				groundDefensersNeeded = 1;
+			}
+			else
+			{
+				groundDefensersNeeded = numDefendersPerEnemyUnit * numEnemyGroundInRegion;
+			}
 
 			updateDefenseSquadUnits(defenseSquad, flyingDefendersNeeded, groundDefensersNeeded);
 		}
@@ -349,10 +373,21 @@ void CombatCommander::updateDefenseSquads()
 		bool enemyUnitInRange = false;
 		for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Enemy))
 		{
-			if (unit->getPos() != sc2::Point3D() && Util::Dist(unit->getPos(), order.getPosition()) < order.getRadius())
+			if (unit->getPos() != sc2::Point3D() && Util::DistSq(unit->getPos(), order.getPosition()) < std::pow(order.getRadius() + unit->getAttackRange(), 2))
 			{
 				enemyUnitInRange = true;
 				break;
+			}
+		}
+		if (!enemyUnitInRange)
+		{
+			for (const auto & unit : m_cloakedUnits)
+			{
+				if (Util::DistSq(order.getPosition(), std::get<2>(unit)) < std::pow(order.getRadius(), 2))
+				{
+					enemyUnitInRange = true;
+					break;
+				}
 			}
 		}
 		bool onlyMedivacs = true;;
@@ -418,8 +453,7 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
 	const CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
 	const CUnits worker = m_bot.Workers().getMineralWorkers();
 	size_t workerCounter = worker.size();
-	while (defendersNeeded > defendersAdded && m_bot.UnitInfo().getNumCombatUnits(Players::Self)<20 && (Bunker.empty()
-			|| Bunker.front()->getCargoSpaceTaken() == 0) && workerCounter>5)
+	while (defendersNeeded > defendersAdded && m_bot.UnitInfo().getNumCombatUnits(Players::Self)<20 && (Bunker.empty() || Bunker.front()->getCargoSpaceTaken() == 0) && workerCounter>5)
 	{
 		const CUnit_ptr workerDefender = findClosestWorkerTo(worker, defenseSquad.getSquadOrder().getPosition());
 
@@ -699,4 +733,48 @@ void CombatCommander::handlePlanetaries() const
 			}
 		}
 	}
+}
+
+void CombatCommander::addCloakedUnit(const sc2::UNIT_TYPEID & type, const sc2::Point2D & pos)
+{
+	for (auto & unit : m_cloakedUnits)
+	{
+		if (std::get<1>(unit) == type && Util::DistSq(pos, std::get<2>(unit)) < 25.0f)
+		{
+			std::get<0>(unit) = m_bot.Observation()->GetGameLoop();
+			std::get<2>(unit) = pos;
+			return;
+		}
+	}
+	m_cloakedUnits.emplace_back(m_bot.Observation()->GetGameLoop(), type, pos);
+}
+
+void CombatCommander::handleCloakedUnits()
+{
+	// Remove old detections
+	const uint32_t currentLoop = m_bot.Observation()->GetGameLoop();
+	std::vector<sc2::Point2D> scanPoints;
+	for (auto & effect : m_bot.Observation()->GetEffects())
+	{
+		if (sc2::EffectID(effect.effect_id).ToType() == sc2::EFFECT_ID::SCANNERSWEEP)
+		{
+			scanPoints.push_back(effect.positions.front());
+		}
+	}
+	const float scanRadiusSq = std::pow(m_bot.Observation()->GetEffectData()[sc2::EffectID(sc2::EFFECT_ID::SCANNERSWEEP)].radius, 2);
+	m_cloakedUnits.erase(std::remove_if(m_cloakedUnits.begin(), m_cloakedUnits.end(), [&](const auto & unit)
+	{
+		if (currentLoop - std::get<0>(unit) > 224)
+		{
+			return true;
+		}
+		for (const auto & p : scanPoints)
+		{
+			if (Util::DistSq(std::get<2>(unit), p) < scanRadiusSq)
+			{
+				return true;
+			}
+		}
+		return false;
+		}), m_cloakedUnits.end());
 }

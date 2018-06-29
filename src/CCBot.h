@@ -52,7 +52,7 @@ public:
 	void OnUnitCreated(const sc2::Unit * unit) override;
 	void OnUnitEnterVision(const sc2::Unit * unit) override;
 
-	void OnDTdetected(const sc2::Point2D pos);
+	void OnCloakDetected(const sc2::UNIT_TYPEID & type, const sc2::Point2D & pos);
 
 
 	BotConfig & Config();
@@ -60,8 +60,8 @@ public:
 	const BaseLocationManager & Bases() const;
 	const MapTools & Map() const;
 	UnitInfoManager & UnitInfo();
-
 	const StrategyManager & Strategy() const;
+	ProductionManager & Production();
 	const TypeData & Data(const sc2::UnitTypeID & type) const;
 	const TypeData & Data(const sc2::UpgradeID & type) const;
 	const TypeData & Data(const BuildType & type) const;
@@ -69,7 +69,6 @@ public:
 	const sc2::Race & GetPlayerRace(int player) const;
 	sc2::Point2D GetStartLocation() const;
 	const CUnit_ptr GetUnit(const UnitTag & tag);
-	const ProductionManager & Production();
 	void requestGuards(const bool req);
 	std::shared_ptr<shuttle> requestShuttleService(const CUnits passengers, const sc2::Point2D targetPos);
 

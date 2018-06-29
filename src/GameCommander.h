@@ -70,9 +70,9 @@ public:
 	void OnBuildingConstructionComplete(CUnit_ptr unit);
 	void onUnitDestroy(CUnit_ptr unit);
 	void OnUnitEnterVision(CUnit_ptr unit);
-	void OnDetectedNeeded(const sc2::Point2D pos);
+	void OnDetectedNeeded(const sc2::UnitTypeID & type, const sc2::Point2D & pos);
 
-	const ProductionManager & Production() const;
+	ProductionManager & Production();
 	void handleScans();
 	void requestGuards(const bool req);
 	std::shared_ptr<shuttle> requestShuttleService(CUnits passengers, const sc2::Point2D targetPos);

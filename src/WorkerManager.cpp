@@ -191,6 +191,10 @@ void WorkerManager::handleMineralWorkers()
 		const CUnits enemies = m_bot.UnitInfo().getUnits(Players::Enemy);
 		for (const auto & worker : getMineralWorkers())
 		{
+			if (!worker->getBuffs().empty() && (worker->getBuffs().front().ToType() == sc2::BUFF_ID::CARRYMINERALFIELDMINERALS || worker->getBuffs().front().ToType() == sc2::BUFF_ID::CARRYHIGHYIELDMINERALFIELDMINERALS))
+			{
+				continue;
+			}
 			float distToBunker = 30.0f;
 			CUnit_ptr closestBunker = nullptr;
 			for (const auto & bunker : bunkers)
@@ -206,7 +210,7 @@ void WorkerManager::handleMineralWorkers()
 			{
 				for (const auto & enemy : enemies)
 				{
-					if (enemy->isVisible() && Util::Dist(enemy->getPos(), worker->getPos()) < 10.0f)
+					if (enemy->isVisible() && Util::DistSq(enemy->getPos(), worker->getPos()) < 100.0f)
 					{
 						const CUnit_ptr mineralPatch = Util::getClostestMineral(closestBunker->getPos(), m_bot);
 						if (mineralPatch)

@@ -67,6 +67,10 @@ void CCBot::OnGameStart()
 
 void CCBot::OnStep()
 {
+	//if (Observation()->GetGameLoop() == 2000)
+	//{
+	//	Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::TERRAN_BANSHEE, Bases().getNewestExpansion(Players::Self), Players::Self, 5);
+	//}
 	Timer t;
 	t.start();
 	// Control()->GetObservation();
@@ -162,9 +166,9 @@ void CCBot::OnUnitEnterVision(const sc2::Unit * unit)
 	m_time[Observation()->GetGameLoop()][3] = t.getElapsedTimeInMilliSec();
 }
 
-void CCBot::OnDTdetected(const sc2::Point2D pos)
+void CCBot::OnCloakDetected(const sc2::UNIT_TYPEID & type, const sc2::Point2D & pos)
 {
-	m_gameCommander.OnDetectedNeeded(pos);
+	m_gameCommander.OnDetectedNeeded(type, pos);
 }
 
 void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
@@ -292,7 +296,7 @@ sc2::Point2D CCBot::GetStartLocation() const
 }
 
 
-const ProductionManager & CCBot::Production()
+ProductionManager & CCBot::Production()
 {
 	return m_gameCommander.Production();
 }

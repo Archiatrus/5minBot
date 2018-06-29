@@ -320,18 +320,23 @@ void GameCommander::onUnitDestroy(CUnit_ptr unit)
 
 void GameCommander::OnUnitEnterVision(CUnit_ptr unit)
 {
-	if (unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_LIBERATOR || unit->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_BANSHEE || unit->getUnitType().ToType() == sc2::UNIT_TYPEID::PROTOSS_COLOSSUS || unit->getUnitType().ToType() == sc2::UNIT_TYPEID::ZERG_BROODLORD)
+	if (unit->isType(sc2::UNIT_TYPEID::TERRAN_LIBERATOR) || unit->isType(sc2::UNIT_TYPEID::TERRAN_BANSHEE) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_COLOSSUS) || unit->isType(sc2::UNIT_TYPEID::ZERG_BROODLORD) || unit->isType(sc2::UNIT_TYPEID::TERRAN_STARPORTTECHLAB))
 	{
 		m_productionManager.requestVikings();
 	}
-	else if (unit->isType(sc2::UNIT_TYPEID::ZERG_MUTALISK) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_ORACLE) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_DARKTEMPLAR))
+	if (unit->isType(sc2::UNIT_TYPEID::ZERG_MUTALISK) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_ORACLE) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_DARKTEMPLAR) || unit->isType(sc2::UNIT_TYPEID::TERRAN_BANSHEE) || unit->isType(sc2::UNIT_TYPEID::TERRAN_STARPORTTECHLAB))
 	{
 		m_productionManager.requestTurrets();
 	}
+	if (Util::IsTownHallType(unit->getUnitType()) && m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getTownHallTypes()) == 2)
+	{
+		m_productionManager.usedScan();
+	}
 }
 
-void GameCommander::OnDetectedNeeded(const sc2::Point2D pos)
+void GameCommander::OnDetectedNeeded(const sc2::UnitTypeID & type, const sc2::Point2D & pos)
 {
+	m_combatCommander.addCloakedUnit(type, pos);
 	m_productionManager.requestScan();
 	m_needDetections.push_back(timePlace(m_bot.Observation()->GetGameLoop(),pos));
 }
@@ -346,58 +351,73 @@ void GameCommander::assignUnit(CUnit_ptr unit, CUnits & units)
 	units.push_back(unit);
 }
 
-const ProductionManager & GameCommander::Production() const
+ProductionManager & GameCommander::Production()
 {
 	return m_productionManager;
 }
 
 void GameCommander::handleScans()
 {
-	if (m_bot.Observation()->GetGameLoop() == 5508)
+	const uint32_t currentTime = m_bot.Observation()->GetGameLoop();
+	if (currentTime == 5508)
 	{
 		m_productionManager.requestScan();
+		if (m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size() < 2)
+		{
+			m_productionManager.requestScan();
+		}
+		return;
 	}
-	if (m_bot.Observation()->GetGameLoop() == 6732)
+	else if (currentTime == 6732)
 	{
-		const sc2::Point2D pos = m_bot.Bases().getNextExpansion(Players::Enemy);
-		sc2::Point2D scanPos;
-		if (m_bot.Observation()->GetVisibility(pos) == sc2::Visibility::Hidden && m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size() < 2)
+		sc2::Point2D scanPos = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy)->getCenterOfBase();
+		if (m_bot.Observation()->GetVisibility(scanPos) != sc2::Visibility::Visible)
 		{
-			scanPos=pos;
-		}
-		else
-		{
-			scanPos=m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy)->getCenterOfBase();
-			if (m_bot.Observation()->GetVisibility(scanPos) != sc2::Visibility::Hidden)
+			CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND);
+			for (const auto & unit : CommandCenters)
 			{
-				return;
-			}
-		}
-		CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND);
-		for (const auto & unit : CommandCenters)
-		{
-			if (unit->isCompleted())
-			{
-				if (unit->getEnergy() >= 50)
+				if (unit->isCompleted())
 				{
-					Micro::SmartAbility(unit, sc2::ABILITY_ID::EFFECT_SCAN, scanPos, m_bot);
-					m_productionManager.usedScan();
-					return;
+					if (unit->getEnergy() >= 50)
+					{
+						Micro::SmartAbility(unit, sc2::ABILITY_ID::EFFECT_SCAN, scanPos, m_bot);
+					}
 				}
 			}
 		}
+		m_productionManager.usedScan();
+		return;
+	}
+	else if (currentTime == 7033)
+	{
+		const sc2::Point2D scanPos = m_bot.Bases().getNextExpansion(Players::Enemy);
+		if (m_bot.Observation()->GetVisibility(scanPos) != sc2::Visibility::Visible && m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size() < 2)
+		{
+			CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND);
+			for (const auto & unit : CommandCenters)
+			{
+				if (unit->isCompleted())
+				{
+					if (unit->getEnergy() >= 50)
+					{
+						Micro::SmartAbility(unit, sc2::ABILITY_ID::EFFECT_SCAN, scanPos, m_bot);
+					}
+				}
+			}
+		}
+		m_productionManager.usedScan();
+		return;
 	}
 	for (const auto & effect : m_bot.Observation()->GetEffects())
 	{
 		if (static_cast<sc2::EFFECT_ID>(effect.effect_id) == sc2::EFFECT_ID::LURKERATTACK)
 		{
-			OnDetectedNeeded(effect.positions.front());
+			OnDetectedNeeded(sc2::UNIT_TYPEID::ZERG_LURKERMPBURROWED, effect.positions.front());
 		}
 	}
 	if (m_needDetections.size() > 0)
 	{
 		//If the detection is too old or if we are already scanning discard it.
-		const uint32_t currentTime = m_bot.Observation()->GetGameLoop();
 		std::vector<sc2::Point2D> scanPoints;
 		for (auto & effect : m_bot.Observation()->GetEffects())
 		{

@@ -48,7 +48,8 @@ CUnit::CUnit(const sc2::Unit * unit, CCBot * bot):
 					return { Occupation::Combat, 0 };
 				}
 			return { Occupation::None, 0 };
-		}())
+		}()),
+	m_maybeBanshee(0)
 {
 	// The default constructor is not setting the values...
 	m_AAWeapons.type = sc2::Weapon::TargetType::Air;
@@ -260,15 +261,44 @@ void CUnit::update()
 			}
 		}
 		*/
-		// DT detection
-		if (getOwner() == Players::Self && m_bot->GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
+		if (getOwner() == Players::Self)
 		{
-			const float lostHealth = m_healthPoints - m_unit->health;
-			const int armor = m_bot->getArmorBio();
-			// Immortal against Marauder gives false alarm...
-			if (lostHealth == 45.0f - armor || lostHealth == 50.0f - armor || lostHealth == 55.0f - armor || lostHealth == 60.0f - armor)
+			if (m_bot->GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
 			{
-				m_bot->OnDTdetected(m_unit->pos);
+				// DT detection
+				const float lostHealth = m_healthPoints - m_unit->health;
+				const int armor = m_bot->getArmorBio() + static_cast<int>(m_bot->Observation()->GetUnitTypeData()[getUnitType()].armor);
+				if (lostHealth == 45.0f - armor || lostHealth == 50.0f - armor || lostHealth == 55.0f - armor || lostHealth == 60.0f - armor)
+				{
+					m_bot->OnCloakDetected(sc2::UNIT_TYPEID::PROTOSS_DARKTEMPLAR, m_unit->pos);
+				}
+			}
+			else if (m_bot->GetPlayerRace(Players::Enemy) == sc2::Race::Terran)
+			{
+				// Banshee detection
+				const float lostHealth = m_healthPoints - m_unit->health;
+				const int armor = m_bot->getArmorBio() + static_cast<int>(m_bot->Observation()->GetUnitTypeData()[getUnitType()].armor);
+				if (lostHealth == 12.0f - armor || lostHealth == 13.0f - armor || lostHealth == 14.0f - armor || lostHealth == 15.0f - armor)
+				{
+					const uint32_t currentTime = m_bot->Observation()->GetGameLoop();
+					if (currentTime - m_maybeBanshee <= 2)
+					{
+						bool hiddenBanshee = true;
+						for (const auto & unit : m_bot->UnitInfo().getUnits(Players::Enemy, sc2::UNIT_TYPEID::TERRAN_BANSHEE))
+						{
+							if (Util::DistSq(unit->getPos(), getPos()) < std::pow(unit->getAttackRange() + 0.5f, 2))
+							{
+								hiddenBanshee = false;
+								break;
+							}
+						}
+						if (hiddenBanshee)
+						{
+							m_bot->OnCloakDetected(sc2::UNIT_TYPEID::TERRAN_BANSHEE, m_unit->pos);
+						}
+					}
+					m_maybeBanshee = currentTime;
+				}
 			}
 		}
 		m_pos = m_unit->pos;
@@ -450,7 +480,7 @@ const float CUnit::getAttackRange(const std::shared_ptr<CUnit> & target) const
 
 const float CUnit::getAttackRange(const sc2::Weapon::TargetType &target) const
 {
-	if (target==sc2::Weapon::TargetType::Air)
+	if (target == sc2::Weapon::TargetType::Air)
 	{
 		return m_AAWeapons.range;
 	}
