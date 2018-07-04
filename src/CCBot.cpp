@@ -67,6 +67,54 @@ void CCBot::OnGameStart()
 
 void CCBot::OnStep()
 {
+	// special thanks to aviloBot
+	auto chat = Observation()->GetChatMessages();
+	if (!chat.empty())
+	{
+		if (chat.front().player_id != Observation()->GetPlayerID())
+		{
+			if (chat.front().message == "gg")
+			{
+				Actions()->SendChat("Agreed. You may leave now.");
+			}
+			else if (chat.front().message == "no scout and the perfect counter.. so blatant!")
+			{
+				Actions()->SendChat("What you gonna do? Report me?");
+			}
+			else if (chat.front().message == "LOL")
+			{
+				Actions()->SendChat("ROFL");
+			}
+			else if (chat.front().message == "i know ur stream cheating")
+			{
+				Actions()->SendChat("i know ur using a bot");
+			}
+			else if (chat.front().message == "same guy again..")
+			{
+				Actions()->SendChat("Stream snipe successful");
+			}
+			else if (chat.front().message == "the same stream sniper AGAIN!!!")
+			{
+				Actions()->SendChat("OH NO YOU CAUGHT ME PLZ NO REPORT");
+			}
+			else if (chat.front().message == "who is teaching u this bad play?")
+			{
+				Actions()->SendChat("ActionJaxon");
+			}
+			else if (chat.front().message == "it's over little jimmy")
+			{
+				Actions()->SendChat("shh no tears only dreams");
+			}
+			else if (chat.front().message == "playing against a know maphacker.. so much fun!" || chat.front().message == "playing against a known maphacker.. so much fun!")
+			{
+				Actions()->SendChat("Imagine knowing everything you do. Now THAT'S fun =)");
+			}
+			else
+			{
+				Actions()->SendChat("ez");
+			}
+		}
+	}
 	//if (Observation()->GetGameLoop() == 2000)
 	//{
 	//	Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::TERRAN_BANSHEE, Bases().getNewestExpansion(Players::Self), Players::Self, 5);
@@ -120,7 +168,7 @@ void CCBot::OnStep()
 		Debug()->SendDebug();
 	}
 	#ifdef VSHUMAN
-	while (timer.getElapsedTimeInMilliSec() - oldTime < 1000.0 / 22.4) {};
+	while (timer.getElapsedTimeInMilliSec() - oldTime < 1000.0 / 22.4) {}
 	oldTime = timer.getElapsedTimeInMilliSec();
 	#endif // VSHUMAN
 }
@@ -287,6 +335,10 @@ WorkerManager & CCBot::Workers()
 
 const CUnit_ptr CCBot::GetUnit(const UnitTag & tag)
 {
+	if (tag == 0)
+	{
+		return nullptr;
+	}
 	return UnitInfo().getUnit(tag);
 }
 
@@ -334,6 +386,11 @@ const bool CCBot::underAttack() const
 void * CreateNewAgent()
 {
 	return new CCBot();
+}
+
+void CCBot::setPlayerRace(int player, sc2::Race race)
+{
+	m_playerRace.at(player) = race;
 }
 
 const char *GetAgentName()

@@ -33,6 +33,7 @@ class GameCommander
 	std::vector<std::shared_ptr<shuttle>>	m_shuttles;
 
 	std::vector<timePlace> m_needDetections;
+	uint32_t m_baseScanTime;
 
 	bool					m_initialScoutSet;
 

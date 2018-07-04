@@ -10,16 +10,19 @@ class CCBot;
 
 class Squad
 {
+public:
+	enum class Status { fine, regroup, flee };
+
+private:
 	CCBot &             m_bot;
 
 	std::string         m_name;
-	CUnits m_units;
-	std::string         m_regroupStatus;
-	int                 m_lastRetreatSwitch;
+	SquadOrder          m_order;
+	Status              m_status;
 	bool                m_lastRetreatSwitchVal;
 	size_t              m_priority;
 
-	SquadOrder          m_order;
+	CUnits m_units;
 	MeleeManager        m_meleeManager;
 	RangedManager       m_rangedManager;
 	SiegeManager		m_siegeManager;

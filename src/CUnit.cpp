@@ -251,23 +251,13 @@ void CUnit::update()
 {
 	if (isVisible())
 	{
-		/*
-		if (getOwner() == Players::Self)
-		{
-			const auto target = getTarget();
-			if (target)
-			{
-				Drawing::drawLine(*m_bot, m_pos, target->getPos(),sc2::Colors::Red);
-			}
-		}
-		*/
 		if (getOwner() == Players::Self)
 		{
 			if (m_bot->GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
 			{
 				// DT detection
 				const float lostHealth = m_healthPoints - m_unit->health;
-				const int armor = m_bot->getArmorBio() + static_cast<int>(m_bot->Observation()->GetUnitTypeData()[getUnitType()].armor);
+				const int armor = static_cast<int>(m_bot->Observation()->GetUnitTypeData()[getUnitType()].armor);
 				if (lostHealth == 45.0f - armor || lostHealth == 50.0f - armor || lostHealth == 55.0f - armor || lostHealth == 60.0f - armor)
 				{
 					m_bot->OnCloakDetected(sc2::UNIT_TYPEID::PROTOSS_DARKTEMPLAR, m_unit->pos);
@@ -277,7 +267,7 @@ void CUnit::update()
 			{
 				// Banshee detection
 				const float lostHealth = m_healthPoints - m_unit->health;
-				const int armor = m_bot->getArmorBio() + static_cast<int>(m_bot->Observation()->GetUnitTypeData()[getUnitType()].armor);
+				const int armor = static_cast<int>(m_bot->Observation()->GetUnitTypeData()[getUnitType()].armor);
 				if (lostHealth == 12.0f - armor || lostHealth == 13.0f - armor || lostHealth == 14.0f - armor || lostHealth == 15.0f - armor)
 				{
 					const uint32_t currentTime = m_bot->Observation()->GetGameLoop();
@@ -640,6 +630,10 @@ const std::shared_ptr<CUnit> CUnitsData::insert(const sc2::Unit * unit, CCBot & 
 		}
 	}
 	m_units.push_back(std::make_shared<CUnit>(unit, &bot));
+	if (bot.GetPlayerRace(Players::Enemy) == sc2::Race::Random && unit->alliance == sc2::Unit::Alliance::Enemy)
+	{
+		bot.setPlayerRace(Players::Enemy, bot.Observation()->GetUnitTypeData()[unit->unit_type].race);
+	}
 	return m_units.back();
 }
 

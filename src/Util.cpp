@@ -663,7 +663,7 @@ const CUnit_ptr Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 	{
 		//We don't care for not finished bases.
 		const CUnit_ptr townHall = base->getTownHall();
-		if (!townHall || (townHall && townHall->getBuildProgress() != 1.0f && townHall->getAssignedHarvesters()>24))
+		if (!townHall || (townHall && (townHall->getBuildProgress() != 1.0f || townHall->getAssignedHarvesters()>1.5f*townHall->getIdealHarvesters())))
 		{
 			continue;
 		}
@@ -694,16 +694,18 @@ const CUnit_ptr Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 		int distance = base->getGroundDistance(pos);
 		orderedBases2[distance] = base;
 	}
-	for (const auto & baseMap : orderedBases2)
+	for (const auto & baseMap : orderedBases)
 	{
-		const CUnits mineralPatches = baseMap.second->getMinerals();
-		for (const auto & mineralPatch : mineralPatches)
+		for (const auto & mineralPatch : bot.UnitInfo().getUnits(Players::Neutral, Util::getMineralTypes()))
 		{
-			// Bad things happen if it is not alive or just snapshot
-			if (mineralPatch->isAlive() && mineralPatch->getDisplayType() == sc2::Unit::DisplayType::Visible && mineralPatch->getMineralContents() > 200)
+			if (Util::DistSq(baseMap.second->getCenterOfBase(), mineralPatch->getPos()) < 100.0f)
 			{
-				bot.Production().needCC();
-				return mineralPatch;
+				// Bad things happen if it is not alive or just snapshot
+				if (mineralPatch->isAlive() && mineralPatch->getDisplayType() == sc2::Unit::DisplayType::Visible && mineralPatch->getMineralContents() > 200)
+				{
+					bot.Production().needCC();
+					return mineralPatch;
+				}
 			}
 		}
 	}
@@ -758,6 +760,7 @@ std::vector<sc2::UNIT_TYPEID> Util::getAntiMedivacTypes()
 	std::vector<sc2::UNIT_TYPEID> anitAir = {
 		sc2::UNIT_TYPEID::ZERG_MUTALISK,
 		sc2::UNIT_TYPEID::ZERG_CORRUPTOR,
+		sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER,
 		sc2::UNIT_TYPEID::PROTOSS_PHOENIX };
 	return anitAir;
 }
@@ -802,21 +805,22 @@ sc2::Point2D Util::normalizeVector(const sc2::Point2D pos, const float length)
 	{
 		return sc2::Point2D();
 	}
-	return (length / Util::Dist(pos)) * pos ;
+	return (length / Util::Dist(pos)) * pos;
 }
 
-const bool Util::isBadEffect(const sc2::EffectID id)
+const bool Util::isBadEffect(const sc2::EffectID id, bool flying)
 {
 	switch (id.ToType())
 	{
 	case sc2::EFFECT_ID::BLINDINGCLOUD:
-	case sc2::EFFECT_ID::CORROSIVEBILE:
 	case sc2::EFFECT_ID::LIBERATORMORPHED:
 	case sc2::EFFECT_ID::LIBERATORMORPHING:
 	case sc2::EFFECT_ID::LURKERATTACK:
+		return !flying;
 	case sc2::EFFECT_ID::NUKEDOT:
 	case sc2::EFFECT_ID::PSISTORM:
-	//case sc2::EFFECT_ID::THERMALLANCES:
+	case sc2::EFFECT_ID::CORROSIVEBILE:
+	// case sc2::EFFECT_ID::THERMALLANCES:
 		return true;
 	}
 	return false;

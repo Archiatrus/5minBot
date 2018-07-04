@@ -363,7 +363,7 @@ const int BaseLocation::getNumEnemyStaticD() const
 			threadLvl+=3;
 		}
 	}
-	CUnits staticD = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON, sc2::UNIT_TYPEID::ZERG_SPORECRAWLER, sc2::UNIT_TYPEID::TERRAN_MISSILETURRET }));
+	CUnits staticD = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED, sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON, sc2::UNIT_TYPEID::ZERG_SPORECRAWLER, sc2::UNIT_TYPEID::TERRAN_MISSILETURRET }));
 	for (const auto & d : staticD)
 	{
 		if (d->isCompleted() && containsPosition(d->getPos()))

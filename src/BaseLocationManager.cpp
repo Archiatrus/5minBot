@@ -477,7 +477,7 @@ sc2::Point2D BaseLocationManager::getNewestExpansion(int player) const
 	for (const auto & base : getBaseLocations())
 	{
 		float dist = Util::Dist(homeBase->getCenterOfBase(), base->getCenterOfBase());
-		if (base->isOccupiedByPlayer(player) && maxDistance < dist && base->getTownHall())
+		if (base->isOccupiedByPlayer(player) && maxDistance < dist)
 		{
 			maxDistance = dist;
 			newestBase = base;

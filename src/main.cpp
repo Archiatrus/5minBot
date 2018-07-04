@@ -78,14 +78,14 @@ static void ParseArguments(int argc, char *argv[], ConnectionOptions &connect_op
 	}
 	else
 	{
-		std::cout << std::endl << "Could not read race option. Please provide it via --HumanRace \"Zerg/Protoss/Terran\". Using default: Zerg" << std::endl << std::endl;
-		connect_options.HumanRace = sc2::Zerg;
+		std::cout << std::endl << "Could not read race option. Please provide it via --HumanRace \"Zerg/Protoss/Terran\". Using default: Terran" << std::endl << std::endl;
+		connect_options.HumanRace = sc2::Terran;
 	}
 
 	if (!arg_parser.Get("Map", connect_options.map))
 	{
-		std::cout << "Could not read map option. Please provide it via --Map \"InterloperLE.SC2Map\". Using default: InterloperLE.SC2Map" << std::endl << std::endl;
-		connect_options.map = "InterloperLE.SC2Map";
+		std::cout << "Could not read map option. Please provide it via --Map \"InterloperLE.SC2Map\". Using default: LostAndFoundLE.SC2Map" << std::endl << std::endl;
+		connect_options.map = "LostAndFoundLE.SC2Map";
 	}
 	std::string realTime;
 	if (arg_parser.Get("WithRealtime", realTime))
@@ -147,8 +147,8 @@ int main(int argc, char* argv[])
 #else  // DEBUG
 int main(int argc, char* argv[])
 {
-	std::vector<std::string> maps = { "16BitLE.SC2Map", "DarknessSanctuaryLE.SC2Map", "AcidPlantLE.SC2Map", "RedShiftLE.SC2Map", "DreamcatcherLE.SC2Map", "CatalystLE.SC2Map", "LostAndFoundLE.SC2Map"};
-	std::vector<sc2::Race> opponents = { sc2::Race::Zerg, sc2::Race::Protoss, sc2::Race::Terran};
+	std::vector<std::string> maps = { "DarknessSanctuaryLE.SC2Map", "16BitLE.SC2Map", "AcidPlantLE.SC2Map", "RedShiftLE.SC2Map", "DreamcatcherLE.SC2Map", "CatalystLE.SC2Map", "LostAndFoundLE.SC2Map"};
+	std::vector<sc2::Race> opponents = { sc2::Race::Terran, sc2::Race::Zerg, sc2::Race::Protoss};
 	std::map<std::string, sc2::Point2D> mapScore;
 	std::map<sc2::Race, sc2::Point2D> raceScore;
 

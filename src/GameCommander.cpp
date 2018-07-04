@@ -2,7 +2,7 @@
 #include "CCBot.h"
 #include "Util.h"
 
-//Only harass if we have more than
+// Only harass if we have more than
 const int manyUnits = 25;
 
 timePlace::timePlace(uint32_t time, sc2::Point2D place) : m_time(time), m_place(place)
@@ -10,12 +10,13 @@ timePlace::timePlace(uint32_t time, sc2::Point2D place) : m_time(time), m_place(
 }
 
 GameCommander::GameCommander(CCBot & bot)
-	: m_bot				 (bot)
-	, m_productionManager   (bot)
-	, m_scoutManager		(bot)
-	, m_harassManager		(bot)
-	, m_combatCommander	 (bot)
-	, m_initialScoutSet	 (false)
+	: m_bot(bot)
+	, m_productionManager(bot)
+	, m_scoutManager(bot)
+	, m_harassManager(bot)
+	, m_combatCommander(bot)
+	, m_initialScoutSet(false)
+	, m_baseScanTime(6048)
 {
 }
 
@@ -200,13 +201,14 @@ void GameCommander::setHarassUnits()
 	{
 		CUnits enemies = m_bot.UnitInfo().getUnits(Players::Enemy);
 		CUnits medivacs = m_harassManager.getMedivacs();
+		bool onlySendOnce = true;
 		for (const auto & unit : m_validUnits)
 		{
 			BOT_ASSERT(unit, "Have a null unit in our valid units\n");
 
 			if (!isAssigned(unit))
 			{
-				if (unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC) && m_harassManager.needMedivac() && unit->getCargoSpaceTaken()==0)
+				if (onlySendOnce && unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC) && m_harassManager.needMedivac() && unit->getCargoSpaceTaken()==0)
 				{
 					int freeMarines = 0;
 					for (const auto & marine : m_validUnits)
@@ -219,6 +221,7 @@ void GameCommander::setHarassUnits()
 					if (freeMarines >= 16)
 					{
 						m_harassManager.setMedivac(unit);
+						onlySendOnce = false;
 					}
 				}
 				//We only assign marines, after we have a medivac
@@ -290,7 +293,7 @@ void GameCommander::onUnitCreate(CUnit_ptr unit)
 					if (b->getBuildProgress()==1.0f && b->getCargoSpaceTaken() != b->getCargoSpaceMax())
 					{
 						Micro::SmartRightClick(unit, b, m_bot);
-						Micro::SmartAbility(b, sc2::ABILITY_ID::LOAD, unit,m_bot);
+						Micro::SmartAbility(b, sc2::ABILITY_ID::LOAD, unit, m_bot);
 						return;
 					}
 				}
@@ -315,7 +318,7 @@ void GameCommander::OnBuildingConstructionComplete(CUnit_ptr unit)
 
 void GameCommander::onUnitDestroy(CUnit_ptr unit)
 {
-	//_productionManager.onUnitDestroy(unit);
+	// _productionManager.onUnitDestroy(unit);
 }
 
 void GameCommander::OnUnitEnterVision(CUnit_ptr unit)
@@ -324,7 +327,7 @@ void GameCommander::OnUnitEnterVision(CUnit_ptr unit)
 	{
 		m_productionManager.requestVikings();
 	}
-	if (unit->isType(sc2::UNIT_TYPEID::ZERG_MUTALISK) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_ORACLE) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_DARKTEMPLAR) || unit->isType(sc2::UNIT_TYPEID::TERRAN_BANSHEE) || unit->isType(sc2::UNIT_TYPEID::TERRAN_STARPORTTECHLAB))
+	if (unit->isType(sc2::UNIT_TYPEID::ZERG_MUTALISK) || unit->isType(sc2::UNIT_TYPEID::ZERG_SPIRE) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_ORACLE) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_DARKTEMPLAR) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_DARKSHRINE) || unit->isType(sc2::UNIT_TYPEID::TERRAN_BANSHEE) || unit->isType(sc2::UNIT_TYPEID::TERRAN_STARPORTTECHLAB))
 	{
 		m_productionManager.requestTurrets();
 	}
@@ -338,7 +341,7 @@ void GameCommander::OnDetectedNeeded(const sc2::UnitTypeID & type, const sc2::Po
 {
 	m_combatCommander.addCloakedUnit(type, pos);
 	m_productionManager.requestScan();
-	m_needDetections.push_back(timePlace(m_bot.Observation()->GetGameLoop(),pos));
+	m_needDetections.push_back(timePlace(m_bot.Observation()->GetGameLoop(), pos));
 }
 
 void GameCommander::assignUnit(CUnit_ptr unit, CUnits & units)
@@ -359,7 +362,7 @@ ProductionManager & GameCommander::Production()
 void GameCommander::handleScans()
 {
 	const uint32_t currentTime = m_bot.Observation()->GetGameLoop();
-	if (currentTime == 5508)
+	if (currentTime == 4824)
 	{
 		m_productionManager.requestScan();
 		if (m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size() < 2)
@@ -368,9 +371,18 @@ void GameCommander::handleScans()
 		}
 		return;
 	}
-	else if (currentTime == 6732)
+	else if (currentTime >= m_baseScanTime && m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy))
 	{
-		sc2::Point2D scanPos = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy)->getCenterOfBase();
+		const CUnits factory = m_bot.UnitInfo().getUnits(Players::Enemy, sc2::UNIT_TYPEID::TERRAN_FACTORY);
+		sc2::Point2D scanPos;
+		if (!factory.empty())
+		{
+			scanPos = factory.back()->getPos();
+		}
+		else
+		{
+			scanPos = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy)->getCenterOfBase();
+		}
 		if (m_bot.Observation()->GetVisibility(scanPos) != sc2::Visibility::Visible)
 		{
 			CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND);
@@ -381,17 +393,24 @@ void GameCommander::handleScans()
 					if (unit->getEnergy() >= 50)
 					{
 						Micro::SmartAbility(unit, sc2::ABILITY_ID::EFFECT_SCAN, scanPos, m_bot);
+						m_baseScanTime += 2688;
+						m_productionManager.usedScan();
+						return;
 					}
 				}
 			}
 		}
-		m_productionManager.usedScan();
-		return;
+		else
+		{
+			m_baseScanTime += 2688;
+			m_productionManager.usedScan();
+			return;
+		}
 	}
 	else if (currentTime == 7033)
 	{
 		const sc2::Point2D scanPos = m_bot.Bases().getNextExpansion(Players::Enemy);
-		if (m_bot.Observation()->GetVisibility(scanPos) != sc2::Visibility::Visible && m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size() < 2)
+		if (sc2::Point2D{0.0f, 0.0f} != scanPos && m_bot.Observation()->GetVisibility(scanPos) != sc2::Visibility::Visible && m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size() < 2)
 		{
 			CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND);
 			for (const auto & unit : CommandCenters)
@@ -401,6 +420,7 @@ void GameCommander::handleScans()
 					if (unit->getEnergy() >= 50)
 					{
 						Micro::SmartAbility(unit, sc2::ABILITY_ID::EFFECT_SCAN, scanPos, m_bot);
+						break;
 					}
 				}
 			}
@@ -417,7 +437,7 @@ void GameCommander::handleScans()
 	}
 	if (m_needDetections.size() > 0)
 	{
-		//If the detection is too old or if we are already scanning discard it.
+		// If the detection is too old or if we are already scanning discard it.
 		std::vector<sc2::Point2D> scanPoints;
 		for (auto & effect : m_bot.Observation()->GetEffects())
 		{
@@ -428,8 +448,8 @@ void GameCommander::handleScans()
 		}
 		const float scanRadius = m_bot.Observation()->GetEffectData()[sc2::EffectID(sc2::EFFECT_ID::SCANNERSWEEP)].radius;
 		int numRemovedDetections = 0;
-		m_needDetections.erase(std::remove_if(m_needDetections.begin(), m_needDetections.end(), [currentTime, scanPoints, scanRadius,&numRemovedDetections](timePlace tp) {
-			if (currentTime - tp.m_time > 112) //5 sec
+		m_needDetections.erase(std::remove_if(m_needDetections.begin(), m_needDetections.end(), [&](timePlace tp) {
+			if (currentTime - tp.m_time > 112)  // 5 sec
 			{
 				++numRemovedDetections;
 				return true;
@@ -449,7 +469,7 @@ void GameCommander::handleScans()
 		{
 			return;
 		}
-		CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self,sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND);
+		CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND);
 		for (const auto & unit : CommandCenters)
 		{
 			if (unit->getBuildProgress() == 1.0f)
@@ -466,7 +486,7 @@ void GameCommander::handleScans()
 					}
 					if (nearbyUnits > 5)
 					{
-						Micro::SmartAbility(unit, sc2::ABILITY_ID::EFFECT_SCAN, m_needDetections.back().m_place,m_bot);
+						Micro::SmartAbility(unit, sc2::ABILITY_ID::EFFECT_SCAN, m_needDetections.back().m_place, m_bot);
 						m_productionManager.usedScan();
 						return;
 					}

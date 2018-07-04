@@ -40,6 +40,6 @@ public:
 
 	void setUnits(CUnits & u);
 	void execute(const SquadOrder & order);
-	void regroup(const sc2::Point2D & regroupPosition) const;
+	void regroup(const sc2::Point2D & regroupPosition, const bool fleeing) const;
 
 };

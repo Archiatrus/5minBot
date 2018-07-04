@@ -10,7 +10,8 @@ shuttle::shuttle(CCBot * const bot, CUnits passengers, sc2::Point2D targetPos) :
 	m_passengers(passengers),
 	m_targetPos(targetPos),
 	m_status(ShuttleStatus::lookingForShuttle),
-	m_stalemateCheck(sc2::Point2D())
+	m_stalemateCheck(sc2::Point2D()),
+	m_lastPathPlan(0)
 {
 
 }
@@ -58,7 +59,11 @@ void shuttle::travelToDestination()
 	{
 		if (Util::Dist(m_shuttle->getPos(), m_targetPos)>1.0f)
 		{
-			m_wayPoints = m_bot->Map().getEdgePath(m_shuttle->getPos(), m_targetPos);
+			if (m_bot->Observation()->GetGameLoop() - m_lastPathPlan > 224)
+			{
+				m_wayPoints = m_bot->Map().getEdgePath(m_shuttle->getPos(), m_targetPos);
+				m_lastPathPlan = m_bot->Observation()->GetGameLoop();
+			}
 		}
 		else
 		{

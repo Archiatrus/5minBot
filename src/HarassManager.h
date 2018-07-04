@@ -30,6 +30,7 @@ class Hitsquad
 	int m_pathPlanCounter;
 	const BaseLocation *m_target;
 	sc2::Point2D m_stalemateCheck;
+	int32_t m_lastPathPlan;
 
 	void checkForCasualties();
 	CUnit_ptr getTargetMarines(CUnits targets) const;

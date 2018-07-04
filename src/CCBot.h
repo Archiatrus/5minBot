@@ -76,6 +76,7 @@ public:
 	const int getWeaponBio() const;
 	const int getWeaponMech() const;
 	const bool underAttack() const;
+	void setPlayerRace(int player, sc2::Race race);
 	void retreat();
 };
 

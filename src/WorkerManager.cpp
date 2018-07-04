@@ -92,10 +92,21 @@ void WorkerManager::handleGasWorkers()
 			{
 				// get the number of workers currently assigned to it
 				int numAssigned = m_workerData.getNumAssignedWorkers(unit);
-
-
+				// check if a liberator is targeting the area
+				bool enemyTooClose = false;
+				for (const auto & effect : m_bot.Observation()->GetEffects())
+				{
+					if (effect.effect_id == sc2::EffectID(sc2::EFFECT_ID::LIBERATORMORPHING) || effect.effect_id == sc2::EffectID(sc2::EFFECT_ID::LIBERATORMORPHING))
+					{
+						if (Util::DistSq(effect.positions.front(), unit->getPos()) < 100.0f)
+						{
+							enemyTooClose = true;
+							break;
+						}
+					}
+				}
 				// if it's less than we want it to be, fill 'er up
-				if (numAssigned<3 && numMinWorker>minNumMinWorkers)
+				if (!enemyTooClose && numAssigned<3 && numMinWorker>minNumMinWorkers)
 				{
 					auto gasWorker = getGasWorker(unit);
 					if (gasWorker)
@@ -135,51 +146,71 @@ void WorkerManager::handleMineralWorkers()
 							if (numAssigned_next < numMaxAssigned_next)
 							{
 								auto transfer_worker = getClosestMineralWorkerTo(unit->getPos());  // THIS WILL PROBABLY CALL THE SAME WORKER OVER AND OVER AGAIN UNTIL HE IS FAR ENOUGH AWAY :(
-								const CUnit_ptr mineralPatch = Util::getClostestMineral(unit_next->getPos(), m_bot);
-								if (mineralPatch && transfer_worker)
+								CUnits minerals = m_bot.Bases().getBaseLocation(unit_next->getPos())->getMinerals();
+								CUnit_ptr closestMineral = nullptr;
+								float minDist = std::numeric_limits<float>::max();
+								for (auto mineral : minerals)
 								{
-									m_workerData.setWorkerJob(transfer_worker, WorkerJobs::Minerals, mineralPatch);
+									if (mineral->getDisplayType() == sc2::Unit::DisplayType::Snapshot)
+									{
+										mineral = m_bot.GetUnit(mineral->getTag());
+									}
+									if (mineral->isAlive() && mineral->getDisplayType() == sc2::Unit::DisplayType::Visible && mineral->getMineralContents() > 200)
+									{
+										const float dist = Util::DistSq(mineral->getPos(), unit_next->getPos());
+										if (minDist > dist)
+										{
+											minDist = dist;
+											closestMineral = mineral;
+										}
+									}
+								}
+								if (closestMineral && transfer_worker)
+								{
+									m_workerData.setWorkerJob(transfer_worker, WorkerJobs::Minerals, closestMineral);
 									return;
 								}
 							}
 						}
 					}
-					// Only do it for one townhall at a time. Otherwise there might be problems?!
-				}
-				// if it's really too much try to find anything
-				if (numAssigned > 1.5f*numMaxAssigned)
-				{
-					auto transfer_worker = getClosestMineralWorkerTo(unit->getPos());  // THIS WILL PROBABLY CALL THE SAME WORKER OVER AND OVER AGAIN UNTIL HE IS FAR ENOUGH AWAY :(
-					CUnit_ptr closestMineralPatch = nullptr;
-					sc2::Point2D pos = sc2::Point2D();
-					for (const auto & CCs : CommandCenters)
+					// if it's really too much try to find anything
+					if (numAssigned > 1.5f*numMaxAssigned)
 					{
-						if (!(CCs->isCompleted()))
+						auto transfer_worker = getClosestMineralWorkerTo(unit->getPos());  // THIS WILL PROBABLY CALL THE SAME WORKER OVER AND OVER AGAIN UNTIL HE IS FAR ENOUGH AWAY :(
+						const CUnit_ptr newBase = m_bot.Bases().getBaseLocation(m_bot.Bases().getNewestExpansion(Players::Self))->getTownHall();
+						sc2::Point2D pos;
+						if (newBase && !newBase->isCompleted())
 						{
-							pos = CCs->getPos();
-							break;
+							pos = newBase->getPos();
 						}
-					}
-					if (pos == sc2::Point2D())
-					{
-						pos = m_bot.Bases().getNextExpansion(Players::Self);
-					}
-					for (const auto & mineralPatch : m_bot.UnitInfo().getUnits(Players::Neutral, Util::getMineralTypes()))
-					{
-						if (Util::Dist(mineralPatch->getPos(), pos) < 10.0f)
+						else
 						{
-							// Bad things happen if it is not alive or just snapshot. But they are probably snapshots if we get till here.
-							if (mineralPatch->isAlive() && mineralPatch->getDisplayType() == sc2::Unit::DisplayType::Visible && mineralPatch->getMineralContents() > 200)
+							pos = m_bot.Bases().getNextExpansion(Players::Self);
+						}
+						CUnit_ptr closestMineral = nullptr;
+						float minDist = std::numeric_limits<float>::max();
+						for (auto mineral : m_bot.UnitInfo().getUnits(Players::Neutral, Util::getMineralTypes()))
+						{
+							if (mineral->getDisplayType() == sc2::Unit::DisplayType::Snapshot)
 							{
-								closestMineralPatch = mineralPatch;
+								mineral = m_bot.GetUnit(mineral->getTag());
+							}
+							if (mineral->isAlive() && mineral->getDisplayType() == sc2::Unit::DisplayType::Visible && mineral->getMineralContents() > 200)
+							{
+								const float dist = Util::DistSq(mineral->getPos(), pos);
+								if (minDist > dist)
+								{
+									minDist = dist;
+									closestMineral = mineral;
+								}
 							}
 						}
-					}
-					if (closestMineralPatch && transfer_worker)
-					{
-						// Micro::SmartMove(unit, unit_next->getPos(), m_bot);
-						m_workerData.setWorkerJob(transfer_worker, WorkerJobs::Minerals, closestMineralPatch);
-						return;
+						if (closestMineral && transfer_worker)
+						{
+							m_workerData.setWorkerJob(transfer_worker, WorkerJobs::Minerals, closestMineral);
+							m_bot.Production().needCC();
+							return;
+						}
 					}
 				}
 			}
@@ -195,29 +226,54 @@ void WorkerManager::handleMineralWorkers()
 			{
 				continue;
 			}
-			float distToBunker = 30.0f;
-			CUnit_ptr closestBunker = nullptr;
-			for (const auto & bunker : bunkers)
+			bool enemyTooClose = false;
+			for (const auto & enemy : enemies)
 			{
-				float dist = Util::Dist(bunker->getPos(), worker->getPos());
-				if (!closestBunker || distToBunker > dist)
+				if (enemy->isVisible() && Util::DistSq(enemy->getPos(), worker->getPos()) < 100.0f)
 				{
-					closestBunker = bunker;
-					distToBunker = dist;
+					enemyTooClose = true;
+					break;
 				}
 			}
-			if (closestBunker && distToBunker > 20.0f)
+			if (!enemyTooClose)
 			{
-				for (const auto & enemy : enemies)
+				for (const auto & effect : m_bot.Observation()->GetEffects())
 				{
-					if (enemy->isVisible() && Util::DistSq(enemy->getPos(), worker->getPos()) < 100.0f)
+					if (effect.effect_id == sc2::EffectID(sc2::EFFECT_ID::LIBERATORMORPHING) || effect.effect_id == sc2::EffectID(sc2::EFFECT_ID::LIBERATORMORPHING))
 					{
-						const CUnit_ptr mineralPatch = Util::getClostestMineral(closestBunker->getPos(), m_bot);
-						if (mineralPatch)
+						if (Util::DistSq(effect.positions.front(), worker->getPos()) < 100.0f)
 						{
-							m_workerData.setWorkerJob(worker, WorkerJobs::Minerals, mineralPatch);
+							enemyTooClose = true;
+							break;
 						}
 					}
+				}
+			}
+			if (enemyTooClose)
+			{
+				float distToBunker = 900.0f;
+				CUnit_ptr closestBunker = nullptr;
+				for (const auto & bunker : bunkers)
+				{
+					float dist = Util::DistSq(bunker->getPos(), worker->getPos());
+					if (!closestBunker || distToBunker > dist)
+					{
+						closestBunker = bunker;
+						distToBunker = dist;
+					}
+				}
+				CUnit_ptr mineralPatch = nullptr;
+				if (closestBunker && distToBunker > 400.0f)
+				{
+					mineralPatch = Util::getClostestMineral(closestBunker->getPos(), m_bot);
+				}
+				else
+				{
+					mineralPatch = Util::getClostestMineral(m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase(), m_bot);
+				}
+				if (mineralPatch)
+				{
+					m_workerData.setWorkerJob(worker, WorkerJobs::Minerals, mineralPatch);
 				}
 			}
 		}
@@ -256,7 +312,15 @@ void WorkerManager::handleRepairWorkers()
 			{
 				if (b->isType(sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS))
 				{
-					int numOfWorkers = std::min(6, b->getAssignedHarvesters());
+					int numNearWorkers = 0;
+					for (const auto & worker : getMineralWorkers())
+					{
+						if (Util::DistSq(b->getPos(), worker->getPos()) < 100.0f)
+						{
+							++numNearWorkers;
+						}
+					}
+					int numOfWorkers = std::max(6, numNearWorkers);
 					setRepairWorker(b, numOfWorkers);
 				}
 				if (b->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER) || b->isType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET))

@@ -224,7 +224,7 @@ void ScoutManager::moveScouts()
 	if (scout->getOrders().size() > 0 && scout->getOrders()[0].ability_id == sc2::ABILITY_ID::MOVE)
 	{
 		const sc2::Point2D jumpPosition = { scout->getPos().x + 2 * std::cos(scout->getFacing()), scout->getPos().y + 2 * std::sin(scout->getFacing()) };
-		if (m_bot.Map().terrainHeight(scout->getPos().x, scout->getPos().y) != m_bot.Map().terrainHeight(jumpPosition.x, jumpPosition.y) && m_bot.Map().isWalkable(jumpPosition))
+		if (m_bot.Map().terrainHeight(scout->getPos()) != m_bot.Map().terrainHeight(jumpPosition) && m_bot.Map().isWalkable(jumpPosition))
 		{
 			return;
 		}

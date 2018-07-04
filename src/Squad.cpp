@@ -4,10 +4,10 @@
 
 Squad::Squad(CCBot & bot)
 	: m_bot(bot)
-	, m_lastRetreatSwitch(0)
+	, m_name("Default")
+	, m_status(Status::fine)
 	, m_lastRetreatSwitchVal(false)
 	, m_priority(0)
-	, m_name("Default")
 	, m_meleeManager(bot)
 	, m_rangedManager(bot)
 	, m_siegeManager(bot)
@@ -19,7 +19,7 @@ Squad::Squad(const std::string & name, const SquadOrder & order, size_t priority
 	: m_bot(bot)
 	, m_name(name)
 	, m_order(order)
-	, m_lastRetreatSwitch(0)
+	, m_status(Status::fine)
 	, m_lastRetreatSwitchVal(false)
 	, m_priority(priority)
 	, m_meleeManager(bot)
@@ -48,9 +48,9 @@ void Squad::onFrame()
 
 		Drawing::drawSphere(m_bot,regroupPosition, 3, sc2::Colors::Purple);
 
-		m_meleeManager.regroup(regroupPosition);
-		m_rangedManager.regroup(regroupPosition);
-		m_siegeManager.regroup(regroupPosition);
+		m_meleeManager.regroup(regroupPosition, m_status == Status::flee);
+		m_rangedManager.regroup(regroupPosition, m_status == Status::flee);
+		m_siegeManager.regroup(regroupPosition, m_status == Status::flee);
 	}
 	else // otherwise, execute micro
 	{
@@ -166,17 +166,58 @@ const bool Squad::needsToRegroup()
 {
 	if (m_order.getType() == SquadOrderTypes::Attack)
 	{
-		if (m_bot.Observation()->GetFoodUsed() >= 180)
-		{
-			return false;
-		}
-		std::cout << "Combat: " << m_units.size()*2 << " < " << m_bot.UnitInfo().getFoodCombatUnits(Players::Enemy) << std::endl;
-		if (m_units.size() < 100 && m_units.size() * 2 < m_bot.UnitInfo().getFoodCombatUnits(Players::Enemy) || m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER) < m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_COLOSSUS))
+		if ((m_bot.Observation()->GetFoodArmy() < 100 && m_units.size() * 2 < m_bot.UnitInfo().getFoodCombatUnits(Players::Enemy)) || (m_bot.Observation()->GetFoodUsed() < 195 && m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER) < m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_COLOSSUS)))
 		{
 			m_bot.retreat();
+			m_status = Status::flee;
 			m_lastRetreatSwitchVal = true;
 			return m_lastRetreatSwitchVal;
 		}
+		std::map<CUnit_ptr, size_t> inSight;
+		for (size_t i = 0; i < m_units.size(); ++i)
+		{
+			if (!m_units[i]->isAlive() || m_units[i]->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
+			{
+				continue;
+			}
+			for (size_t j = i + 1; j < m_units.size(); ++j)
+			{
+				if (!m_units[j]->isAlive() || m_units[j]->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
+				{
+					continue;
+				}
+				if (Util::DistSq(m_units[i]->getPos(), m_units[j]->getPos()) < 225.0f)
+				{
+					++inSight[m_units[i]];
+					++inSight[m_units[j]];
+				}
+			}
+		}
+		float count = 0;
+		for (const auto & sightCount : inSight)
+		{
+			count += static_cast<float>(sightCount.second);
+		}
+		const float scattering = static_cast<float>(count)/ static_cast<float>(std::pow(std::max<size_t>(1, inSight.size()), 2));
+		std::cout << "scattering = " << scattering << std::endl;
+		// if we are retreating, we want to do it for a while
+		if (m_status == Status::fine)
+		{
+			if (scattering < 0.55f)
+			{
+				m_status = Status::regroup;
+				m_lastRetreatSwitchVal = true;
+			}
+		}
+		else
+		{
+			if (scattering > 0.8f)
+			{
+				m_status = Status::fine;
+				m_lastRetreatSwitchVal = false;
+			}
+		}
+		/* Does not work good
 		float n = 0.0f;
 		sc2::Point2D mean(0.0f, 0.0f);
 		sc2::Point2D variance(0.0f, 0.0f);
@@ -192,11 +233,11 @@ const bool Squad::needsToRegroup()
 			sc2::Point2D delta2 = unit->getPos() - mean;
 			variance += sc2::Point2D(delta.x*delta2.x, delta.y*delta2.y);
 		}
-		//std::cout << "std x = " << std::sqrt(variance.x / (n - 1)) << ", std y = " << std::sqrt(variance.y / (n - 1)) << std::endl;
-		//std::cout << "std = " << std::sqrt((variance.x/m_bot.Map().width() + variance.y / m_bot.Map().height()) / (n - 1)) << std::endl;
-		//Lets see if this is good. Actually, you should look this up. 
+		// std::cout << "std x = " << std::sqrt(variance.x / (n - 1)) << ", std y = " << std::sqrt(variance.y / (n - 1)) << std::endl;
+		// std::cout << "std = " << std::sqrt((variance.x/m_bot.Map().width() + variance.y / m_bot.Map().height()) / (n - 1)) << std::endl;
+		// Lets see if this is good. Actually, you should look this up. 
 		const float scattering = std::sqrt((variance.x / m_bot.Map().width() + variance.y / m_bot.Map().height()) / (n - 1));
-		//if we are retreating, we want to do it for a while
+		// if we are retreating, we want to do it for a while
 		if (m_lastRetreatSwitchVal)
 		{
 			if (scattering < 1.0f)
@@ -211,6 +252,7 @@ const bool Squad::needsToRegroup()
 				m_lastRetreatSwitchVal = true;
 			}
 		}
+		*/
 	}
 	else if (m_order.getType() == SquadOrderTypes::Defend)
 	{
@@ -306,15 +348,22 @@ sc2::Point2D Squad::calcCenter() const
 
 sc2::Point2D Squad::calcRegroupPosition() const
 {
-	sc2::Point2D regroup= m_bot.Bases().getRallyPoint();
-
-	if (regroup.x == 0.0f && regroup.y == 0.0f)
+	if (m_status == Status::flee)
 	{
-		return m_bot.GetStartLocation();
+		sc2::Point2D regroup = m_bot.Bases().getRallyPoint();
+
+		if (regroup.x == 0.0f && regroup.y == 0.0f)
+		{
+			return m_bot.GetStartLocation();
+		}
+		else
+		{
+			return regroup;
+		}
 	}
 	else
 	{
-		return regroup;
+		return Util::CalcCenter(m_units);
 	}
 }
 

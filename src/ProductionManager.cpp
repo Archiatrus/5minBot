@@ -293,7 +293,7 @@ void ProductionManager::defaultMacro()
 			// Before building a worker, make sure it is a OC
 			if (unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER && numRaxFinished > 0)
 			{
-				if (m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND) < 2 || numEngibaysFinished == 0)
+				if (m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND) < 2 || numEngibaysFinished == 0 || m_bot.GetPlayerRace(Players::Enemy) != sc2::Race::Zerg)
 				{
 					if (minerals >= 150)
 					{
@@ -342,12 +342,19 @@ void ProductionManager::defaultMacro()
 	{
 		if (m_bot.Bases().getOccupiedBaseLocations(Players::Self).size() > m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_MISSILETURRET, false) + static_cast<size_t>(howOftenQueued(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)))
 		{
-			if (howOftenQueued(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET) == 0 && minerals >= 100)
+			if (howOftenQueued(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET) == 0)
 			{
-				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET), BUILDING, false));
-				std::cout << "MISSILETURRET " << std::endl;
+				if (minerals >= 100)
+				{
+					m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET), BUILDING, false));
+					std::cout << "MISSILETURRET " << std::endl;
+				}
+				else
+				{
+					std::cout << "Saving for MISSILETURRET " << std::endl;
+				}
+				return;
 			}
-			return;
 		}
 	}
 	// Refinaries
@@ -882,7 +889,7 @@ void ProductionManager::needCC()
 	const CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, Util::getTownHallTypes());
 	const int numBases = static_cast<int>(CommandCenters.size());
 	const int numBasesFinished = buildingsFinished(CommandCenters);
-	if (numBases - numBasesFinished + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER) == 0)
+	if (numBases - numBasesFinished + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER) == 0 && m_bot.Bases().getOccupiedBaseLocations(Players::Self).size() + m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size() < m_bot.Bases().getBaseLocations().size())
 	{
 		m_needCC = true;
 	}

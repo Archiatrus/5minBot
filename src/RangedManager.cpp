@@ -109,7 +109,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 		bool fleeYouFools = false;
 		for (const auto & effect : effects)
 		{
-			if (Util::isBadEffect(effect.effect_id))
+			if (Util::isBadEffect(effect.effect_id, rangedUnit->isFlying()))
 			{
 				const float radius = m_bot.Observation()->GetEffectData()[effect.effect_id].radius;
 				for (const auto & pos : effect.positions)
@@ -272,6 +272,8 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 					}
 				}
 				
+
+
 				//Search for target
 				if (!rangedUnitTargets.empty() || (order.getType() == SquadOrderTypes::Defend && Util::DistSq(rangedUnit->getPos(), order.getPosition()) > 42.0f))
 				{

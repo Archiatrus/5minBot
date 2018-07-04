@@ -161,7 +161,7 @@ const CUnits & MicroManager::getUnits() const
 	return m_units;
 }
 
-void MicroManager::regroup(const sc2::Point2D & regroupPosition) const
+void MicroManager::regroup(const sc2::Point2D & regroupPosition, const bool fleeing) const
 {
 	CUnits regroupUnitsMove;
 	CUnits regroupUnitsShoot;
@@ -196,7 +196,7 @@ void MicroManager::regroup(const sc2::Point2D & regroupPosition) const
 		}
 		else
 		{
-			if (unit->isType(sc2::UNIT_TYPEID::TERRAN_SIEGETANK))
+			if (unit->isType(sc2::UNIT_TYPEID::TERRAN_SIEGETANK) && fleeing)
 			{
 				Micro::SmartAbility(unit, sc2::ABILITY_ID::MORPH_SIEGEMODE, m_bot);
 			}

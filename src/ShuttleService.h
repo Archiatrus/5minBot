@@ -20,6 +20,7 @@ class shuttle
 	int m_status;
 	std::queue<sc2::Point2D> m_wayPoints;
 	sc2::Point2D m_stalemateCheck;
+	size_t m_lastPathPlan;
 
 	void loadPassangers();
 	void travelToDestination();

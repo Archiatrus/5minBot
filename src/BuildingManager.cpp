@@ -455,6 +455,16 @@ void BuildingManager::addBuildingTask(const sc2::UnitTypeID & type, const sc2::P
 			m_buildingPlacer.freeTiles();
 		}
 	}
+	else
+	{
+		for (const auto & bOld : m_buildings)
+		{
+			if (b == bOld)
+			{
+				return;
+			}
+		}
+	}
 	m_buildings.push_back(b);
 }
 
@@ -580,7 +590,6 @@ sc2::Point2D BuildingManager::getBuildingLocation(const Building & b)
 	{
 		return m_buildingPlacer.getRefineryPosition();
 	}
-
 	if (Util::IsTownHallType(b.m_type))
 	{
 		if (m_bot.Query()->Placement(sc2::ABILITY_ID::BUILD_COMMANDCENTER, b.desiredPosition))
@@ -589,7 +598,6 @@ sc2::Point2D BuildingManager::getBuildingLocation(const Building & b)
 		}
 		return m_buildingPlacer.getTownHallLocationNear(b);
 	}
-
 	if (b.m_type == sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT)
 	{
 		sc2::Point2D testPoint = m_bot.Map().getWallPositionDepot();
@@ -601,6 +609,14 @@ sc2::Point2D BuildingManager::getBuildingLocation(const Building & b)
 	if (b.m_type == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
 	{
 		if (m_bot.Query()->Placement(sc2::ABILITY_ID::BUILD_MISSILETURRET, b.desiredPosition))
+		{
+			return b.desiredPosition;
+		}
+		return m_buildingPlacer.getBuildLocationNear(b, 0);
+	}
+	if (b.m_type == sc2::UNIT_TYPEID::TERRAN_BUNKER)
+	{
+		if (m_bot.Query()->Placement(sc2::ABILITY_ID::BUILD_BUNKER, b.desiredPosition))
 		{
 			return b.desiredPosition;
 		}

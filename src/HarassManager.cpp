@@ -14,7 +14,8 @@ Hitsquad::Hitsquad(CCBot & bot, CUnit_ptr medivac) :
 	m_medivac(medivac),
 	m_pathPlanCounter(updateRatePathplaning+1),
 	m_target(nullptr),
-	m_stalemateCheck(sc2::Point2D())
+	m_stalemateCheck(sc2::Point2D()),
+	m_lastPathPlan(0)
 {
 }
 
@@ -331,21 +332,47 @@ bool Hitsquad::harass(const BaseLocation * target)
 		if (targetUnit)
 		{
 			// Really ugly here
-			sc2::Tag oldTargetTag = 0;
-			if (m_marines.front() && m_marines.front()->getOrders().size() > 0)
+			CUnit_ptr oldTarget = nullptr;
+			if (m_marines.front())
 			{
-				oldTargetTag = m_marines.front()->getOrders().back().target_unit_tag;
+				const sc2::Tag oldTargetTag = m_marines.front()->getEngagedTargetTag();
+				if (oldTargetTag)
+				{
+					oldTarget = m_bot.GetUnit(oldTargetTag);
+				}
 			}
-			if (oldTargetTag && m_bot.GetUnit(oldTargetTag) && m_bot.GetUnit(oldTargetTag)->isWorker())
+			if (oldTarget && oldTarget->isAlive())
 			{
-				// If we already attack a probe don't change the target
-				int a = 1;
+				if (oldTarget->isType(sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED))
+				{
+					// Jump a siege tank
+					for (const auto & marine : m_marines)
+					{
+						if (marine->getWeaponCooldown() > 0)
+						{
+							Micro::SmartMove(marine, oldTarget, m_bot);
+						}
+						else
+						{
+							Micro::SmartAttackUnit(marine, oldTarget, m_bot);
+						}
+					}
+				}
+				else if (oldTarget->isWorker())
+				{
+					// If we already attack a probe don't change the target
+					Micro::SmartAttackMoveToUnit(m_marines, oldTarget, m_bot);
+				}
+				else
+				{
+					Micro::SmartAttackMoveToUnit(m_marines, targetUnit, m_bot);
+				}
 			}
 			else
 			{
 				Micro::SmartAttackMoveToUnit(m_marines, targetUnit, m_bot);
-				Micro::SmartStim(m_marines, m_bot);
 			}
+			Micro::SmartStim(m_marines, m_bot);
 		}
 		else
 		{
@@ -408,6 +435,7 @@ bool Hitsquad::harass(const BaseLocation * target)
 				targetUnitsCanHitMedivac.push_back(unit);
 			}
 		}
+		stalemateCheck();
 		if (targetUnitsCanHitMedivac.size() > 0 || m_wayPoints.empty())
 		{
 			if (m_pathPlanCounter > updateRatePathplaning || m_wayPoints.empty())
@@ -422,7 +450,6 @@ bool Hitsquad::harass(const BaseLocation * target)
 			}
 		}
 		m_pathPlanCounter++;
-		stalemateCheck();
 		if (m_wayPoints.size() > 0 && Util::Dist(m_medivac->getPos(), m_wayPoints.front()) < 0.95f)
 		{
 			m_wayPoints.pop();
@@ -639,7 +666,7 @@ CUnit_ptr Hitsquad::getTargetMarines(CUnits targets) const
 	for (const auto & t : targets)
 	{
 		int prio = 0;
-		if (t->isType(sc2::UNIT_TYPEID::ZERG_BANELING))
+		if (t->isType(sc2::UNIT_TYPEID::ZERG_BANELING) || t->isType(sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED))
 		{
 			if (t->isVisible())
 			{
@@ -650,7 +677,7 @@ CUnit_ptr Hitsquad::getTargetMarines(CUnits targets) const
 				prio = 2;
 			}
 		}
-		else if (t->getUnitType().ToType() == sc2::UNIT_TYPEID::ZERG_QUEEN)
+		else if (t->isType(sc2::UNIT_TYPEID::ZERG_QUEEN))
 		{
 			if (t->isVisible())
 			{
@@ -737,6 +764,16 @@ const bool Hitsquad::manhattenMove(const BaseLocation * newTarget)
 
 	// If we get a new target
 	sc2::Point2D posEnd = newTarget->getCenterOfRessources() + 1.2f*(newTarget->getCenterOfRessources() - newTarget->getCenterOfBase());
+	// Try to drop on top of a tank if there is one
+	const CUnits tanks = m_bot.UnitInfo().getUnits(Players::Enemy, sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED);
+	for (const auto & tank : tanks)
+	{
+		if (Util::DistSq(tank->getPos(), newTarget->getCenterOfBase()) < 100.0f)
+		{
+			posEnd = tank->getPos();
+			break;
+		}
+	}
 	posEnd = m_bot.Map().findLandingZone(posEnd);
 	float dist;
 	if (m_wayPoints.empty())
@@ -756,7 +793,11 @@ const bool Hitsquad::manhattenMove(const BaseLocation * newTarget)
 		}
 		if (m_wayPoints.empty())
 		{
-			m_wayPoints = m_bot.Map().getEdgePath(m_medivac->getPos(), posEnd);
+			if (m_bot.Observation()->GetGameLoop() - m_lastPathPlan > 224)
+			{
+				m_wayPoints = m_bot.Map().getEdgePath(m_medivac->getPos(), posEnd);
+				m_lastPathPlan = m_bot.Observation()->GetGameLoop();
+			}
 		}
 		// If we found a new base and it is closer to us then our current target
 		else if (Util::Dist(m_wayPoints.back(), posEnd) > 10.0f && Util::Dist(m_medivac->getPos(), posEnd) < Util::Dist(m_medivac->getPos(), m_wayPoints.back()))
@@ -1168,11 +1209,15 @@ const BaseLocation * HarassManager::getLiberatorTarget()
 	{
 		if (base->getNumEnemyStaticD() > hitSquadLimit)
 		{
-			float dist = Util::DistSq(home->getCenterOfBase(), base->getCenterOfBase());
-			if (minDist > dist)
+			auto minerals = base->getMinerals();
+			if (std::find_if(minerals.begin(), minerals.end(), [](const auto & mineral) { return mineral->isAlive() && mineral->getMineralContents() > 100; }) != minerals.end())
 			{
-				minDist = dist;
-				target = base;
+				float dist = Util::DistSq(home->getCenterOfBase(), base->getCenterOfBase());
+				if (minDist > dist)
+				{
+					minDist = dist;
+					target = base;
+				}
 			}
 		}
 	}

@@ -156,11 +156,19 @@ bool MapTools::isPowered(const sc2::Point2D & pos) const
 
 float MapTools::terrainHeight(float x, float y) const
 {
+	if (!isValid(x, y))
+	{
+		return -1.0f;
+	}
 	return m_terrainHeight[static_cast<int>(x)][static_cast<int>(y)];
 }
 
 float MapTools::terrainHeight(sc2::Point2D pos) const
 {
+	if (!isValid(pos))
+	{
+		return -1.0f;
+	}
 	return m_terrainHeight[static_cast<int>(pos.x)][static_cast<int>(pos.y)];
 }
 
@@ -277,12 +285,7 @@ bool MapTools::isDepotBuildableTile(const sc2::Point2D & tile) const
 
 bool MapTools::isWalkable(int x, int y) const
 {
-	if (!isValid(x, y))
-	{
-		return false;
-	}
-
-	return m_walkable[x][y];
+	return isValid(x, y) && m_walkable[x][y];
 }
 
 bool MapTools::isWalkable(const sc2::Point2D & tile) const
@@ -955,7 +958,7 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart, cons
 			return Util::DistSq(staticD->getPos(), posEnd) > 400.0f;
 		}), staticDs.end());
 		sc2::Point2D saveDirection;
-		if (wayPoints.back() - posB != sc2::Point2D{0.0f, 0.0f})
+		if (wayPoints.back() - posB != sc2::Point2D{ 0.0f, 0.0f })
 		{
 			saveDirection = Util::normalizeVector(wayPoints.back() - posB);
 		}
@@ -973,33 +976,15 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart, cons
 				inRange = true;
 			}
 		}
-		wayPoints.push(posB);
-
-		if (staticDs.empty())
+		pathPlaning plan1(m_bot, wayPoints.back(), posB, m_bot.Map().width(), m_bot.Map().height(), 1.0f);
+		for (const auto & wp : plan1.planPath())
 		{
-			wayPoints.push(posEnd);
+			wayPoints.push(wp);
 		}
-		else
+		pathPlaning plan2(m_bot, posB, posEnd, m_bot.Map().width(), m_bot.Map().height(), 1.0f);
+		for (const auto & wp : plan2.planPath())
 		{
-			pathPlaning escapePlan(m_bot, posB, posEnd, m_bot.Map().width(), m_bot.Map().height(), 1.0f);
-			std::vector<sc2::Point2D> escapePath = escapePlan.planPath();
-			if (escapePath.size() > 0)
-			{
-				for (int i = 0; i < static_cast<int>(escapePath.size()) - 1; ++i)
-				{
-					const sc2::Point2D directionNext = escapePath[i] - wayPoints.back();
-					const sc2::Point2D directionNextNext = escapePath[i + 1] - wayPoints.back();
-					if (directionNext.x*directionNextNext.y != directionNext.y*directionNextNext.x)
-					{
-						wayPoints.push(escapePath[i]);
-					}
-				}
-				wayPoints.push(escapePath.back());
-			}
-			else
-			{
-				wayPoints.push(posEnd);
-			}
+			wayPoints.push(wp);
 		}
 	}
 	else

@@ -308,6 +308,18 @@ void CombatCommander::updateDefenseSquads()
 			}
 		}
 
+		for (const auto & effect : m_bot.Observation()->GetEffects())
+		{
+			if (effect.effect_id == sc2::EffectID(sc2::EFFECT_ID::LIBERATORMORPHING) || effect.effect_id == sc2::EffectID(sc2::EFFECT_ID::LIBERATORMORPHED))
+			{
+				if (Util::DistSq(effect.positions.front(), basePosition) < 625.0f)
+				{
+					numEnemyFlyingInRegion++;
+					m_underAttack = true;
+				}
+			}
+		}
+
 		std::stringstream squadName;
 		squadName << "Base Defense " << basePosition.x << " " << basePosition.y;
 
@@ -506,7 +518,7 @@ void CombatCommander::drawSquadInformation()
 sc2::Point2D CombatCommander::getMainAttackLocation()
 {
 	const BaseLocation * enemyBaseLocation;
-	if (m_combatUnits.size() < 50)
+	if (true)  // m_combatUnits.size() < 50)
 	{
 		enemyBaseLocation = m_bot.Bases().getBaseLocation(m_bot.Bases().getNewestExpansion(Players::Enemy));
 	}
