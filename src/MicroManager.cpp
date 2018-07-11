@@ -28,7 +28,6 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 		{
 			if (Util::DistSq(unit->getPos(), pos) > 25.0f)
 			{
-
 				if (unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC))
 				{
 					Micro::SmartCDAbility(unit, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
@@ -95,7 +94,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 	{
 		for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
 		{
-			if (Util::DistSq(enemyUnit->getPos(), order.getPosition()) < std::powf(order.getRadius(),2))
+			if (Util::DistSq(enemyUnit->getPos(), order.getPosition()) < std::powf(order.getRadius(), 2))
 			{
 				nearbyEnemies.push_back(enemyUnit);
 			}
@@ -165,8 +164,13 @@ void MicroManager::regroup(const sc2::Point2D & regroupPosition, const bool flee
 {
 	CUnits regroupUnitsMove;
 	CUnits regroupUnitsShoot;
+	CUnits regroupUnitsAttackMove;
 	for (const auto & unit : m_units)
 	{
+		if (unit->isSelected())
+		{
+			int a = 1;
+		}
 		if (Util::DistSq(unit->getPos(), regroupPosition) > 56.0f)
 		{
 			if (unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC))
@@ -184,14 +188,7 @@ void MicroManager::regroup(const sc2::Point2D & regroupPosition, const bool flee
 			}
 			else
 			{
-				if (unit->getWeaponCooldown()>0)
-				{
-					regroupUnitsMove.push_back(unit);
-				}
-				else
-				{
-					regroupUnitsShoot.push_back(unit);
-				}
+				regroupUnitsShoot.push_back(unit);
 			}
 		}
 		else
@@ -200,22 +197,27 @@ void MicroManager::regroup(const sc2::Point2D & regroupPosition, const bool flee
 			{
 				Micro::SmartAbility(unit, sc2::ABILITY_ID::MORPH_SIEGEMODE, m_bot);
 			}
+			else if (unit->isCombatUnit() && !unit->getOrders().empty() && unit->getOrders().front().ability_id == sc2::ABILITY_ID::MOVE)
+			{
+				regroupUnitsAttackMove.push_back(unit);
+			}
 		}
-
 	}
-	if (regroupUnitsMove.size() > 0)
+	if (!regroupUnitsMove.empty())
 	{
 		Micro::SmartMove(regroupUnitsMove, regroupPosition, m_bot);
 	}
-	if (regroupUnitsShoot.size() > 0)
+	if (!regroupUnitsShoot.empty())
 	{
-		Micro::SmartAttackMove(regroupUnitsShoot, regroupPosition, m_bot);
+		Micro::SmartAttackMoveToPos(regroupUnitsShoot, regroupPosition, m_bot);
 	}
-
-	
+	if (!regroupUnitsAttackMove.empty())
+	{
+		Micro::SmartAttackMove(regroupUnitsAttackMove, regroupPosition, m_bot);
+	}
 }
 
 void MicroManager::trainSubUnits(CUnit_ptr unit) const
 {
-	// TODO: something here
+	// something here
 }

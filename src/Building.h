@@ -26,7 +26,7 @@ public:
 	Building();
 
 	// constructor we use most often
-	Building(sc2::UnitTypeID t, sc2::Point2D desired);
+	Building(sc2::UnitTypeID t, sc2::Point2D desired, int width);
 
 	// equals operator
 	bool operator == (const Building & b);

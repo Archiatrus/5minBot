@@ -15,14 +15,14 @@ class BuildingManager
 	bool			m_debugMode;
 	int			 m_reservedMinerals;				// minerals reserved for planned buildings
 	int			 m_reservedGas;					// gas reserved for planned buildings
-
+	bool m_tryingToExpand;
 	bool			isBuildingPositionExplored(const Building & b) const;
 	void			removeBuildings(const std::vector<Building> & toRemove);
 
 	bool isBuildingOrder(sc2::ABILITY_ID id);
 
 	void			validateWorkersAndBuildings();			// STEP 1
-	void			assignWorkersToUnassignedBuildings();	// STEP 2
+	void			assignWorkersToUnassignedBuildings();   // STEP 2
 	void			constructAssignedBuildings();			// STEP 3
 	void			requestGuards();						// STEP 3.5
 	void			checkForStartedConstruction();			// STEP 4
@@ -32,7 +32,6 @@ class BuildingManager
 	char			getBuildingWorkerCode(const Building & b) const;
 
 public:
-
 	BuildingManager(CCBot & bot);
 
 	void				onStart();
@@ -52,4 +51,6 @@ public:
 
 	std::vector<sc2::UnitTypeID> buildingsQueued() const;
 	int getNumBuildingsQueued(sc2::UnitTypeID type) const;
+	bool tryingToExpand() const;
+	void onBuildingDestroyed(const sc2::Unit * unit);
 };

@@ -5,7 +5,6 @@
 MeleeManager::MeleeManager(CCBot & bot)
 	: MicroManager(bot)
 {
-
 }
 
 void MeleeManager::executeMicro(const CUnits & targets)
@@ -55,9 +54,9 @@ void MeleeManager::assignTargets(const CUnits & targets)
 				{
 					const float dist = Util::Dist(meleeUnit->getPos(), target->getPos());
 					CUnit_ptr mineral = nullptr;
-					if (dist < 6.0f*meleeUnit->getRadius() && dist > 4.0f)
+					if (4.0f < dist && dist < 6.0f*meleeUnit->getRadius())
 					{
-						mineral = m_bot.Map().workerSlideMineral(meleeUnit->getPos(),target->getPos());
+						mineral = m_bot.Map().workerSlideMineral(meleeUnit->getPos(), target->getPos());
 					}
 					if (mineral)
 					{
@@ -84,16 +83,11 @@ void MeleeManager::assignTargets(const CUnits & targets)
 				}
 			}
 		}
-
-		if (m_bot.Config().DrawUnitTargetInfo)
-		{
-			// TODO: draw the line to the unit's target
-		}
 	}
 }
 
 // get a target for the meleeUnit to attack
-const CUnit_ptr MeleeManager::getTarget(const CUnit_ptr meleeUnit,const  CUnits & targets)
+const CUnit_ptr MeleeManager::getTarget(const CUnit_ptr meleeUnit, const  CUnits & targets)
 {
 	BOT_ASSERT(meleeUnit, "null melee unit in getTarget");
 
@@ -107,10 +101,10 @@ const CUnit_ptr MeleeManager::getTarget(const CUnit_ptr meleeUnit,const  CUnits 
 		BOT_ASSERT(targetUnit, "null target unit in getTarget");
 
 		int priority = getAttackPriority(meleeUnit, targetUnit);
-		float distance = Util::Dist(meleeUnit->getPos(), targetUnit->getPos());
+		float distance = Util::DistSq(meleeUnit->getPos(), targetUnit->getPos());
 
 		// if it's a higher priority, or it's closer, set it
-		if (!closestTarget || (priority > highPriority) || (priority == highPriority && distance < closestDist))
+		if (!closestTarget || (priority > highPriority) || (priority == highPriority && closestDist > distance))
 		{
 			closestDist = distance;
 			highPriority = priority;
@@ -122,10 +116,11 @@ const CUnit_ptr MeleeManager::getTarget(const CUnit_ptr meleeUnit,const  CUnits 
 }
 
 // get the attack priority of a type in relation to a zergling
-int MeleeManager::getAttackPriority(const CUnit_ptr attacker,const CUnit_ptr unit)
+int MeleeManager::getAttackPriority(const CUnit_ptr attacker, const CUnit_ptr unit)
 {
 	BOT_ASSERT(unit, "null unit in getAttackPriority");
 
+	/*
 	if (unit->isCombatUnit())
 	{
 		return 10;
@@ -135,22 +130,22 @@ int MeleeManager::getAttackPriority(const CUnit_ptr attacker,const CUnit_ptr uni
 	{
 		return 9;
 	}
+	*/
 
 	return 1;
 }
 
-bool MeleeManager::meleeUnitShouldRetreat(const CUnit_ptr meleeUnit,const CUnits & targets)
+bool MeleeManager::meleeUnitShouldRetreat(const CUnit_ptr meleeUnit, const CUnits & targets)
 {
 	if (std::find_if(targets.begin(), targets.end(), [](const CUnit_ptr enemy) {return enemy->isCombatUnit() && !enemy->isBuilding(); }) != targets.end())
 	{
-		const auto numUnits = m_bot.UnitInfo().getNumCombatUnits(Players::Self);
-		if (numUnits < 1)
+		if (m_bot.UnitInfo().getNumCombatUnits(Players::Self) < 1 && m_bot.UnitInfo().getUnitTypeCount(Players::Self, Util::getTownHallTypes()) > 1)
 		{
 			return true;
 		}
 		for (const auto & target : targets)
 		{
-			//It would be better if we have one sacrifice.
+			// It would be better if we have one sacrifice.
 			if (target->getUnitType().ToType() == sc2::UNIT_TYPEID::ZERG_BANELING && Util::Dist(meleeUnit->getPos(), target->getPos()) <= 5.2f)
 			{
 				return true;

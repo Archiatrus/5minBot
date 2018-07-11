@@ -17,7 +17,10 @@ CUnit::CUnit(const sc2::Unit * unit, CCBot * bot):
 				sc2::Attribute::Structure) != attributes.end()
 				&& !isType(sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
 				&& !isType(sc2::UNIT_TYPEID::TERRAN_AUTOTURRET)
-				&& !isType(sc2::UNIT_TYPEID::TERRAN_POINTDEFENSEDRONE);
+				&& !isType(sc2::UNIT_TYPEID::TERRAN_POINTDEFENSEDRONE)
+				&& !isType(sc2::UNIT_TYPEID::ZERG_CREEPTUMOR)
+				&& !isType(sc2::UNIT_TYPEID::ZERG_CREEPTUMORBURROWED)
+				&& !isType(sc2::UNIT_TYPEID::ZERG_CREEPTUMORQUEEN);
 		}()),
 	m_isCombatUnit(unit->alliance != sc2::Unit::Alliance::Neutral && Util::IsCombatUnitType(unit->unit_type, *bot)),
 	m_sight(m_bot->Observation()->GetUnitTypeData()[getUnitType()].sight_range),
@@ -41,6 +44,7 @@ CUnit::CUnit(const sc2::Unit * unit, CCBot * bot):
 				}
 			if (m_isBuilding)
 				{
+					return { Occupation::Building, 0 };
 					return { Occupation::Building, 0 };
 				}
 			if (m_isCombatUnit)
@@ -313,6 +317,10 @@ void CUnit::update()
 			else if (!isBurrowed())
 			{
 				m_pos = sc2::Point3D();
+			}
+			else if (isBurrowed())
+			{
+				m_bot->OnCloakDetected(getUnitType(), getPos());
 			}
 		}
 	}

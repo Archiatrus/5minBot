@@ -2,6 +2,7 @@
 #include "Micro.h"
 #include "CCBot.h"
 #include "Util.h"
+#include "sc2api/sc2_score.h"
 #include "Building.h"
 
 WorkerManager::WorkerManager(CCBot & bot)
@@ -66,7 +67,7 @@ void WorkerManager::handleGasWorkers()
 	const int minNumMinWorkers = 13;
 	int numMinWorker = m_workerData.getWorkerJobCount(WorkerJobs::Minerals);
 	int numGasWorker = m_workerData.getWorkerJobCount(WorkerJobs::Gas);
-	if (numMinWorker < minNumMinWorkers && numGasWorker > 1)
+	if (numMinWorker < minNumMinWorkers && numGasWorker >= 1)
 	{
 		for (const auto & gasWorker : m_workerData.getGasWorkers())
 		{
@@ -75,7 +76,7 @@ void WorkerManager::handleGasWorkers()
 				setMineralWorker(gasWorker);
 				numMinWorker++;
 				numGasWorker--;
-				if (numMinWorker > minNumMinWorkers || numGasWorker == 1)
+				if (numMinWorker > minNumMinWorkers || (numGasWorker == 1 && numMinWorker > 5))
 				{
 					return;
 				}
@@ -304,45 +305,48 @@ void WorkerManager::handleIdleWorkers()
 void WorkerManager::handleRepairWorkers()
 {
 	const CUnits buildings = m_bot.UnitInfo().getUnits(Players::Self);
-	for (const auto & b : buildings)
+	if (m_workerData.getMineralWorkers().size() > 5)
 	{
-		if (b->isBuilding())
+		for (const auto & b : buildings)
 		{
-			if (b->isCompleted() && b->getHealth() < b->getHealthMax())
+			if (b->isBuilding())
 			{
-				if (b->isType(sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS))
+				if (b->isCompleted() && b->getHealth() < b->getHealthMax())
 				{
-					int numNearWorkers = 0;
-					for (const auto & worker : getMineralWorkers())
+					if (b->isType(sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS))
 					{
-						if (Util::DistSq(b->getPos(), worker->getPos()) < 100.0f)
+						int numNearWorkers = 0;
+						for (const auto & worker : getMineralWorkers())
 						{
-							++numNearWorkers;
+							if (Util::DistSq(b->getPos(), worker->getPos()) < 100.0f)
+							{
+								++numNearWorkers;
+							}
 						}
+						int numOfWorkers = std::max(6, numNearWorkers);
+						setRepairWorker(b, numOfWorkers);
 					}
-					int numOfWorkers = std::max(6, numNearWorkers);
-					setRepairWorker(b, numOfWorkers);
+					if (b->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER) || b->isType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET))
+					{
+						setRepairWorker(b, 6);
+					}
+					else if (b->isType(sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND) || b->isType(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT))
+					{
+						setRepairWorker(b, 2);
+					}
+					else
+					{
+						setRepairWorker(b);
+					}
 				}
-				if (b->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER) || b->isType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET))
+				else if (b->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER) && m_bot.underAttack())
 				{
-					setRepairWorker(b, 6);
-				}
-				else if (b->isType(sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND) || b->isType(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT))
-				{
-					setRepairWorker(b, 2);
-				}
-				else
-				{
-					setRepairWorker(b);
-				}
-			}
-			else if (b->isType(sc2::UNIT_TYPEID::TERRAN_BUNKER) && m_bot.underAttack())
-			{
-				const size_t bases = m_bot.UnitInfo().getUnitTypeCount(Players::Self, Util::getTownHallTypes());
-				if (bases <= 1)
-				{
-					// std::cout << "We are under attack so prepair repair workers!" << std::endl;
-					setRepairWorker(b, 3);
+					const size_t bases = m_bot.UnitInfo().getUnitTypeCount(Players::Self, Util::getTownHallTypes());
+					if (bases <= 1)
+					{
+						// std::cout << "We are under attack so prepair repair workers!" << std::endl;
+						setRepairWorker(b, 3);
+					}
 				}
 			}
 		}

@@ -44,7 +44,7 @@ BotConfig::BotConfig()
 	ColorUnitNotNearEnemy			   = sc2::Colors::Green;
 	
 	WorkersPerRefinery				  = 3;
-	BuildingSpacing					 = 0;
+	BuildingSpacing					 = 1;
 	PylonSpacing						= 3;
 }
 

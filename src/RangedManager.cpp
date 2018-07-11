@@ -298,7 +298,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 						//This can happen with vikings
 						if (frontSoldier && (rangedUnit->getOrders().empty() || rangedUnit->getOrders().front().target_unit_tag && rangedUnit->getOrders().front().target_unit_tag != frontSoldier->getTag()))
 						{
-							Micro::SmartMove(rangedUnit, frontSoldier,m_bot);
+							Micro::SmartAttackMoveToPos({ rangedUnit }, frontSoldier->getPos(), m_bot);
 						}
 						continue;
 					}
@@ -311,8 +311,15 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 							{
 								if (!targets[0].second || Util::DistSq(rangedUnit->getPos(), Bunker.front()->getPos()) < Util::DistSq(rangedUnit->getPos(), targets[0].second->getPos()))
 								{
-									Micro::SmartRightClick(rangedUnit, Bunker.front(), m_bot);
-									Micro::SmartAbility(Bunker.front(), sc2::ABILITY_ID::LOAD, rangedUnit, m_bot);
+									if (Util::DistSq(rangedUnit->getPos(), Bunker.front()->getPos()) < 36.0f)
+									{
+										Micro::SmartRightClick(rangedUnit, Bunker.front(), m_bot);
+										Micro::SmartAbility(Bunker.front(), sc2::ABILITY_ID::LOAD, rangedUnit, m_bot);
+									}
+									else
+									{
+										Micro::SmartAttackMoveToPos({ rangedUnit }, Bunker.front()->getPos(), m_bot);
+									}
 									continue;
 								}
 							}
@@ -331,7 +338,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 											else
 											{
 												sc2::Point2D retreatPos = m_bot.Bases().getNewestExpansion(Players::Self);
-												Micro::SmartMove(rangedUnit, retreatPos, m_bot);
+												Micro::SmartAttackMoveToPos({ rangedUnit }, retreatPos, m_bot);
 											}
 											continue;
 										}
@@ -368,7 +375,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 						{
 							if (targets[0].second->isBuilding())
 							{
-								if (rangedUnit->getWeaponCooldown())
+								if (rangedUnit->getWeaponCooldown() > 0)
 								{
 									targetsMovedTo[targets[1].second].push_back(rangedUnit);
 								}
@@ -396,7 +403,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 				else
 				{
 					// if we're not near the order position
-					if (Util::DistSq(rangedUnit->getPos(), order.getPosition()) > 16.0f)
+					if (Util::DistSq(rangedUnit->getPos(), order.getPosition()) > 36.0f)
 					{
 						// move to it
 						moveToPosition.push_back(rangedUnit);
@@ -408,7 +415,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 	//Grouped by target attack command
 	for (const auto & t : targetsAttackedBy)
 	{
-		Micro::SmartAttackUnit(t.second, t.first, m_bot);
+		Micro::SmartAttackMoveToUnit(t.second, t.first, m_bot);
 	}
 	for (const auto & t : targetsMovedTo)
 	{
@@ -450,6 +457,10 @@ int RangedManager::getAttackPriority(const CUnit_ptr & unit)
 		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_LURKERMPBURROWED || unit->isType(sc2::UNIT_TYPEID::PROTOSS_SENTRY) || unit->isType(sc2::UNIT_TYPEID::TERRAN_SIEGETANK) || unit->isType(sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED))
 		{
 			return 8;
+		}
+		if (unit->isType(sc2::UNIT_TYPEID::ZERG_MUTALISK) || unit->isType(sc2::UNIT_TYPEID::ZERG_QUEEN))
+		{
+			return 7;
 		}
 		if (unit->isType(sc2::UNIT_TYPEID::ZERG_INFESTEDTERRANSEGG) || unit->isType(sc2::UNIT_TYPEID::ZERG_BROODLING) || unit->isType(sc2::UNIT_TYPEID::ZERG_INFESTORTERRAN) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_INTERCEPTOR))
 		{

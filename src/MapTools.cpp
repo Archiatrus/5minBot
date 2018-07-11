@@ -263,9 +263,9 @@ bool MapTools::isBuildable(int x, int y) const
 	return m_buildable[x][y];
 }
 
-bool MapTools::canBuildTypeAtPosition(int x, int y, sc2::UnitTypeID type) const
+bool MapTools::canBuildTypeAtPosition(float x, float y, sc2::UnitTypeID type) const
 {
-	return m_bot.Query()->Placement(m_bot.Data(type).buildAbility, sc2::Point2D(static_cast<float>(x), static_cast<float>(y)));
+	return m_bot.Query()->Placement(m_bot.Data(type).buildAbility, sc2::Point2D(x,y));
 }
 
 bool MapTools::isBuildable(const sc2::Point2D & tile) const

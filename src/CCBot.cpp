@@ -67,58 +67,10 @@ void CCBot::OnGameStart()
 
 void CCBot::OnStep()
 {
-	// special thanks to aviloBot
-	auto chat = Observation()->GetChatMessages();
-	if (!chat.empty())
-	{
-		if (chat.front().player_id != Observation()->GetPlayerID())
-		{
-			if (chat.front().message == "gg")
-			{
-				Actions()->SendChat("Agreed. You may leave now.");
-			}
-			else if (chat.front().message == "no scout and the perfect counter.. so blatant!")
-			{
-				Actions()->SendChat("What you gonna do? Report me?");
-			}
-			else if (chat.front().message == "LOL")
-			{
-				Actions()->SendChat("ROFL");
-			}
-			else if (chat.front().message == "i know ur stream cheating")
-			{
-				Actions()->SendChat("i know ur using a bot");
-			}
-			else if (chat.front().message == "same guy again..")
-			{
-				Actions()->SendChat("Stream snipe successful");
-			}
-			else if (chat.front().message == "the same stream sniper AGAIN!!!")
-			{
-				Actions()->SendChat("OH NO YOU CAUGHT ME PLZ NO REPORT");
-			}
-			else if (chat.front().message == "who is teaching u this bad play?")
-			{
-				Actions()->SendChat("ActionJaxon");
-			}
-			else if (chat.front().message == "it's over little jimmy")
-			{
-				Actions()->SendChat("shh no tears only dreams");
-			}
-			else if (chat.front().message == "playing against a know maphacker.. so much fun!" || chat.front().message == "playing against a known maphacker.. so much fun!")
-			{
-				Actions()->SendChat("Imagine knowing everything you do. Now THAT'S fun =)");
-			}
-			else
-			{
-				Actions()->SendChat("ez");
-			}
-		}
-	}
-	//if (Observation()->GetGameLoop() == 2000)
-	//{
-	//	Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::TERRAN_BANSHEE, Bases().getNewestExpansion(Players::Self), Players::Self, 5);
-	//}
+	//  if (Observation()->GetGameLoop() == 10)
+	//  {
+	//  	Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_HIGHTEMPLAR, Bases().getNewestExpansion(Players::Self), Players::Self, 2);
+	//  }
 	Timer t;
 	t.start();
 	// Control()->GetObservation();
@@ -214,6 +166,11 @@ void CCBot::OnUnitEnterVision(const sc2::Unit * unit)
 	m_time[Observation()->GetGameLoop()][3] = t.getElapsedTimeInMilliSec();
 }
 
+void CCBot::OnUnitDestroyed(const sc2::Unit * unit)
+{
+	m_gameCommander.onUnitDestroyed(unit);
+}
+
 void CCBot::OnCloakDetected(const sc2::UNIT_TYPEID & type, const sc2::Point2D & pos)
 {
 	m_gameCommander.OnDetectedNeeded(type, pos);
@@ -224,38 +181,37 @@ void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 	if (upgrade == sc2::UPGRADE_ID::SHIELDWALL && !underAttack())
 	{
 		m_gameCommander.attack(true);
-		for (const auto & b : UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER))
-		{
-			if (b->getCargoSpaceTaken() > 0)
-			{
-				Micro::SmartAbility(b, sc2::ABILITY_ID::UNLOADALL, *this);
-			}
-		}
 	}
 
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL3)
 	{
 		m_armorBio = 3;
+		m_gameCommander.attack(true);
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL2)
 	{
 		m_armorBio = 2;
+		m_gameCommander.attack(true);
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL1)
 	{
 		m_armorBio = 1;
+		m_gameCommander.attack(true);
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL3)
 	{
 		m_weaponsBio = 3;
+		m_gameCommander.attack(true);
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL2)
 	{
 		m_weaponsBio = 2;
+		m_gameCommander.attack(true);
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL1)
 	{
 		m_weaponsBio = 1;
+		m_gameCommander.attack(true);
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANVEHICLEWEAPONSLEVEL3)
 	{

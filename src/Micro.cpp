@@ -136,7 +136,7 @@ void Micro::SmartAttackMoveToPos(const CUnits & attacker, const sc2::Point2D pos
 		}
 		else
 		{
-			if (a->getOrders().empty() || a->getOrders().front().ability_id != sc2::ABILITY_ID::ATTACK || Util::DistSq(a->getOrders().front().target_pos,pos)>0.01f)
+			if (a->getOrders().empty() || a->getOrders().front().ability_id == sc2::ABILITY_ID::MOVE || Util::DistSq(a->getOrders().front().target_pos,pos)>0.01f)
 			{
 				attackerThatNeedToAttackMove.push_back(a->getUnit_ptr());
 			}

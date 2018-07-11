@@ -2,6 +2,7 @@
 #include "Micro.h"
 #include "Util.h"
 #include "CCBot.h"
+#include "sc2api/sc2_score.h"
 #include <iostream>
 #include <sstream>
 
@@ -30,15 +31,12 @@ void WorkerData::updateAllWorkerData()
         {
             setWorkerJob(worker, WorkerJobs::Idle);
         }
-
-        // TODO: If it's a gas worker whose refinery has been destroyed, set to minerals
     }
 
     // remove any worker units which no longer exist in the game
     CUnits workersDestroyed;
     for (const auto & worker : getWorkers())
     {
-        // TODO: for now skip gas workers because they disappear inside refineries, this is annoying
         if (!worker || !worker->isAlive() || (m_bot.Observation()->GetGameLoop() != worker->getLastSeenGameLoop() && getWorkerJob(worker) != WorkerJobs::Gas))
         {
             workersDestroyed.push_back(worker);
@@ -54,7 +52,7 @@ void WorkerData::updateAllWorkerData()
 void WorkerData::workerDestroyed(const CUnit_ptr unit)
 {
     clearPreviousJob(unit);
-	m_workers.erase(std::remove_if(m_workers.begin(), m_workers.end(), [&](CUnit_ptr & newUnit) {return unit->getTag() == newUnit->getTag(); }),m_workers.end());
+	m_workers.erase(std::remove_if(m_workers.begin(), m_workers.end(), [&](CUnit_ptr & newUnit) {return unit->getTag() == newUnit->getTag(); }), m_workers.end());
 }
 
 void WorkerData::updateWorker(const CUnit_ptr unit)
@@ -72,7 +70,7 @@ void WorkerData::setWorkerJob(const CUnit_ptr unit, int job, const CUnit_ptr job
     m_workerJobMap[unit] = job;
     m_workerJobCount[job]++;
 
-	unit->setOccupation({ CUnit::Occupation::Worker,job });
+	unit->setOccupation({ CUnit::Occupation::Worker, job });
 
     if (job == WorkerJobs::Minerals)
     {
@@ -89,15 +87,11 @@ void WorkerData::setWorkerJob(const CUnit_ptr unit, int job, const CUnit_ptr job
         m_workerDepotMap[unit] = jobUnit;
         m_depotWorkerCount[jobUnit]++;
 
-        // find the mineral to mine and mine it
-		//WHY??? WE HAVE THIS ALREADY?
-        //const CUnit_ptr mineralToMine = getMineralToMine(unit);
-        
 		if (jobUnit->getDisplayType() == sc2::Unit::DisplayType::Visible && jobUnit->isAlive())
 		{
-			//Micro::SmartMove(unit, jobUnit->pos, m_bot);
-			Micro::SmartAbility(unit, sc2::ABILITY_ID::HARVEST_GATHER,jobUnit,m_bot);
-			//Micro::SmartRightClick(unit, jobUnit, m_bot,true);
+			// Micro::SmartMove(unit, jobUnit->pos, m_bot);
+			Micro::SmartAbility(unit, sc2::ABILITY_ID::HARVEST_GATHER, jobUnit, m_bot);
+			// Micro::SmartRightClick(unit, jobUnit, m_bot,true);
 		}
 		else
 		{
@@ -134,11 +128,9 @@ void WorkerData::setWorkerJob(const CUnit_ptr unit, int job, const CUnit_ptr job
     }
     else if (job == WorkerJobs::Scout)
     {
-
 	}
 	else if (job == WorkerJobs::Build)
 	{
-
 	}
 }
 
@@ -160,15 +152,12 @@ void WorkerData::clearPreviousJob(const CUnit_ptr unit)
 	}
 	else if (previousJob == WorkerJobs::Build)
 	{
-
 	}
 	else if (previousJob == WorkerJobs::Repair)
 	{
-		
 	}
 	else if (previousJob == WorkerJobs::Move)
 	{
-
 	}
 
 	m_workerJobMap.erase(unit);
@@ -201,7 +190,7 @@ const CUnit_ptr WorkerData::getMineralToMine(const CUnit_ptr unit) const
     CUnit_ptr bestMineral = nullptr;
     double bestDist = 100000;
 
-    for (const auto & mineral : m_bot.UnitInfo().getUnits(Players::Neutral,Util::getMineralTypes()))
+    for (const auto & mineral : m_bot.UnitInfo().getUnits(Players::Neutral, Util::getMineralTypes()))
     {
         if (!mineral->isMineral()||!mineral->isAlive()) continue;
 
@@ -241,7 +230,7 @@ int WorkerData::getNumAssignedWorkers(const CUnit_ptr unit)
             return it->second;
         }
     }
-    else if (unit->getUnitType()==sc2::UNIT_TYPEID::TERRAN_REFINERY)
+    else if (unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_REFINERY)
     {
         auto it = m_refineryWorkerCount.find(unit);
 
@@ -279,14 +268,16 @@ const char * WorkerData::getJobCode(const CUnit_ptr unit)
 
 void WorkerData::drawDepotDebugInfo()
 {
-	return;/*
+	return;
+	/*
 	for (const auto & depot: m_depots)
 	{
 		std::stringstream ss;
 		ss << "Workers: " << getNumAssignedWorkers(depot);
 
         Drawing::drawText(m_bot,depot->getPos(), ss.str());
-    }*/
+    }
+	*/
 }
 
 const CUnits & WorkerData::getWorkers() const
@@ -348,6 +339,17 @@ void WorkerData::checkRepairedBuildings()
 	{
 		return;
 	}
+	if (getMineralWorkers().size() < 5)
+	{
+		for (auto & m : m_repair_map)
+		{
+			for (const auto & worker : m.second)
+			{
+				clearPreviousJob(worker);
+			}
+		}
+		m_repair_map.clear();
+	}
 	std::vector<sc2::Tag> targetsToDelete;
 	for (auto & m : m_repair_map)
 	{
@@ -372,7 +374,7 @@ void WorkerData::checkRepairedBuildings()
 			}
 			if (w->getOrders().empty() || w->getOrders().front().target_unit_tag != m.first)
 			{
-				Micro::SmartAbility(w, sc2::ABILITY_ID::EFFECT_REPAIR, target,m_bot);
+				Micro::SmartAbility(w, sc2::ABILITY_ID::EFFECT_REPAIR, target, m_bot);
 			}
 		}
 		for (const auto & deadW : deadWorker)

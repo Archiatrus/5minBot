@@ -44,7 +44,7 @@ class BuildingPlacer
 
 	void expandBuildingTesterOnce();
 	// queries for various BuildingPlacer data
-	bool			buildable(const Building & b, int x, int y) const;
+	bool			buildable(const Building & b, float x, float y) const;
 	bool			isReserved(int x, int y) const;
 	bool			isInResourceBox(int x, int y) const;
 	bool			tileOverlapsBaseLocation(int x, int y, sc2::UnitTypeID type) const;
@@ -59,7 +59,7 @@ class BuildingPlacer
 
 	// determines whether we can build at a given location
 	bool			canBuildHere(int bx, int by, const Building & b) const;
-	bool			canBuildHereWithSpace(int bx, int by, const Building & b, int buildDist) const;
+	bool			canBuildHereWithSpace(float bx, float by, const Building & b, int buildDist) const;
 
 	// returns a build location near a building's desired location
 	sc2::Point2D	getBuildLocationNear(const Building & b, int buildDist);
@@ -67,8 +67,8 @@ class BuildingPlacer
 
 	void			drawReservedTiles();
 
-	void			reserveTiles(int x, int y, int width, int height);
-	void			freeTiles(int x, int y, int width, int height);
+	void			reserveTiles(float bx, float by, float width, float height, bool addon = false);
+	void			freeTiles(float bx, float by, float width, float height);
 	void			freeTiles();
 	sc2::Point2D	getRefineryPosition();
 };

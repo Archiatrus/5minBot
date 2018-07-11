@@ -39,7 +39,7 @@ void CombatCommander::onStart()
 
 	// the guard duty squad will handle securing the area for a new expansion
 	SquadOrder guardDutyOrder(SquadOrderTypes::GuardDuty, sc2::Point2D(0.0f, 0.0f), 25, "Guard Duty");
-	m_squadData.addSquad("GuardDuty", Squad("GuardDuty", enemyScoutDefense, ScoutDefensePriority, m_bot));
+	m_squadData.addSquad("GuardDuty", Squad("GuardDuty", enemyScoutDefense, GuardDutyPriority, m_bot));
 }
 
 bool CombatCommander::isSquadUpdateFrame()
@@ -223,7 +223,12 @@ void CombatCommander::updateDefenseSquads()
 
 	// for each of our occupied regions
 	const BaseLocation * enemyBaseLocation = m_bot.Bases().getPlayerStartingBaseLocation(Players::Enemy);
-	for (const BaseLocation * myBaseLocation : m_bot.Bases().getOccupiedBaseLocations(Players::Self))
+	std::set<const BaseLocation *> bases = m_bot.Bases().getOccupiedBaseLocations(Players::Self);
+	if (m_bot.Production().tryingToExpand())
+	{
+		bases.insert(m_bot.Bases().getBaseLocation(m_bot.Bases().getNextExpansion(Players::Self)));
+	}
+	for (const BaseLocation * myBaseLocation : bases)
 	{
 		// don't defend inside the enemy region, this will end badly when we are stealing gas or cannon rushing
 		if (myBaseLocation == enemyBaseLocation)
@@ -293,17 +298,20 @@ void CombatCommander::updateDefenseSquads()
 		}
 
 		// Cloaked units
-		for (const auto & unit : m_cloakedUnits)
+		if (m_combatUnits.size() > 6)
 		{
-			if (Util::DistSq(basePosition, std::get<2>(unit)) < 625.0f)
+			for (const auto & unit : m_cloakedUnits)
 			{
-				if (std::get<1>(unit) == sc2::UNIT_TYPEID::TERRAN_BANSHEE)
+				if (Util::DistSq(basePosition, std::get<2>(unit)) < 625.0f)
 				{
-					numEnemyFlyingInRegion++;
-				}
-				else
-				{
-					numEnemyGroundInRegion++;
+					if (std::get<1>(unit) == sc2::UNIT_TYPEID::TERRAN_BANSHEE)
+					{
+						numEnemyFlyingInRegion += 3;
+					}
+					else
+					{
+						numEnemyGroundInRegion += 3;
+					}
 				}
 			}
 		}
@@ -465,7 +473,8 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
 	const CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
 	const CUnits worker = m_bot.Workers().getMineralWorkers();
 	size_t workerCounter = worker.size();
-	while (defendersNeeded > defendersAdded && m_bot.UnitInfo().getNumCombatUnits(Players::Self)<20 && (Bunker.empty() || Bunker.front()->getCargoSpaceTaken() == 0) && workerCounter>5)
+	const size_t combatCounter = m_bot.UnitInfo().getNumCombatUnits(Players::Self);
+	while (defendersNeeded > defendersAdded && combatCounter < 20 && (Bunker.empty() || Bunker.front()->getCargoSpaceTaken() == 0) && (workerCounter > 3 || combatCounter < 5))
 	{
 		const CUnit_ptr workerDefender = findClosestWorkerTo(worker, defenseSquad.getSquadOrder().getPosition());
 
@@ -498,7 +507,7 @@ const CUnit_ptr CombatCommander::findClosestDefender(const Squad & defenseSquad,
 			continue;
 		}
 
-		float dist = Util::Dist(unit->getPos(), pos);
+		float dist = Util::DistSq(unit->getPos(), pos);
 		if (!closestDefender || (dist < minDistance))
 		{
 			closestDefender = unit;
@@ -645,6 +654,13 @@ const bool CombatCommander::underAttack() const
 void CombatCommander::attack(const bool attack)
 {
 	m_attack = attack;
+	for (const auto & b : m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER))
+	{
+		if (b->getCargoSpaceTaken() > 0)
+		{
+			Micro::SmartAbility(b, sc2::ABILITY_ID::UNLOADALL, m_bot);
+		}
+	}
 }
 
 void CombatCommander::requestGuards(const bool req)
@@ -702,7 +718,7 @@ void CombatCommander::checkDepots() const
 		bool enemyNear = false;
 		for (const auto & enemy : m_bot.UnitInfo().getUnits(Players::Enemy))
 		{
-			if (!enemy->isFlying() && Util::DistSq(depot->getPos(), enemy->getPos()) < 25)
+			if (!enemy->isFlying() && Util::DistSq(depot->getPos(), enemy->getPos()) < 25.0f)
 			{
 				if (depot->isType(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOTLOWERED))
 				{

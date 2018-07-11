@@ -163,7 +163,7 @@ bool Hitsquad::harass(const BaseLocation * target)
 	switch (m_status)
 	{
 	case HarassStatus::Idle:
-		if (haveNoTarget() || m_bot.underAttack() || m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) > 5)
+		if (haveNoTarget() || m_bot.underAttack() || m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) >= 1)
 		{
 			if (m_medivac && m_medivac->getCargoSpaceTaken() > 0)
 			{
@@ -238,7 +238,7 @@ bool Hitsquad::harass(const BaseLocation * target)
 			m_status = HarassStatus::Harass;
 		}
 		const CUnits enemies = getNearbyEnemyUnits();
-		if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || shouldWeFlee(enemies, static_cast<int>(m_marines.size())) || m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) > 5)
+		if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || shouldWeFlee(enemies, static_cast<int>(m_marines.size())) || m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) >= 1)
 		{
 			while (!m_wayPoints.empty())
 			{
@@ -507,7 +507,7 @@ bool Hitsquad::harass(const BaseLocation * target)
 			{
 				Micro::SmartAbility(m_medivac, sc2::ABILITY_ID::STOP, m_bot);
 			}
-			if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || m_marines.size() < 6 || haveNoTarget() || m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) > 5)
+			if (m_medivac->getHealth() < 0.5*m_medivac->getHealthMax() || m_marines.size() < 6 || haveNoTarget() || m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) >= 1)
 			{
 				m_status = HarassStatus::GoingHome;
 			}
@@ -583,7 +583,7 @@ const bool Hitsquad::haveNoTarget() const
 
 const BaseLocation * Hitsquad::getSavePosition() const
 {
-	if (m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) > 5)
+	if (m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) >= 1)
 	{
 		std::set<const BaseLocation *> bases = m_bot.Bases().getOccupiedBaseLocations(Players::Self);
 		return bases.empty() ? m_bot.Bases().getPlayerStartingBaseLocation(Players::Self) : *bases.begin();
@@ -1072,7 +1072,7 @@ void HarassManager::handleHitSquads()
 std::vector<const BaseLocation *> HarassManager::getHitSquadTargets() const
 {
 	std::vector<const BaseLocation *> targetBases = { nullptr, nullptr };
-	if (m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) > 5)
+	if (m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, Util::getAntiMedivacTypes()) >= 1)
 	{
 		return targetBases;
 	}

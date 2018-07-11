@@ -14,6 +14,7 @@ BuildingManager::BuildingManager(CCBot & bot)
 	, m_debugMode(false)
 	, m_reservedMinerals(0)
 	, m_reservedGas(0)
+	, m_tryingToExpand(false)
 {
 }
 
@@ -115,7 +116,6 @@ void BuildingManager::assignWorkersToUnassignedBuildings()
 
 		if (m_debugMode) { printf("Assigning Worker To: %s", sc2::UnitTypeToName(b.m_type)); }
 
-		// grab a worker unit from WorkerManager which is closest to this final position
 		sc2::Point2D testLocation = getBuildingLocation(b);
 		if (!m_bot.Map().isValid(testLocation) && testLocation != sc2::Point2D{ 0.0f, 0.0f })
 		{
@@ -135,11 +135,11 @@ void BuildingManager::assignWorkersToUnassignedBuildings()
 		// reserve this building's space
 		if (b.m_type == sc2::UNIT_TYPEID::TERRAN_BARRACKS || b.m_type == sc2::UNIT_TYPEID::TERRAN_FACTORY || b.m_type == sc2::UNIT_TYPEID::TERRAN_STARPORT)
 		{
-			m_buildingPlacer.reserveTiles(static_cast<int>(b.finalPosition.x), static_cast<int>(b.finalPosition.y), Util::GetUnitTypeWidth(b.m_type, m_bot)+2, Util::GetUnitTypeHeight(b.m_type, m_bot));
+			m_buildingPlacer.reserveTiles(b.finalPosition.x, b.finalPosition.y, Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot), true);
 		}
 		else
 		{
-			m_buildingPlacer.reserveTiles(static_cast<int>(b.finalPosition.x), static_cast<int>(b.finalPosition.y), Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot));
+			m_buildingPlacer.reserveTiles(b.finalPosition.x, b.finalPosition.y, Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot));
 		}
 
 		b.status = BuildingStatus::Assigned;
@@ -205,10 +205,15 @@ void BuildingManager::constructAssignedBuildings()
 			{
 				Micro::SmartMove(builderUnit, b.finalPosition, m_bot);
 			}
+			else if (m_bot.Observation()->HasCreep(b.desiredPosition))
+			{
+				m_bot.OnCloakDetected(sc2::UNIT_TYPEID::ZERG_CREEPTUMORBURROWED, b.desiredPosition);
+			}
 			// if this is not the first time we've sent this guy to build this
 			// it must be the case that something was in the way of building
-			else if (b.buildCommandGiven)
+			else if (b.buildCommandGiven && b.m_type == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER)
 			{
+				m_bot.OnCloakDetected(sc2::UNIT_TYPEID::ZERG_ZERGLINGBURROWED, b.desiredPosition);
 				Micro::SmartBuild(b.builderUnit, b.m_type, b.finalPosition, m_bot);
 			}
 			else
@@ -259,7 +264,7 @@ void BuildingManager::requestGuards()
 	{
 		if (b.m_type.ToType() == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER)
 		{
-			// We need guards when the build order is issued bot there is no building yet
+			// We need guards when the build order is issued but there is no building yet
 			if (b.status == BuildingStatus::Assigned)
 			{
 				m_bot.requestGuards(true);
@@ -328,13 +333,7 @@ void BuildingManager::checkForStartedConstruction()
 				if (b.m_type.ToType() == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER)
 				{
 					m_bot.requestGuards(false);
-				}
-				// free this space
-				// but not if it is an starport or factory.
-				// this whole part should actually only be done if the building is destroyed.
-				if (b.m_type.ToType() != sc2::UNIT_TYPEID::TERRAN_FACTORY && b.m_type.ToType() != sc2::UNIT_TYPEID::TERRAN_STARPORT)
-				{
-					m_buildingPlacer.freeTiles(static_cast<int>(b.finalPosition.x), static_cast<int>(b.finalPosition.y), Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot));
+					m_tryingToExpand = false;
 				}
 
 				// only one building will match
@@ -429,33 +428,15 @@ void BuildingManager::addBuildingTask(const sc2::UnitTypeID & type, const sc2::P
 	m_reservedMinerals  += Util::GetUnitTypeMineralPrice(type, m_bot);
 	m_reservedGas		+= Util::GetUnitTypeGasPrice(type, m_bot);
 
-	Building b(type, desiredPosition);
+	Building b(type, desiredPosition, Util::GetUnitTypeWidth(type, m_bot));
 	b.status = BuildingStatus::Unassigned;
 
-	// with an empty building task queue there shouldn't be any reserved tiles.
-	if (m_buildings.empty())
+	if (type == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER)
 	{
-		bool canReset = true;
-		// Well there are. The ones reserved for addons...
-		const CUnits flyingBuildings = m_bot.UnitInfo().getUnits(Players::Self, std::vector<sc2::UNIT_TYPEID>({sc2::UNIT_TYPEID::TERRAN_STARPORTFLYING, sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING }));
-		if (flyingBuildings.empty())
-		{
-			const CUnits addonBuildings = m_bot.UnitInfo().getUnits(Players::Self, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::TERRAN_BARRACKS, sc2::UNIT_TYPEID::TERRAN_STARPORT , sc2::UNIT_TYPEID::TERRAN_STARPORTFLYING, sc2::UNIT_TYPEID::TERRAN_FACTORY, sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING }));
-			for (const auto & addonBuilding : addonBuildings)
-			{
-				if (!addonBuilding->getAddOnTag())
-				{
-					canReset = false;
-					break;
-				}
-			}
-		}
-		if (canReset)
-		{
-			m_buildingPlacer.freeTiles();
-		}
+		m_tryingToExpand = true;
 	}
-	else
+
+	if (!m_buildings.empty())
 	{
 		for (const auto & bOld : m_buildings)
 		{
@@ -605,6 +586,7 @@ sc2::Point2D BuildingManager::getBuildingLocation(const Building & b)
 		{
 			return testPoint;
 		}
+		return m_buildingPlacer.getBuildLocationNear(b, 0);
 	}
 	if (b.m_type == sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)
 	{
@@ -612,7 +594,12 @@ sc2::Point2D BuildingManager::getBuildingLocation(const Building & b)
 		{
 			return b.desiredPosition;
 		}
-		return m_buildingPlacer.getBuildLocationNear(b, 0);
+		sc2::Point2D testPoint = m_buildingPlacer.getBuildLocationNear(b, 0);
+		if (testPoint != sc2::Point2D(0, 0))
+		{
+			return testPoint;
+		}
+		return m_buildingPlacer.getBuildLocationNear(Building(b.m_type, m_bot.Bases().getBaseLocation(b.desiredPosition)->getCenterOfBase(), Util::GetUnitTypeWidth(b.m_type, m_bot)), 0);
 	}
 	if (b.m_type == sc2::UNIT_TYPEID::TERRAN_BUNKER)
 	{
@@ -638,9 +625,25 @@ void BuildingManager::removeBuildings(const std::vector<Building> & toRemove)
 			{
 				m_bot.Workers().finishedWithWorker(b.builderUnit);
 			}
-			m_buildingPlacer.freeTiles(static_cast<int>(b.finalPosition.x), static_cast<int>(b.finalPosition.y), Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot));
+			if (!b.buildingUnit || !b.buildingUnit->isCompleted())
+			{
+				m_buildingPlacer.freeTiles(b.finalPosition.x, b.finalPosition.y, Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot));
+			}
 			m_buildings.erase(it);
 		}
+	}
+}
+
+bool BuildingManager::tryingToExpand() const
+{
+	return m_tryingToExpand;
+}
+
+void BuildingManager::onBuildingDestroyed(const sc2::Unit * unit)
+{
+	if (Util::IsBuildingType(unit->unit_type, m_bot))
+	{
+		m_buildingPlacer.freeTiles(unit->pos.x, unit->pos.y, Util::GetUnitTypeWidth(unit->unit_type, m_bot), Util::GetUnitTypeHeight(unit->unit_type, m_bot));
 	}
 }
 

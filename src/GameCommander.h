@@ -69,7 +69,7 @@ public:
 
 	void onUnitCreate(CUnit_ptr unit);
 	void OnBuildingConstructionComplete(CUnit_ptr unit);
-	void onUnitDestroy(CUnit_ptr unit);
+	void onUnitDestroyed(const sc2::Unit * unit);
 	void OnUnitEnterVision(CUnit_ptr unit);
 	void OnDetectedNeeded(const sc2::UnitTypeID & type, const sc2::Point2D & pos);
 

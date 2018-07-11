@@ -23,7 +23,7 @@ bool useAutoObserver = false;
 bool useDebug = false;
 bool useAutoObserver = false;
 #else
-bool useDebug = false;
+bool useDebug = true;
 bool useAutoObserver = false;
 #endif
 
@@ -78,14 +78,14 @@ static void ParseArguments(int argc, char *argv[], ConnectionOptions &connect_op
 	}
 	else
 	{
-		std::cout << std::endl << "Could not read race option. Please provide it via --HumanRace \"Zerg/Protoss/Terran\". Using default: Terran" << std::endl << std::endl;
-		connect_options.HumanRace = sc2::Terran;
+		std::cout << std::endl << "Could not read race option. Please provide it via --HumanRace \"Zerg/Protoss/Terran\". Using default: Zerg" << std::endl << std::endl;
+		connect_options.HumanRace = sc2::Zerg;
 	}
 
 	if (!arg_parser.Get("Map", connect_options.map))
 	{
-		std::cout << "Could not read map option. Please provide it via --Map \"InterloperLE.SC2Map\". Using default: LostAndFoundLE.SC2Map" << std::endl << std::endl;
-		connect_options.map = "LostAndFoundLE.SC2Map";
+		std::cout << "Could not read map option. Please provide it via --Map \"InterloperLE.SC2Map\". Using default: DreamcatcherLE.SC2Map" << std::endl << std::endl;
+		connect_options.map = "DreamcatcherLE.SC2Map";
 	}
 	std::string realTime;
 	if (arg_parser.Get("WithRealtime", realTime))
@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
 	//		  Setting this = N means the bot's onFrame gets called once every N frames
 	//		  The bot may crash or do unexpected things if its logic is not called every frame
 	coordinator.SetStepSize(stepSize);
-	coordinator.SetRealtime(Options.rt);
+	coordinator.SetRealtime(false);
 	coordinator.SetMultithreaded(true);
 	coordinator.SetParticipants({
 		CreateParticipant(Options.HumanRace, &human),
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 #else  // DEBUG
 int main(int argc, char* argv[])
 {
-	std::vector<std::string> maps = { "DarknessSanctuaryLE.SC2Map", "16BitLE.SC2Map", "AcidPlantLE.SC2Map", "RedShiftLE.SC2Map", "DreamcatcherLE.SC2Map", "CatalystLE.SC2Map", "LostAndFoundLE.SC2Map"};
+	std::vector<std::string> maps = { "RedShiftLE.SC2Map", "16BitLE.SC2Map", "LostAndFoundLE.SC2Map", "DarknessSanctuaryLE.SC2Map", "AcidPlantLE.SC2Map", "DreamcatcherLE.SC2Map", "CatalystLE.SC2Map"};
 	std::vector<sc2::Race> opponents = { sc2::Race::Terran, sc2::Race::Zerg, sc2::Race::Protoss};
 	std::map<std::string, sc2::Point2D> mapScore;
 	std::map<sc2::Race, sc2::Point2D> raceScore;

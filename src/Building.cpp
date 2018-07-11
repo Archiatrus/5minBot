@@ -14,9 +14,8 @@ Building::Building()
 {} 
 
 // constructor we use most often
-Building::Building(sc2::UnitTypeID t, sc2::Point2D desired)
-	: desiredPosition   (desired)
-	, finalPosition	 (0,0)
+Building::Building(sc2::UnitTypeID t, sc2::Point2D desired, int width)
+	: finalPosition	 (0,0)
 	, position		  (0,0)
 	, m_type			  (t)
 	, buildingUnit	  (nullptr)
@@ -25,7 +24,17 @@ Building::Building(sc2::UnitTypeID t, sc2::Point2D desired)
 	, status			(BuildingStatus::Unassigned)
 	, buildCommandGiven (false)
 	, underConstruction (false) 
-{}
+{
+	
+	if (width % 2 == 1)
+	{
+		desiredPosition = sc2::Point2D(std::floor(desired.x) + 0.5f, std::floor(desired.y) + 0.5f);
+	}
+	else
+	{
+		desiredPosition = sc2::Point2D(std::floor(desired.x), std::floor(desired.y));
+	}
+}
 
 // equals operator
 bool Building::operator == (const Building & b) 

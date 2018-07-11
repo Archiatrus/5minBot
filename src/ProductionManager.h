@@ -37,7 +37,7 @@ public:
 
 	void    onStart();
 	void    onFrame();
-	void    onUnitDestroy(CUnit_ptr unit);
+	void    onUnitDestroy(const sc2::Unit * unit);
 	void    drawProductionInformation();
 
 	void defaultMacro();
@@ -51,4 +51,5 @@ public:
 	int buildingsFinished(const CUnits units) const;
 	void needCC();
 	int howOftenQueued(sc2::UnitTypeID type);
+	bool tryingToExpand() const;
 };

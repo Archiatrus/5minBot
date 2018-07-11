@@ -448,7 +448,7 @@ sc2::Point2D BaseLocationManager::getNextExpansion(int player) const
 			bool tooDangerous = false;
 			for (const auto & enemy : m_bot.UnitInfo().getUnits(Players::Enemy))
 			{
-				if (enemy->isVisible() && enemy->isCombatUnit() && Util::DistSq(enemy->getPos(), base->getCenterOfBase()) < 100.0f)
+				if (enemy->isVisible() && enemy->isCombatUnit() && !enemy->isBurrowed() && Util::DistSq(enemy->getPos(), base->getCenterOfBase()) < 100.0f)
 				{
 					tooDangerous = true;
 					break;

@@ -51,6 +51,7 @@ public:
 	void OnBuildingConstructionComplete(const sc2::Unit * unit) override;
 	void OnUnitCreated(const sc2::Unit * unit) override;
 	void OnUnitEnterVision(const sc2::Unit * unit) override;
+	void OnUnitDestroyed(const sc2::Unit * unit) override;
 
 	void OnCloakDetected(const sc2::UNIT_TYPEID & type, const sc2::Point2D & pos);
 

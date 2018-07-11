@@ -166,7 +166,8 @@ const bool Squad::needsToRegroup()
 {
 	if (m_order.getType() == SquadOrderTypes::Attack)
 	{
-		if ((m_bot.Observation()->GetFoodArmy() < 100 && m_units.size() * 2 < m_bot.UnitInfo().getFoodCombatUnits(Players::Enemy)) || (m_bot.Observation()->GetFoodUsed() < 195 && m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER) < m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_COLOSSUS)))
+		std::cout << m_bot.UnitInfo().getFoodCombatUnits(Players::Self) << " < " << m_bot.UnitInfo().getFoodCombatUnits(Players::Enemy) << std::endl;
+		if ((m_bot.Observation()->GetFoodArmy() < 100 && m_bot.UnitInfo().getFoodCombatUnits(Players::Self) < m_bot.UnitInfo().getFoodCombatUnits(Players::Enemy)) || (m_bot.Observation()->GetFoodUsed() < 195 && m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER) < m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_COLOSSUS)))
 		{
 			m_bot.retreat();
 			m_status = Status::flee;
@@ -174,13 +175,14 @@ const bool Squad::needsToRegroup()
 			return m_lastRetreatSwitchVal;
 		}
 		std::map<CUnit_ptr, size_t> inSight;
+		std::map<CUnit_ptr, size_t> inSightEnemy;
 		for (size_t i = 0; i < m_units.size(); ++i)
 		{
 			if (!m_units[i]->isAlive() || m_units[i]->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 			{
 				continue;
 			}
-			for (size_t j = i + 1; j < m_units.size(); ++j)
+			for (size_t j = i; j < m_units.size(); ++j)
 			{
 				if (!m_units[j]->isAlive() || m_units[j]->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 				{
@@ -192,18 +194,31 @@ const bool Squad::needsToRegroup()
 					++inSight[m_units[j]];
 				}
 			}
+			for (const auto & enemy : m_bot.UnitInfo().getUnits(Players::Enemy))
+			{
+				if (enemy->isCombatUnit() && Util::DistSq(m_units[i]->getPos(), enemy->getPos()) < std::pow(m_units[i]->getSightRange(), 2))
+				{
+					inSightEnemy[m_units[i]]++;
+				}
+			}
 		}
-		float count = 0;
+		size_t maxCount = 0;
 		for (const auto & sightCount : inSight)
 		{
-			count += static_cast<float>(sightCount.second);
+			maxCount = std::max<size_t>(maxCount, sightCount.second);
 		}
-		const float scattering = static_cast<float>(count)/ static_cast<float>(std::pow(std::max<size_t>(1, inSight.size()), 2));
-		std::cout << "scattering = " << scattering << std::endl;
+		const float scattering = static_cast<float>(maxCount)/ static_cast<float>(std::max<size_t>(1, inSight.size()));
+
+		size_t maxCountEnemy = 0;
+		for (const auto & sightCount : inSightEnemy)
+		{
+			maxCountEnemy = std::max<size_t>(maxCountEnemy, sightCount.second);
+		}
+
 		// if we are retreating, we want to do it for a while
 		if (m_status == Status::fine)
 		{
-			if (scattering < 0.55f)
+			if (maxCountEnemy > std::min<size_t>(2, maxCount) && scattering < 0.55f)
 			{
 				m_status = Status::regroup;
 				m_lastRetreatSwitchVal = true;
@@ -258,7 +273,7 @@ const bool Squad::needsToRegroup()
 	{
 		const sc2::Point2D startingBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase();
 		const sc2::Point2D newestBase = m_bot.Bases().getNewestExpansion(Players::Self);
-		if ( (m_order.getPosition().x == startingBase.x && m_order.getPosition().y == startingBase.y) || !(m_order.getPosition().x == newestBase.x && m_order.getPosition().y == newestBase.y) || m_bot.Observation()->GetFoodUsed()>=180)
+		if ( m_bot.UnitInfo().getUnitTypeCount(Players::Self, Util::getTownHallTypes())==1 || (m_order.getPosition().x == startingBase.x && m_order.getPosition().y == startingBase.y) || !(m_order.getPosition().x == newestBase.x && m_order.getPosition().y == newestBase.y) || m_bot.Observation()->GetFoodUsed()>=180)
 		{
 			return false;
 		}
@@ -276,7 +291,6 @@ const bool Squad::needsToRegroup()
 			}
 		}
 		return nearbyEnemies.size() > m_units.size();
-		
 	}
 	else
 	{

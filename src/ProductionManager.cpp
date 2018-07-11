@@ -43,8 +43,9 @@ void ProductionManager::onFrame()
 }
 
 // on unit destroy
-void ProductionManager::onUnitDestroy(const CUnit_ptr unit)
+void ProductionManager::onUnitDestroy(const sc2::Unit * unit)
 {
+	m_buildingManager.onBuildingDestroyed(unit);
 }
 
 void ProductionManager::manageBuildOrderQueue()
@@ -105,6 +106,23 @@ void ProductionManager::create(BuildOrderItem item)
 				return;
 			}
 		}
+		for (const auto & bunker : m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER))
+		{
+			bool protectedBunker = false;
+			for (const auto & mt : m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_MISSILETURRET))
+			{
+				if (Util::DistSq(bunker->getPos(), mt->getPos()) < 25.0f)
+				{
+					protectedBunker = true;
+					break;
+				}
+			}
+			if (!protectedBunker)
+			{
+				m_buildingManager.addBuildingTask(item.m_type.getUnitTypeID(), bunker->getPos());
+				return;
+			}
+		}
 	}
 	else if (item.m_type.getUnitTypeID().ToType() == sc2::UNIT_TYPEID::TERRAN_BUNKER)
 	{
@@ -116,6 +134,17 @@ void ProductionManager::create(BuildOrderItem item)
 		else
 		{
 			m_buildingManager.addBuildingTask(item.m_type.getUnitTypeID(), m_bot.Bases().getBuildingLocation());
+		}
+	}
+	else if (m_bot.Map().hasPocketBase() && item.m_type.getUnitTypeID() == sc2::UNIT_TYPEID::TERRAN_BARRACKS && m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 2)
+	{
+		if (m_bot.Observation()->GetGameInfo().map_name == "Redshift LE")
+		{
+			m_buildingManager.addBuildingTask(item.m_type.getUnitTypeID(), m_bot.Bases().getNaturalExpansion(Players::Self)->getCenterOfBase());
+		}
+		else
+		{
+			m_buildingManager.addBuildingTask(item.m_type.getUnitTypeID(), m_bot.Bases().getNaturalExpansion(Players::Self)->getCenterOfMinerals());
 		}
 	}
 	else
@@ -160,7 +189,7 @@ void ProductionManager::defaultMacro()
 	int scansAvailable = 0;
 	for (const auto & unit : CommandCenters)
 	{
-		if (unit->isCompleted())
+		if (unit->isCompleted() && !unit->isFlying())
 		{
 			if (unit->getEnergy() >= 50)
 			{
@@ -242,7 +271,7 @@ void ProductionManager::defaultMacro()
 			}
 		}
 		const CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
-		if (Bunker.size() + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BUNKER) < 1)
+		if (m_bot.Workers().getMineralWorkers().size() > 5 && Bunker.size() + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BUNKER) < 1)
 		{
 			m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BUNKER), BUILDING, false));
 			std::cout << "Bunker" << std::endl;
@@ -253,19 +282,21 @@ void ProductionManager::defaultMacro()
 	const int reactorsFinished = buildingsFinished(m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR));
 	if (!m_bot.underAttack() && (m_needCC || mineralRate / static_cast<float>(reactorsFinished) < 350.f) && numBases - numBasesFinished + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER) == 0 && m_bot.Bases().getNextExpansion(Players::Self) != sc2::Point2D{})
 	{
-		
-		if (minerals > 400)
+		if (std::find_if(CommandCenters.begin(), CommandCenters.end(), [](const auto & cc) { return cc->getAssignedHarvesters() < cc->getIdealHarvesters(); }) == CommandCenters.end())
 		{
-			m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER), BUILDING, false));
-			m_needCC = false;
-			std::cout << "CC" << std::endl;
+			if (minerals > 400)
+			{
+				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER), BUILDING, false));
+				m_needCC = false;
+				std::cout << "CC" << std::endl;
+			}
+			else
+			{
+				m_needCC = true;
+				std::cout << "Need CC" << std::endl;
+			}
+			return;
 		}
-		else
-		{
-			m_needCC = true;
-			std::cout << "Need CC" << std::endl;
-		}
-		return;
 	}
 
 	if (supplyCap < 200 && (supplyCap - supply < (numBasesFinished + 2 * numRaxFinished) || (numDepots == 0 && minerals >= 50 && m_bot.Observation()->GetFoodWorkers() == 13)))
@@ -290,48 +321,66 @@ void ProductionManager::defaultMacro()
 	{
 		if (unit->isCompleted() && unit->isIdle())
 		{
-			// Before building a worker, make sure it is a OC
-			if (unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER && numRaxFinished > 0)
+			if (!unit->isFlying())
 			{
-				if (m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND) < 2 || numEngibaysFinished == 0 || m_bot.GetPlayerRace(Players::Enemy) != sc2::Race::Zerg)
+				// Before building a worker, make sure it is a OC
+				if (unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER && numRaxFinished > 0)
 				{
-					if (minerals >= 150)
+					const BaseLocation * targetBase = m_bot.Bases().getBaseLocation(unit->getPos());
+					if (Util::DistSq(unit->getPos(), targetBase->getCenterOfBase()) > 0.01f && m_bot.Query()->Placement(sc2::ABILITY_ID::LAND_COMMANDCENTER, targetBase->getCenterOfBase()))
 					{
-						Micro::SmartAbility(unit, sc2::ABILITY_ID::MORPH_ORBITALCOMMAND, m_bot);
-						std::cout << "OC" << std::endl;
+						Micro::SmartAbility(unit, sc2::ABILITY_ID::LIFT, m_bot);
+						return;
 					}
-					else
-					{
-						std::cout << "Saving minerals for OC" << std::endl;
-					}
-					return;
-				}
-				else
-				{
-					if (gas >= 150)
+					if (m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_ORBITALCOMMAND) < 2 || numEngibaysFinished == 0 || m_bot.GetPlayerRace(Players::Enemy) != sc2::Race::Zerg)
 					{
 						if (minerals >= 150)
 						{
-							Micro::SmartAbility(unit, sc2::ABILITY_ID::MORPH_PLANETARYFORTRESS, m_bot);
-							std::cout << "PF" << std::endl;
+							Micro::SmartAbility(unit, sc2::ABILITY_ID::MORPH_ORBITALCOMMAND, m_bot);
+							std::cout << "OC" << std::endl;
 						}
 						else
 						{
-							std::cout << "Saving minerals for PF" << std::endl;
+							std::cout << "Saving minerals for OC" << std::endl;
 						}
 						return;
 					}
-					continue;
+					else
+					{
+						if (gas >= 150)
+						{
+							if (minerals >= 150)
+							{
+								Micro::SmartAbility(unit, sc2::ABILITY_ID::MORPH_PLANETARYFORTRESS, m_bot);
+								std::cout << "PF" << std::endl;
+							}
+							else
+							{
+								std::cout << "Saving minerals for PF" << std::endl;
+							}
+							return;
+						}
+						continue;
+					}
+				}
+
+				// Every Base has to build a worker until 66 workers.
+				if (m_bot.Observation()->GetFoodWorkers() < 66 && (unit->getIdealHarvesters() == 0 || unit->getAssignedHarvesters() <= unit->getIdealHarvesters() + 3 || numBases - numBasesFinished + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER) == 1))
+				{
+					if (supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_SCV).supplyCost)
+					{
+						Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_SCV, m_bot);
+						std::cout << "TrainSCV" << std::endl;
+						return;
+					}
 				}
 			}
-
-			// Every Base has to build a worker until 66 workers.
-			if (m_bot.Observation()->GetFoodWorkers() < 66 && (unit->getIdealHarvesters() == 0 || unit->getAssignedHarvesters() <= unit->getIdealHarvesters() + 3 || numBases - numBasesFinished + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER) == 1))
+			else
 			{
-				if (supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_SCV).supplyCost)
+				const BaseLocation * targetBase = m_bot.Bases().getBaseLocation(unit->getPos());
+				if (Util::DistSq(unit->getPos(), targetBase->getCenterOfBase()) > 0.01f && m_bot.Query()->Placement(sc2::ABILITY_ID::LAND_COMMANDCENTER, targetBase->getCenterOfBase()))
 				{
-					Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_SCV, m_bot);
-					std::cout << "TrainSCV" << std::endl;
+					Micro::SmartAbility(unit, sc2::ABILITY_ID::LAND, targetBase->getCenterOfBase(), m_bot);
 					return;
 				}
 			}
@@ -340,7 +389,7 @@ void ProductionManager::defaultMacro()
 	// turrets
 	if (m_turretsRequested && numEngibaysFinished > 0)
 	{
-		if (m_bot.Bases().getOccupiedBaseLocations(Players::Self).size() > m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_MISSILETURRET, false) + static_cast<size_t>(howOftenQueued(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)))
+		if (m_bot.Bases().getOccupiedBaseLocations(Players::Self).size() + m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER) > m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_MISSILETURRET, false) + static_cast<size_t>(howOftenQueued(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)))
 		{
 			if (howOftenQueued(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET) == 0)
 			{
@@ -469,7 +518,7 @@ void ProductionManager::defaultMacro()
 
 	// Armory
 	// Needed for upgrades after +1
-	if (weaponBio >= 1 && armorBio >= 0 && numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ARMORY) == 0)
+	if (numArmories + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ARMORY) == 0 && numEngibays == 2)
 	{
 		// A armory needs 1040 frames to build.
 		// +1 weapons needs 2560 frames.
@@ -480,7 +529,7 @@ void ProductionManager::defaultMacro()
 		{
 			if (engi->getOrders().empty())
 			{
-				maxProgress = 1.0f;
+				maxProgress = m_bot.getWeaponBio();
 				break;
 			}
 			const float progress = engi->getOrders().front().progress;
@@ -529,6 +578,68 @@ void ProductionManager::defaultMacro()
 							std::cout << "Weapon ++" << std::endl;
 							return;
 						}
+					}
+				}
+			}
+		}
+	}
+	// Factories
+	for (const auto & unit : Factories)
+	{
+		// Any finished Factory
+		if (unit->isCompleted() && !unit->isFlying())
+		{
+			// that is idle
+			if (unit->isIdle())
+			{
+				// if it is only a factory build addon
+				if (!unit->getAddOnTag())
+				{
+					// Build a reactor for the first starport
+					if (numStarport == 0 || numStarport == 1 && numStarportFinished == 0)
+					{
+						if (minerals >= 50 && gas >= 50 && numStarport == 1)
+						{
+							Micro::SmartAbility(unit, sc2::ABILITY_ID::BUILD_REACTOR_FACTORY, m_bot);
+							std::cout << "ReactorFactory" << std::endl;
+							return;
+						}
+					}
+					else if (Starports.size() > 0 && (Starports.front()->getAddOnTag() || (Starports.front()->getOrders().size() > 0 && Starports.front()->getOrders().front().ability_id == sc2::ABILITY_ID::BUILD_REACTOR)))
+					{
+						if (minerals >= 50 && gas >= 25)
+						{
+							Micro::SmartAbility(unit, sc2::ABILITY_ID::BUILD_TECHLAB_FACTORY, m_bot);
+							std::cout << "TechlabFactory" << std::endl;
+							return;
+						}
+					}
+				}
+				else if (m_bot.UnitInfo().getUnit(unit->getAddOnTag())->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORYTECHLAB)
+				{
+					const size_t numWidowMines = m_bot.UnitInfo().getUnitTypeCount(Players::Self, std::vector<sc2::UNIT_TYPEID>{ sc2::UNIT_TYPEID::TERRAN_WIDOWMINE, sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED });
+					const size_t numTanks = m_bot.UnitInfo().getUnitTypeCount(Players::Self, std::vector<sc2::UNIT_TYPEID>{ sc2::UNIT_TYPEID::TERRAN_SIEGETANK, sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED });
+					const size_t numThors = m_bot.UnitInfo().getUnitTypeCount(Players::Self, std::vector<sc2::UNIT_TYPEID>{ sc2::UNIT_TYPEID::TERRAN_THOR, sc2::UNIT_TYPEID::TERRAN_THORAP });
+					if (numArmories > 0 && m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Zerg && m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::ZERG_MUTALISK) > 0 && numThors == 0)
+					{
+						if (minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_THOR).mineralCost && gas >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_THOR).gasCost && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_THOR).supplyCost)
+						{
+							Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_THOR, m_bot);
+							std::cout << "Thor" << std::endl;
+							return;
+						}
+					}
+					else if (numTanks > 0 && numWidowMines == 0 && minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).mineralCost && gas >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).gasCost && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).supplyCost)
+					{
+						Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_WIDOWMINE, m_bot);
+						std::cout << "WM" << std::endl;
+						return;
+					}
+					else if (minerals >= 150 && gas >= 125 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_SIEGETANK).supplyCost)
+					{
+						Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_SIEGETANK, m_bot);
+						std::cout << "Tank" << std::endl;
+						return;
 					}
 				}
 			}
@@ -594,7 +705,7 @@ void ProductionManager::defaultMacro()
 					{
 						const size_t numMedivacs = m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, sc2::UNIT_TYPEID::TERRAN_MEDIVAC);
 						const size_t numVikings = m_bot.UnitInfo().getUnitTypeCount(sc2::Unit::Alliance::Self, std::vector<sc2::UNIT_TYPEID>{ sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER, sc2::UNIT_TYPEID::TERRAN_VIKINGASSAULT });
-						if ((!m_vikingRequested && numMedivacs < 12) || (m_vikingRequested && numMedivacs <= numVikings))
+						if ((!m_vikingRequested && numMedivacs < 9) || (m_vikingRequested && numMedivacs <= numVikings))
 						{
 							if (gas >= 100 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MEDIVAC).supplyCost)
 							{
@@ -610,7 +721,7 @@ void ProductionManager::defaultMacro()
 								return;
 							}
 						}
-						else
+						else if (numVikings <= numMedivacs)
 						{
 							if (minerals >= 150 && gas >= 75 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER).supplyCost)
 							{
@@ -698,57 +809,6 @@ void ProductionManager::defaultMacro()
 			}
 		}
 	}
-	for (const auto & unit : Factories)
-	{
-		// Any finished Factory
-		if (unit->isCompleted() && !unit->isFlying())
-		{
-			// that is idle
-			if (unit->isIdle())
-			{
-				// if it is only a factory build addon
-				if (!unit->getAddOnTag())
-				{
-					// Build a reactor for the first starport
-					if (numStarport == 0 || numStarport == 1 && numStarportFinished == 0)
-					{
-						if (minerals >= 50 && gas >= 50 && numStarport == 1)
-						{
-							Micro::SmartAbility(unit, sc2::ABILITY_ID::BUILD_REACTOR_FACTORY, m_bot);
-							std::cout << "ReactorFactory" << std::endl;
-							return;
-						}
-					}
-					else if (Starports.size() > 0 && (Starports.front()->getAddOnTag() || (Starports.front()->getOrders().size() > 0 && Starports.front()->getOrders().front().ability_id == sc2::ABILITY_ID::BUILD_REACTOR)))
-					{
-						if (minerals >= 50 && gas >= 25)
-						{
-							Micro::SmartAbility(unit, sc2::ABILITY_ID::BUILD_TECHLAB_FACTORY, m_bot);
-							std::cout << "TechlabFactory" << std::endl;
-							return;
-						}
-					}
-				}
-				else if (m_bot.UnitInfo().getUnit(unit->getAddOnTag())->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORYTECHLAB)
-				{
-					const int numWidowMines = static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(Players::Self, std::vector<sc2::UNIT_TYPEID>{ sc2::UNIT_TYPEID::TERRAN_WIDOWMINE, sc2::UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED }));
-					const int numTanks = static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(Players::Self, std::vector<sc2::UNIT_TYPEID>{ sc2::UNIT_TYPEID::TERRAN_SIEGETANK, sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED }));
-					if (numTanks > 0 && numWidowMines == 0 && minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).mineralCost && gas >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).gasCost && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).supplyCost)
-					{
-						Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_WIDOWMINE, m_bot);
-						std::cout << "WM" << std::endl;
-						return;
-					}
-					if (minerals >= 150 && gas >= 125 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_SIEGETANK).supplyCost)
-					{
-						Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_SIEGETANK, m_bot);
-						std::cout << "Tank" << std::endl;
-						return;
-					}
-				}
-			}
-		}
-	}
 	if (minerals >= 100 && numBases >= 2)  // m_bot.GetPlayerRace(Players::Enemy) != sc2::Race::Terran &&
 	{
 		const CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
@@ -763,8 +823,8 @@ void ProductionManager::defaultMacro()
 	// Engineering bay
 	// We start with one. We want to built it after the starport has finished
 	if (minerals >= 125
-		&& (((numStarportFinished == 1 || m_turretsRequested) && numEngibays + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY) == 0)
-		|| (numEngibays + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY) == 1 && numArmoriesFinished == 1)))
+		&& (((numStarport >= 1 || m_turretsRequested) && numEngibays + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY) == 0)
+		|| (numEngibays + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY) == 1 && numEngibaysFinished == 1)))
 	{
 		m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY), BUILDING, false));
 		std::cout << "Engineering Bay" << std::endl;
@@ -908,6 +968,10 @@ int ProductionManager::howOftenQueued(sc2::UnitTypeID type)
 	return numQueued + m_buildingManager.getNumBuildingsQueued(type);
 }
 
+bool ProductionManager::tryingToExpand() const
+{
+	return m_buildingManager.tryingToExpand();
+}
 
 void ProductionManager::drawProductionInformation()
 {

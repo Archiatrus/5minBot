@@ -16,8 +16,8 @@ void BuildingPlacer::onStart()
 
 	sc2::Point2D buildingSeedPosition = m_bot.Bases().getBuildingLocation();
 	const std::vector<sc2::Point2D> & closestToBuilding = m_bot.Map().getClosestTilesTo(buildingSeedPosition);
-	buildingPlace depots(buildingSeedPosition, 4, Building(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT, sc2::Point2D()), closestToBuilding);
-	buildingPlace production(buildingSeedPosition, 9, Building(sc2::UNIT_TYPEID::TERRAN_BARRACKS, sc2::Point2D()), closestToBuilding);
+	buildingPlace depots(buildingSeedPosition, 4, Building(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT, sc2::Point2D(), 2), closestToBuilding);
+	buildingPlace production(buildingSeedPosition, 9, Building(sc2::UNIT_TYPEID::TERRAN_BARRACKS, sc2::Point2D(), 3), closestToBuilding);
 	m_buildLocationTester.push_back(depots);
 	m_buildLocationTester.push_back(production);
 }
@@ -43,7 +43,7 @@ void BuildingPlacer::expandBuildingTesterOnce()
 		}
 		sc2::Point2D pos = buildLocationTester.m_closestTiles[buildLocationTester.m_idx];
 
-		if (canBuildHereWithSpace(static_cast<int>(pos.x), static_cast<int>(pos.y), buildLocationTester.m_building, m_bot.Config().BuildingSpacing))
+		if (canBuildHereWithSpace(pos.x, pos.y, buildLocationTester.m_building, m_bot.Config().BuildingSpacing))
 		{
 			buildLocationTester.m_canBuildHere = true;
 		}
@@ -69,18 +69,6 @@ bool BuildingPlacer::canBuildHere(int bx, int by, const Building & b) const
 		return false;
 	}
 
-	// check the reserve map
-	for (int x = bx; x < bx + Util::GetUnitTypeWidth(b.m_type, m_bot); x++)
-	{
-		for (int y = by; y < by + Util::GetUnitTypeHeight(b.m_type, m_bot); y++)
-		{
-			if (!m_bot.Map().isValid(x, y) || m_reserveMap[x][y])
-			{
-				return false;
-			}
-		}
-	}
-
 	// if it overlaps a base location return false
 	if (tileOverlapsBaseLocation(bx, by, b.m_type))
 	{
@@ -100,14 +88,18 @@ bool BuildingPlacer::canBuildHere(int bx, int by, const Building & b) const
 }
 
 // returns true if we can build this type of unit here with the specified amount of space.
-bool BuildingPlacer::canBuildHereWithSpace(int bx, int by, const Building & b, int buildDist) const
+bool BuildingPlacer::canBuildHereWithSpace(float bx, float by, const Building & b, int buildDist) const
 {
+	
 	sc2::UnitTypeID type = b.m_type;
-
 	// if we can't build here, we of course can't build here with space
 	if (!canBuildHere(bx, by, b))
 	{
 		return false;
+	}
+	if (Util::IsTownHallType(b.m_type))
+	{
+		return buildable(b, bx, by);
 	}
 
 	// height and width of the building
@@ -115,13 +107,27 @@ bool BuildingPlacer::canBuildHereWithSpace(int bx, int by, const Building & b, i
 	int height = Util::GetUnitTypeHeight(b.m_type, m_bot);
 
 	// define the rectangle of the building spot
-	int startx = bx  + buildDist;
-	int starty = by + buildDist;
-	int endx   = bx + width + buildDist;
-	int endy   = by + height + buildDist;
+	float startx = bx - (width / 2.0 + buildDist);
+	float starty = by - (height / 2.0 + buildDist);
+	float endx   = bx + (width / 2.0 + buildDist);
+	float endy   = by + (height / 2.0 + buildDist);
 
 	if (b.m_type == sc2::UNIT_TYPEID::TERRAN_BARRACKS || b.m_type == sc2::UNIT_TYPEID::TERRAN_FACTORY || b.m_type == sc2::UNIT_TYPEID::TERRAN_STARPORT)
 	{
+		for (const auto & mineral : m_bot.UnitInfo().getUnits(Players::Neutral, Util::getMineralTypes()))
+		{
+			if (Util::DistSq(sc2::Point2D(bx, by), mineral->getPos()) < 16.0f)
+			{
+				return false;
+			}
+		}
+		for (const auto & mineral : m_bot.UnitInfo().getUnits(Players::Neutral, Util::getGeyserTypes()))
+		{
+			if (Util::DistSq(sc2::Point2D(bx, by), mineral->getPos()) < 16.0f)
+			{
+				return false;
+			}
+		}
 		--startx;
 		endx += 2;
 	}
@@ -130,27 +136,28 @@ bool BuildingPlacer::canBuildHereWithSpace(int bx, int by, const Building & b, i
 	{
 		return false;
 	}
-
-	if (Util::IsTownHallType(b.m_type))
-	{
-		return buildable(b, startx, starty);
-	}
 	// if we can't build here, or space is reserved, or it's in the resource box, we can't build here
+	std::vector<sc2::QueryInterface::PlacementQuery> query;
 	if (!Util::IsRefineryType(b.m_type) && !Util::IsTownHallType(b.m_type))
 	{
 		for (int x = startx; x < endx; x++)
 		{
 			for (int y = starty; y < endy; y++)
 			{
-				if (m_reserveMap[x][y] || !buildable(b, x, y))
+				if (m_reserveMap[x][y])  // || !buildable(b, x, y))
 				{
 					return false;
 				}
+				query.push_back({ sc2::ABILITY_ID::BUILD_SENSORTOWER, sc2::Point2D(x + 0.5f, y + 0.5f) });
 			}
 		}
 	}
-
-	return true;
+	std::vector<bool> results = m_bot.Query()->Placement(query);
+	if (std::find(results.begin(), results.end(), false) != results.end())
+	{
+		return false;
+	}
+	return buildable(b, bx, by);
 }
 
 // We will never speak of this again....
@@ -191,7 +198,7 @@ sc2::Point2D BuildingPlacer::getBuildLocationNear(const Building & b, int buildD
 	{
 		sc2::Point2D pos = idx->m_closestTiles[i];
 		// Drawing::drawSphere(m_bot, pos, 1.0f);
-		if (canBuildHereWithSpace(static_cast<int>(pos.x), static_cast<int>(pos.y), b, buildDist))
+		if (canBuildHereWithSpace(pos.x, pos.y, b, buildDist))
 		{
 			// double ms = t.getElapsedTimeInMilliSec();
 			// printf("Building Placer Took %d iterations, lasting %lf ms @ %lf iterations/ms, %lf setup ms\n", (int)i, ms, (i / ms), ms1);
@@ -224,7 +231,10 @@ bool BuildingPlacer::tileOverlapsBaseLocation(int x, int y, sc2::UnitTypeID type
 	int ty1 = y;
 	int tx2 = tx1 + Util::GetUnitTypeWidth(type, m_bot);
 	int ty2 = ty1 + Util::GetUnitTypeHeight(type, m_bot);
-
+	if (type == sc2::UNIT_TYPEID::TERRAN_BARRACKS)
+	{
+		tx2 += 2;
+	}
 	// for each base location
 	for (const BaseLocation * base : m_bot.Bases().getBaseLocations())
 	{
@@ -248,7 +258,7 @@ bool BuildingPlacer::tileOverlapsBaseLocation(int x, int y, sc2::UnitTypeID type
 	return false;
 }
 
-bool BuildingPlacer::buildable(const Building & b, int x, int y) const
+bool BuildingPlacer::buildable(const Building & b, float x, float y) const
 {
 	if (!m_bot.Map().isValid(x, y) || !m_bot.Map().canBuildTypeAtPosition(x, y, b.m_type))
 	{
@@ -257,13 +267,13 @@ bool BuildingPlacer::buildable(const Building & b, int x, int y) const
 	return true;
 }
 
-void BuildingPlacer::reserveTiles(int bx, int by, int width, int height)
+void BuildingPlacer::reserveTiles(float bx, float by, float width, float height, bool addon)
 {
 	size_t rwidth = m_reserveMap.size();
 	size_t rheight = m_reserveMap[0].size();
-	for (size_t x = bx; x < bx + width && x < rwidth; x++)
+	for (size_t x = static_cast<size_t>(bx - width/2.0f); x < static_cast<size_t>(bx + width/2.0f + addon*2.0f) && x < rwidth; x++)
 	{
-		for (size_t y = by; y < by + height && y < rheight; y++)
+		for (size_t y = static_cast<size_t>(by - height/2.0f); y < static_cast<size_t>(by + height/2.0f) && y < rheight; y++)
 		{
 			m_reserveMap[x][y] = true;
 		}
@@ -272,7 +282,7 @@ void BuildingPlacer::reserveTiles(int bx, int by, int width, int height)
 
 void BuildingPlacer::drawReservedTiles()
 {
-	if (!m_bot.Config().DrawReservedBuildingTiles)
+	if (false)//!m_bot.Config().DrawReservedBuildingTiles)
 	{
 		return;
 	}
@@ -286,25 +296,20 @@ void BuildingPlacer::drawReservedTiles()
 		{
 			if (m_reserveMap[x][y] || isInResourceBox(x, y))
 			{
-				int x1 = x*32 + 8;
-				int y1 = y*32 + 8;
-				int x2 = (x+1)*32 - 8;
-				int y2 = (y+1)*32 - 8;
-
-				Drawing::drawBox(m_bot, static_cast<float>(x1), static_cast<float>(y1), static_cast<float>(x2), static_cast<float>(y2), sc2::Colors::Yellow);
+				Drawing::drawSphere(m_bot, sc2::Point2D(x + 0.5f, y + 0.5f), 0.5f, sc2::Colors::Yellow);
 			}
 		}
 	}
 }
 
-void BuildingPlacer::freeTiles(int bx, int by, int width, int height)
+void BuildingPlacer::freeTiles(float bx, float by, float width, float height)
 {
 	int rwidth = static_cast<int>(m_reserveMap.size());
 	int rheight = static_cast<int>(m_reserveMap[0].size());
 
-	for (int x = bx; x < bx + width && x < rwidth; x++)
+	for (size_t x = static_cast<size_t>(bx - width / 2.0f); x < static_cast<size_t>(bx + width / 2.0f) && x < rwidth; x++)
 	{
-		for (int y = by; y < by + height && y < rheight; y++)
+		for (size_t y = static_cast<size_t>(by - height / 2.0f); y < static_cast<size_t>(by + height / 2.0f) && y < rheight; y++)
 		{
 			m_reserveMap[x][y] = false;
 		}

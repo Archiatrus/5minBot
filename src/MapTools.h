@@ -57,7 +57,7 @@ public:
 	bool	isPowered(const sc2::Point2D & pos) const;
 	bool	isExplored(const sc2::Point2D & pos) const;
 	bool	isVisible(const sc2::Point2D & pos) const;
-	bool	canBuildTypeAtPosition(int x, int y, sc2::UnitTypeID type) const;
+	bool	canBuildTypeAtPosition(float x, float y, sc2::UnitTypeID type) const;
 
 	const DistanceMap & getDistanceMap(const sc2::Point2D & tile) const;
 	const DistanceMap & getAirDistanceMap(const sc2::Point2D & tile) const;

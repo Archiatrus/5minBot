@@ -67,16 +67,16 @@ const size_t UnitInfoManager::getFoodCombatUnits(int player) const
 	{
 		return 0;
 	}
-	size_t numFoodCombatUnits = 0;
+	float numFoodCombatUnits = 0;
 	const sc2::UnitTypes & data = m_bot.Observation()->GetUnitTypeData();
 	for (const auto & units : m_unitDataBase.at(player))
 	{
 		if (Util::IsCombatUnitType(units.first, m_bot))
 		{
-			numFoodCombatUnits += units.second.getUnits().size()*static_cast<size_t>(std::ceil(data[units.first].food_required));
+			numFoodCombatUnits += static_cast<float>(units.second.getUnits().size())*data[units.first].food_required;
 		}
 	}
-	return numFoodCombatUnits;
+	return static_cast<size_t>(numFoodCombatUnits);
 }
 
 static std::string GetAbilityText(sc2::AbilityID ability_id) {

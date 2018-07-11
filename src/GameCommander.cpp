@@ -16,7 +16,7 @@ GameCommander::GameCommander(CCBot & bot)
 	, m_harassManager(bot)
 	, m_combatCommander(bot)
 	, m_initialScoutSet(false)
-	, m_baseScanTime(6048)
+	, m_baseScanTime(9999)
 {
 }
 
@@ -26,6 +26,14 @@ void GameCommander::onStart()
 	m_scoutManager.onStart();
 	m_harassManager.onStart();
 	m_combatCommander.onStart();
+	if (m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Terran)
+	{
+		m_baseScanTime = 6048;
+	}
+	else
+	{
+		m_baseScanTime = 8736;
+	}
 }
 
 void GameCommander::onFrame()
@@ -98,11 +106,10 @@ bool GameCommander::isHarassUnit(CUnit_ptr unit) const
 
 void GameCommander::handleShuttleService()
 {
-	
-	m_shuttles.erase(std::remove_if(m_shuttles.begin(), m_shuttles.end(),[](std::shared_ptr<shuttle> s){
-		//Here is the shuttle handling hidden
+	m_shuttles.erase(std::remove_if(m_shuttles.begin(), m_shuttles.end(), [](std::shared_ptr<shuttle> s){
+		// Here is the shuttle handling hidden
 		s->hereItGoes();
-		return s->getShuttleStatus()==ShuttleStatus::Done;
+		return s->getShuttleStatus() == ShuttleStatus::Done;
 	}), m_shuttles.end());
 }
 
@@ -195,9 +202,9 @@ bool GameCommander::shouldSendInitialScout()
 
 void GameCommander::setHarassUnits()
 {
-	//We only start harassing after we saw two bases. Otherwise it might be a 1 base allin
-	//We should only can add units, if we are not under attack or if we have many units already
-	if (m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size()>1 || ( !m_combatCommander.underAttack() || m_validUnits.size() > manyUnits))
+	// We only start harassing after we saw two bases. Otherwise it might be a 1 base allin
+	// We should only can add units, if we are not under attack or if we have many units already
+	if (m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size() > 1 || ( !m_combatCommander.underAttack() || m_validUnits.size() > manyUnits))
 	{
 		CUnits enemies = m_bot.UnitInfo().getUnits(Players::Enemy);
 		CUnits medivacs = m_harassManager.getMedivacs();
@@ -208,7 +215,7 @@ void GameCommander::setHarassUnits()
 
 			if (!isAssigned(unit))
 			{
-				if (onlySendOnce && unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC) && m_harassManager.needMedivac() && unit->getCargoSpaceTaken()==0)
+				if (onlySendOnce && unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC) && m_harassManager.needMedivac() && unit->getCargoSpaceTaken() == 0)
 				{
 					int freeMarines = 0;
 					for (const auto & marine : m_validUnits)
@@ -224,10 +231,10 @@ void GameCommander::setHarassUnits()
 						onlySendOnce = false;
 					}
 				}
-				//We only assign marines, after we have a medivac
-				else if (medivacs.size()>0 && unit->isType(sc2::UNIT_TYPEID::TERRAN_MARINE) && unit->getHealth() == unit->getHealthMax() && m_harassManager.needMarine())
+				// We only assign marines, after we have a medivac
+				else if (medivacs.size() > 0 && unit->isType(sc2::UNIT_TYPEID::TERRAN_MARINE) && unit->getHealth() == unit->getHealthMax() && m_harassManager.needMarine())
 				{
-					//If the marine is currently close to an anti air enemy, the medivac does not know what to do
+					// If the marine is currently close to an anti air enemy, the medivac does not know what to do
 					bool tooClose = false;
 					for (const auto & e : enemies)
 					{
@@ -275,7 +282,7 @@ void GameCommander::setCombatUnits()
 
 void GameCommander::onUnitCreate(CUnit_ptr unit)
 {
-	if (Util::IsCombatUnitType(unit->getUnitType(),m_bot))
+	if (Util::IsCombatUnitType(unit->getUnitType(), m_bot))
 	{
 		sc2::Point2D pos(m_bot.Bases().getRallyPoint());
 		if (Util::Dist(unit->getPos(), pos) > 5)
@@ -290,7 +297,7 @@ void GameCommander::onUnitCreate(CUnit_ptr unit)
 				CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
 				for (auto & b : Bunker)
 				{
-					if (b->getBuildProgress()==1.0f && b->getCargoSpaceTaken() != b->getCargoSpaceMax())
+					if (b->getBuildProgress() == 1.0f && b->getCargoSpaceTaken() != b->getCargoSpaceMax())
 					{
 						Micro::SmartRightClick(unit, b, m_bot);
 						Micro::SmartAbility(b, sc2::ABILITY_ID::LOAD, unit, m_bot);
@@ -316,9 +323,9 @@ void GameCommander::OnBuildingConstructionComplete(CUnit_ptr unit)
 	}
 }
 
-void GameCommander::onUnitDestroy(CUnit_ptr unit)
+void GameCommander::onUnitDestroyed(const sc2::Unit * unit)
 {
-	// _productionManager.onUnitDestroy(unit);
+	m_productionManager.onUnitDestroy(unit);
 }
 
 void GameCommander::OnUnitEnterVision(CUnit_ptr unit)
@@ -342,6 +349,10 @@ void GameCommander::OnDetectedNeeded(const sc2::UnitTypeID & type, const sc2::Po
 	m_combatCommander.addCloakedUnit(type, pos);
 	m_productionManager.requestScan();
 	m_needDetections.push_back(timePlace(m_bot.Observation()->GetGameLoop(), pos));
+	if (type == sc2::UNIT_TYPEID::ZERG_ROACHBURROWED)
+	{
+		m_productionManager.requestTurrets();
+	}
 }
 
 void GameCommander::assignUnit(CUnit_ptr unit, CUnits & units)
@@ -402,7 +413,14 @@ void GameCommander::handleScans()
 		}
 		else
 		{
-			m_baseScanTime += 2688;
+			if (m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Terran)
+			{
+				m_baseScanTime += 2688;
+			}
+			else
+			{
+				m_baseScanTime += 5376;
+			}
 			m_productionManager.usedScan();
 			return;
 		}
