@@ -55,14 +55,14 @@ void BuildingPlacer::expandBuildingTesterOnce()
 	}
 }
 
-bool BuildingPlacer::isInResourceBox(int x, int y) const
+bool BuildingPlacer::isInResourceBox(float x, float y) const
 {
 	return false;
 	// return m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->isInResourceBox(x, y);
 }
 
 // makes final checks to see if a building can be built at a certain location
-bool BuildingPlacer::canBuildHere(int bx, int by, const Building & b) const
+bool BuildingPlacer::canBuildHere(float bx, float by, const Building & b) const
 {
 	if (isInResourceBox(by, by))
 	{
@@ -260,7 +260,7 @@ bool BuildingPlacer::tileOverlapsBaseLocation(int x, int y, sc2::UnitTypeID type
 
 bool BuildingPlacer::buildable(const Building & b, float x, float y) const
 {
-	if (!m_bot.Map().isValid(x, y) || !m_bot.Map().canBuildTypeAtPosition(x, y, b.m_type))
+	if (!m_bot.Map().isValid(static_cast<int>(x), static_cast<int>(y)) || !m_bot.Map().canBuildTypeAtPosition(x, y, b.m_type))
 	{
 		return false;
 	}

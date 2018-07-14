@@ -156,7 +156,7 @@ void CombatCommander::updateGuardSquads()
 		guardSquad.setSquadOrder(guardDutyOrder);
 	}
 }
-
+/*
 void CombatCommander::updateScoutDefenseSquad()
 {
 	// if the current squad has units in it then we can ignore this
@@ -216,6 +216,7 @@ void CombatCommander::updateScoutDefenseSquad()
 		scoutDefenseSquad.clear();
 	}
 }
+*/
 
 void CombatCommander::updateDefenseSquads()
 {

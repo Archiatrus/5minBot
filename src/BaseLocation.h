@@ -35,31 +35,31 @@ public:
 	BaseLocation(CCBot & bot, int baseID, const CUnits resources);
 	
 	int getGroundDistance(const sc2::Point2D & pos) const;
-	bool isStartLocation() const;
+	bool isStartLocation() const noexcept;
 	bool isPlayerStartLocation(int player) const;
 	bool isMineralOnly() const;
-	void resetNumEnemyCombatUnits();
+	void resetNumEnemyCombatUnits() noexcept;
 	void incrementNumEnemyCombatUnits();
 	const int getNumEnemyCombatUnits() const;
 	const int getNumEnemyStaticD() const;
 	const int getBaseID() const;
 	bool containsPosition(const sc2::Point2D & pos) const;
 	//const sc2::Point2D & getDepotPosition() const;
-	const sc2::Point2D & getCenterOfRessources() const;
-	const sc2::Point2D & getCenterOfMinerals() const;
-	const sc2::Point2D & getCenterOfBase() const;
-	const CUnits & getGeysers() const;
-	const CUnits & getMinerals() const;
+	const sc2::Point2D & getCenterOfRessources() const noexcept;
+	const sc2::Point2D & getCenterOfMinerals() const noexcept;
+	const sc2::Point2D & getCenterOfBase() const noexcept;
+	const CUnits & getGeysers() const noexcept;
+	const CUnits & getMinerals() const noexcept;
 	bool isOccupiedByPlayer(int player) const;
 	bool isExplored() const;
-	bool isInResourceBox(int x, int y) const;
+	bool isInResourceBox(int x, int y) const noexcept;
 
 	void setPlayerOccupying(int player, bool occupying);
 	void setTownHall(const CUnit_ptr townHall);
 
 	const std::vector<sc2::Point2D> & getClosestTiles() const;
 
-	const CUnit_ptr getTownHall() const;
+	const CUnit_ptr getTownHall() const noexcept;
 
 	void draw();
 };

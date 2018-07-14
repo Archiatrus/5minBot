@@ -46,7 +46,7 @@ class BuildingPlacer
 	// queries for various BuildingPlacer data
 	bool			buildable(const Building & b, float x, float y) const;
 	bool			isReserved(int x, int y) const;
-	bool			isInResourceBox(int x, int y) const;
+	bool			isInResourceBox(float x, float y) const;
 	bool			tileOverlapsBaseLocation(int x, int y, sc2::UnitTypeID type) const;
 
 
@@ -58,7 +58,7 @@ class BuildingPlacer
 	void onFrame();
 
 	// determines whether we can build at a given location
-	bool			canBuildHere(int bx, int by, const Building & b) const;
+	bool			canBuildHere(float bx, float by, const Building & b) const;
 	bool			canBuildHereWithSpace(float bx, float by, const Building & b, int buildDist) const;
 
 	// returns a build location near a building's desired location

@@ -51,10 +51,12 @@ const BuildOrder & StrategyManager::getOpeningBookBuildOrder() const
 	}
 }
 
+/*
 bool StrategyManager::shouldExpandNow() const
 {
 	return false;
 }
+*/
 
 void StrategyManager::addStrategy(const std::string & name, const Strategy & strategy)
 {

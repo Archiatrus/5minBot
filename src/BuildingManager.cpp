@@ -135,11 +135,11 @@ void BuildingManager::assignWorkersToUnassignedBuildings()
 		// reserve this building's space
 		if (b.m_type == sc2::UNIT_TYPEID::TERRAN_BARRACKS || b.m_type == sc2::UNIT_TYPEID::TERRAN_FACTORY || b.m_type == sc2::UNIT_TYPEID::TERRAN_STARPORT)
 		{
-			m_buildingPlacer.reserveTiles(b.finalPosition.x, b.finalPosition.y, Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot), true);
+			m_buildingPlacer.reserveTiles(b.finalPosition.x, b.finalPosition.y, static_cast<float>(Util::GetUnitTypeWidth(b.m_type, m_bot)), Util::GetUnitTypeHeight(b.m_type, m_bot), true);
 		}
 		else
 		{
-			m_buildingPlacer.reserveTiles(b.finalPosition.x, b.finalPosition.y, Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot));
+			m_buildingPlacer.reserveTiles(b.finalPosition.x, b.finalPosition.y, static_cast<float>(Util::GetUnitTypeWidth(b.m_type, m_bot)), Util::GetUnitTypeHeight(b.m_type, m_bot));
 		}
 
 		b.status = BuildingStatus::Assigned;

@@ -529,7 +529,7 @@ void ProductionManager::defaultMacro()
 		{
 			if (engi->getOrders().empty())
 			{
-				maxProgress = m_bot.getWeaponBio();
+				maxProgress = std::min<float>(1.0f, m_bot.getWeaponBio());
 				break;
 			}
 			const float progress = engi->getOrders().front().progress;

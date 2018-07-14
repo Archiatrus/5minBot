@@ -339,24 +339,9 @@ const bool CCBot::underAttack() const
 	return m_gameCommander.underAttack();
 }
 
-void * CreateNewAgent()
-{
-	return new CCBot();
-}
-
 void CCBot::setPlayerRace(int player, sc2::Race race)
 {
 	m_playerRace.at(player) = race;
-}
-
-const char *GetAgentName()
-{
-	return "5minBot";
-}
-
-int GetAgentRace()
-{
-	return sc2::Race::Terran;
 }
 
 std::string ClientErrorToString(sc2::ClientError error)

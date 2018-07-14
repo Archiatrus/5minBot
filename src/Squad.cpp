@@ -12,7 +12,6 @@ Squad::Squad(CCBot & bot)
 	, m_rangedManager(bot)
 	, m_siegeManager(bot)
 {
-
 }
 
 Squad::Squad(const std::string & name, const SquadOrder & order, size_t priority, CCBot & bot)
@@ -26,7 +25,6 @@ Squad::Squad(const std::string & name, const SquadOrder & order, size_t priority
 	, m_rangedManager(bot)
 	, m_siegeManager(bot)
 {
-
 }
 
 void Squad::onFrame()
@@ -39,31 +37,28 @@ void Squad::onFrame()
 	}
 	// determine whether or not we should regroup
 	bool needToRegroup = needsToRegroup();
-	
+
 	// if we do need to regroup, do it
 	if (needToRegroup)
 	{
 		m_lastRetreatSwitchVal = true;
 		sc2::Point2D regroupPosition = calcRegroupPosition();
 
-		Drawing::drawSphere(m_bot,regroupPosition, 3, sc2::Colors::Purple);
+		Drawing::drawSphere(m_bot, regroupPosition, 3, sc2::Colors::Purple);
 
 		m_meleeManager.regroup(regroupPosition, m_status == Status::flee);
 		m_rangedManager.regroup(regroupPosition, m_status == Status::flee);
 		m_siegeManager.regroup(regroupPosition, m_status == Status::flee);
 	}
-	else // otherwise, execute micro
+	else  // otherwise, execute micro
 	{
 		m_meleeManager.execute(m_order);
 		m_rangedManager.execute(m_order);
 		m_siegeManager.execute(m_order);
-		//_detectorManager.setUnitClosestToEnemy(unitClosestToEnemy());
-		//_detectorManager.execute(_order);
 	}
 	for (const auto & unit : m_units)
 	{
-		//Drawing::drawSphereAroundUnit(m_bot,unit->getTag());
-		Drawing::drawText(m_bot,unit->getPos()-sc2::Point3D(0.0f,0.0f,0.0f),"\n"+m_order.getStatus());
+		Drawing::drawText(m_bot, unit->getPos() - sc2::Point3D(), "\n" + m_order.getStatus());
 	}
 }
 
@@ -77,15 +72,16 @@ size_t Squad::getPriority() const
 	return m_priority;
 }
 
+/*
 void Squad::setPriority(const size_t & priority)
 {
 	m_priority = priority;
 }
+*/
 
 void Squad::updateUnits()
 {
 	setAllUnits();
-	//setNearEnemyUnits();
 	addUnitsToMicroManagers();
 }
 
@@ -100,7 +96,7 @@ void Squad::setAllUnits()
 		if (unit->getHealth() <= 0) { continue; }
 		if (unit->getLastSeenGameLoop() != m_bot.Observation()->GetGameLoop()) { continue; }
 		if (m_order.getType() == SquadOrderTypes::Attack  && unit->isWorker()) { continue; }
-		if (unit->getOccupation().first == CUnit::Occupation::Harass) { continue; } 
+		if (unit->getOccupation().first == CUnit::Occupation::Harass) { continue; }
 		if (unit->getOccupation().first == CUnit::Occupation::Shuttle) { continue; }
 		if (unit->getOccupation().first == CUnit::Occupation::Scout) { continue; }
 		if (unit->getOccupation().first == CUnit::Occupation::Worker && unit->getOccupation().second != WorkerJobs::Combat) { continue; }
@@ -111,6 +107,7 @@ void Squad::setAllUnits()
 	m_units = goodUnits;
 }
 
+/*
 void Squad::setNearEnemyUnits()
 {
 	m_nearEnemy.clear();
@@ -119,9 +116,9 @@ void Squad::setNearEnemyUnits()
 		m_nearEnemy[unit] = isUnitNearEnemy(unit);
 
 		sc2::Color color = m_nearEnemy[unit] ? m_bot.Config().ColorUnitNearEnemy : m_bot.Config().ColorUnitNotNearEnemy;
-		//m_bot.Map().drawSphereAroundUnit(unitTag, color);
 	}
 }
+*/
 
 void Squad::addUnitsToMicroManagers()
 {
@@ -158,7 +155,7 @@ void Squad::addUnitsToMicroManagers()
 
 	m_meleeManager.setUnits(meleeUnits);
 	m_rangedManager.setUnits(rangedUnits);
-	//m_detectorManager.setUnits(detectorUnits);
+	// m_detectorManager.setUnits(detectorUnits);
 	m_siegeManager.setUnits(siegeUnits);
 }
 
@@ -273,7 +270,7 @@ const bool Squad::needsToRegroup()
 	{
 		const sc2::Point2D startingBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->getCenterOfBase();
 		const sc2::Point2D newestBase = m_bot.Bases().getNewestExpansion(Players::Self);
-		if ( m_bot.UnitInfo().getUnitTypeCount(Players::Self, Util::getTownHallTypes())==1 || (m_order.getPosition().x == startingBase.x && m_order.getPosition().y == startingBase.y) || !(m_order.getPosition().x == newestBase.x && m_order.getPosition().y == newestBase.y) || m_bot.Observation()->GetFoodUsed()>=180)
+		if ( m_bot.UnitInfo().getUnitTypeCount(Players::Self, Util::getTownHallTypes()) == 1 || (m_order.getPosition().x == startingBase.x && m_order.getPosition().y == startingBase.y) || !(m_order.getPosition().x == newestBase.x && m_order.getPosition().y == newestBase.y) || m_bot.Observation()->GetFoodUsed() >= 180)
 		{
 			return false;
 		}
@@ -321,7 +318,7 @@ void Squad::clear()
 		}
 		else
 		{
-			unit->setOccupation({ unit->getOccupation().first,0 });
+			unit->setOccupation({ unit->getOccupation().first, 0 });
 		}
 	}
 
@@ -347,11 +344,11 @@ sc2::Point2D Squad::calcCenter() const
 {
 	if (m_units.empty())
 	{
-		return sc2::Point2D(0.0f,0.0f);
+		return sc2::Point2D(0.0f, 0.0f);
 	}
 
-	sc2::Point2D sum(0,0);
-	for (const auto & unit: m_units)
+	sc2::Point2D sum(0.0f, 0.0f);
+	for (const auto & unit : m_units)
 	{
 		BOT_ASSERT(unit, "null unit in squad calcCenter");
 		sum += unit->getPos();
@@ -381,6 +378,7 @@ sc2::Point2D Squad::calcRegroupPosition() const
 	}
 }
 
+/*
 const CUnit_ptr Squad::unitClosestToEnemy() const
 {
 	CUnit_ptr closest = nullptr;
@@ -402,7 +400,9 @@ const CUnit_ptr Squad::unitClosestToEnemy() const
 
 	return closest;
 }
+*/
 
+/*
 int Squad::squadUnitsNear(const sc2::Point2D & p) const
 {
 	int numUnits = 0;
@@ -419,6 +419,7 @@ int Squad::squadUnitsNear(const sc2::Point2D & p) const
 
 	return numUnits;
 }
+*/
 
 const CUnits & Squad::getUnits() const
 {
@@ -433,7 +434,7 @@ const SquadOrder & Squad::getSquadOrder()	const
 void Squad::addUnit(const CUnit_ptr unit)
 {
 	m_units.push_back(unit);
-	unit->setOccupation({ CUnit::Occupation::Combat,static_cast<int>(getPriority()) });
+	unit->setOccupation({ CUnit::Occupation::Combat, static_cast<int>(getPriority()) });
 }
 
 void Squad::removeUnit(const CUnit_ptr unit)
@@ -442,7 +443,7 @@ void Squad::removeUnit(const CUnit_ptr unit)
 	{
 		m_bot.Workers().finishedWithWorker(unit);
 	}
-	m_units.erase(std::remove_if(m_units.begin(), m_units.end(), [unit](CUnit_ptr & newUnit) {return unit->getTag() == newUnit->getTag(); }),m_units.end());
+	m_units.erase(std::remove_if(m_units.begin(), m_units.end(), [unit](CUnit_ptr & newUnit) {return unit->getTag() == newUnit->getTag(); }), m_units.end());
 }
 
 const std::string & Squad::getName() const

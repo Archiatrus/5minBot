@@ -132,10 +132,12 @@ void SquadData::verifySquadUniqueMembership()
 	}
 }
 
+/*
 bool SquadData::unitIsInSquad(const CUnit_ptr unit) const
 {
 	return getUnitSquad(unit) != nullptr;
 }
+*/
 
 const Squad * SquadData::getUnitSquad(const CUnit_ptr unit) const
 {

@@ -36,11 +36,11 @@ void DistanceMap::computeDistanceMap(CCBot & m_bot, const sc2::Point2D & startTi
 	m_width = m_bot.Map().width();
 	m_height = m_bot.Map().height();
 	m_dist = std::vector<std::vector<int>>(m_width, std::vector<int>(m_height, -1));
-	m_sortedTilePositions.reserve(m_width * m_height);
+	m_sortedTilePositions.reserve(static_cast<size_t>(m_width) * static_cast<size_t>(m_height));
 
 	// the fringe for the BFS we will perform to calculate distances
 	std::vector<sc2::Point2D> fringe;
-	fringe.reserve(m_width * m_height);
+	fringe.reserve(static_cast<size_t>(m_width) * static_cast<size_t>(m_height));
 	fringe.push_back(startTile);
 	m_sortedTilePositions.push_back(startTile);
 
@@ -77,11 +77,11 @@ void DistanceMap::computeAirDistanceMap(CCBot & m_bot, const sc2::Point2D & star
 	m_width = m_bot.Map().width();
 	m_height = m_bot.Map().height();
 	m_dist = std::vector<std::vector<int>>(m_width, std::vector<int>(m_height, -1));
-	m_sortedTilePositionsAir.reserve(m_width * m_height);
+	m_sortedTilePositionsAir.reserve(static_cast<size_t>(m_width) * static_cast<size_t>(m_height));
 
 	// the fringe for the BFS we will perform to calculate distances
 	std::vector<sc2::Point2D> fringe;
-	fringe.reserve(m_width * m_height);
+	fringe.reserve(static_cast<size_t>(m_width) * static_cast<size_t>(m_height));
 	fringe.push_back(startTile);
 	m_sortedTilePositionsAir.push_back(startTile);
 

@@ -10,6 +10,7 @@ UnitData::UnitData()
 	m_numUnits			= std::vector<int>(maxTypeID + 1, 0);
 }
 
+/*
 void UnitData::updateUnit(const sc2::Unit * unit)
 {
 
@@ -35,6 +36,7 @@ void UnitData::updateUnit(const sc2::Unit * unit)
 		m_numUnits[ui.m_type]++;
 	}
 }
+*/
 
 void UnitData::killUnit(const sc2::Unit * unit)
 {

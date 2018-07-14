@@ -56,8 +56,8 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 		}
 
 		// set the limits of the base location bounding box
-		float resWidth = 1;
-		float resHeight = 0.5;
+		const float resWidth = 1;
+		const float resHeight = 0.5;
 
 		m_left	= std::min(m_left,	resource->getPos().x - resWidth);
 		m_right	= std::max(m_right,	resource->getPos().x + resWidth);
@@ -66,8 +66,8 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 	}
 
 	// calculate the center of the resources
-	size_t numResources = m_minerals.size() + m_geysers.size();
-	sc2::Point2D centerMinerals(mineralsCenterX / m_minerals.size(), mineralsCenterY / m_minerals.size());
+	const size_t numResources = m_minerals.size() + m_geysers.size();
+	const sc2::Point2D centerMinerals(mineralsCenterX / m_minerals.size(), mineralsCenterY / m_minerals.size());
 	m_centerOfMinerals = centerMinerals;
 	m_centerOfResources = sc2::Point2D(m_left + (m_right-m_left)*0.5f, m_top + (m_bottom-m_top)*0.5f);
 	// compute this BaseLocation's DistanceMap, which will compute the ground distance
@@ -146,12 +146,12 @@ BaseLocation::BaseLocation(CCBot & bot, int baseID, const CUnits resources)
 	}
 }
 
-const sc2::Point2D & BaseLocation::getCenterOfMinerals() const
+const sc2::Point2D & BaseLocation::getCenterOfMinerals() const noexcept
 {
 	return m_centerOfMinerals;
 }
 
-const sc2::Point2D & BaseLocation::getCenterOfBase() const
+const sc2::Point2D & BaseLocation::getCenterOfBase() const noexcept
 {
 	return m_centerOfBase;
 }
@@ -167,7 +167,7 @@ void BaseLocation::setPlayerOccupying(int player, bool occupying)
 	}
 }
 
-bool BaseLocation::isInResourceBox(int x, int y) const
+bool BaseLocation::isInResourceBox(int x, int y) const noexcept
 {
 	return x >= m_left && x < m_right && y < m_top && y >= m_bottom;
 }
@@ -200,17 +200,17 @@ bool BaseLocation::containsPosition(const sc2::Point2D & pos) const
 	return Util::DistSq(m_centerOfMinerals, pos) < 400 && m_bot.Map().terrainHeight(m_centerOfMinerals) == m_bot.Map().terrainHeight(pos);
 }
 
-const CUnits & BaseLocation::getGeysers() const
+const CUnits & BaseLocation::getGeysers() const noexcept
 {
 	return m_geysers;
 }
 
-const CUnits & BaseLocation::getMinerals() const
+const CUnits & BaseLocation::getMinerals() const noexcept
 {
 	return m_minerals;
 }
 
-const sc2::Point2D & BaseLocation::getCenterOfRessources() const
+const sc2::Point2D & BaseLocation::getCenterOfRessources() const noexcept
 {
 	return m_centerOfResources;
 }
@@ -224,7 +224,7 @@ int BaseLocation::getGroundDistance(const sc2::Point2D & pos) const
 	return dist > 0 ? dist : static_cast<int>(Util::Dist(pos, m_centerOfResources));
 }
 
-bool BaseLocation::isStartLocation() const
+bool BaseLocation::isStartLocation() const noexcept
 {
 	return m_isStartLocation;
 }
@@ -234,7 +234,7 @@ const std::vector<sc2::Point2D> & BaseLocation::getClosestTiles() const
 	return m_distanceMap.getSortedTiles();
 }
 
-const CUnit_ptr BaseLocation::getTownHall() const
+const CUnit_ptr BaseLocation::getTownHall() const noexcept
 {
 	return m_townhall;
 }
@@ -249,7 +249,7 @@ void BaseLocation::setTownHall(const CUnit_ptr townHall)
 	float minDist = 10.0f;
 	for (const auto & resource : resources)
 	{
-		float dist = Util::Dist(townHall->getPos(), resource->getPos());
+		const float dist = Util::Dist(townHall->getPos(), resource->getPos());
 		if (dist < 10.0f)
 		{
 			m_minerals.push_back(resource);
@@ -320,14 +320,14 @@ void BaseLocation::draw()
 		Drawing::drawSphere(m_bot, m_centerOfBase, 1.0f, sc2::Colors::Red);
 	}
 
-	float ccWidth = 5;
-	float ccHeight = 4;
-	sc2::Point2D boxtl = m_centerOfBase - sc2::Point2D(ccWidth/2, -ccHeight/2);
-	sc2::Point2D boxbr = m_centerOfBase + sc2::Point2D(ccWidth/2, -ccHeight/2);
+	const float ccWidth = 5;
+	const float ccHeight = 4;
+	const sc2::Point2D boxtl = m_centerOfBase - sc2::Point2D(ccWidth/2, -ccHeight/2);
+	const sc2::Point2D boxbr = m_centerOfBase + sc2::Point2D(ccWidth/2, -ccHeight/2);
 
 	Drawing::drawBox(m_bot, boxtl.x, boxtl.y, boxbr.x, boxbr.y, sc2::Colors::Red);
 
-	sc2::Point2D posEnd = getCenterOfRessources() + 1.2f*(getCenterOfRessources() - getCenterOfBase());
+	const sc2::Point2D posEnd = getCenterOfRessources() + 1.2f*(getCenterOfRessources() - getCenterOfBase());
 	Drawing::drawLine(m_bot, m_bot.Map().getClosestBorderPoint(posEnd, 0), posEnd);
 	// m_distanceMap.draw(m_bot);
 }
@@ -337,7 +337,7 @@ bool BaseLocation::isMineralOnly() const
 	return getGeysers().empty();
 }
 
-void BaseLocation::resetNumEnemyCombatUnits()
+void BaseLocation::resetNumEnemyCombatUnits() noexcept
 {
 	m_numEnemyCombatUnits = 0;
 }

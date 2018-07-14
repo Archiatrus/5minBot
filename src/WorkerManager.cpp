@@ -56,10 +56,12 @@ void WorkerManager::setRepairWorker(const CUnit_ptr worker, const CUnit_ptr unit
 	m_workerData.setWorkerJob(worker, WorkerJobs::Repair, unitToRepair);
 }
 
+/*
 void WorkerManager::stopRepairing(const CUnit_ptr worker)
 {
 	m_workerData.setWorkerJob(worker, WorkerJobs::Idle);
 }
+*/
 
 void WorkerManager::handleGasWorkers()
 {

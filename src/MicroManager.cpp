@@ -217,7 +217,9 @@ void MicroManager::regroup(const sc2::Point2D & regroupPosition, const bool flee
 	}
 }
 
+/*
 void MicroManager::trainSubUnits(CUnit_ptr unit) const
 {
 	// something here
 }
+*/

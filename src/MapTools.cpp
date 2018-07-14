@@ -82,7 +82,7 @@ void MapTools::computeConnectivity()
 {
 	// the fringe data structe we will use to do our BFS searches
 	std::vector<sc2::Point2D> fringe;
-	fringe.reserve(m_width*m_height);
+	fringe.reserve(static_cast<size_t>(m_width) * static_cast<size_t>(m_height));
 	int sectorNumber = 0;
 
 	// for every tile on the map, do a connected flood fill using BFS
@@ -156,7 +156,7 @@ bool MapTools::isPowered(const sc2::Point2D & pos) const
 
 float MapTools::terrainHeight(float x, float y) const
 {
-	if (!isValid(x, y))
+	if (!isValid(static_cast<int>(x), static_cast<int>(y)))
 	{
 		return -1.0f;
 	}
