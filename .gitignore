@@ -4,6 +4,7 @@
 *.lo
 *.o
 *.obj
+*.pdb
 
 # Compiled Dynamic libraries
 *.so
@@ -20,9 +21,16 @@ Release
 *.suo
 *.csproj.user
 *.vbproj.user
+*.vcxproj.user
 ipch
 *sdf
 *.tlog
+*.log
+*.ilk
+*.db
+*.filters
+*.user
+*.opendb
 
 # gitignore for cmake
 CMakeCache.txt
@@ -34,3 +42,10 @@ cmake_install.cmake
 install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
+
+# other
+*.zip
+*.xml
+*.exe
+*Microsoft.Gsl*
+*.config

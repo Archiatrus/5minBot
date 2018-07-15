@@ -38,11 +38,11 @@ class Hitsquad
 	const bool manhattenMove(const BaseLocation * target);
 	CUnits getNearbyEnemyUnits() const;
 	const BaseLocation * getSavePosition() const;
-	const bool shouldWeFlee(CUnits targets,int threshold) const;
+	const bool shouldWeFlee(CUnits targets, int threshold) const;
 	void escapePathPlaning();
 	const bool haveNoTarget() const;
 
-public:
+ public:
 	Hitsquad(CCBot & bot, CUnit_ptr medivac);
 	~Hitsquad();
 
@@ -66,7 +66,7 @@ class WMHarass
 	std::queue<sc2::Point2D> m_wayPoints;
 	void getWayPoints(const sc2::Point2D targetPos);
 	void replanWayPoints(const sc2::Point2D targetPos);
-public:
+ public:
 	WMHarass(CCBot & bot);
 
 
@@ -79,25 +79,22 @@ class HarassManager
 {
 	CCBot &   m_bot;
 
-	std::map<bool,Hitsquad>	m_hitSquads;
+	std::map<bool, Hitsquad>	m_hitSquads;
 	HarassLiberator m_liberatorHarass;
 	WMHarass m_WMHarass;
 	int	m_numHitSquads = 1;
 
 	std::vector<const BaseLocation *> getHitSquadTargets() const;
-	//Medivac hit squad
+	// Medivac hit squad
 	void handleHitSquads();
-	//Liberator harass
+	// Liberator harass
 	void handleLiberator();
 	const BaseLocation * getLiberatorTarget();
-	//Widow mine harass
+	// Widow mine harass
 	void handleWMHarass();
 
-	
-
-public:
-
-	HarassManager (CCBot & bot);
+ public:
+	HarassManager(CCBot & bot);
 
 	void onStart();
 	void onFrame();
@@ -115,5 +112,4 @@ public:
 	CUnits getMedivacs();
 	CUnits getMarines();
 	CUnit_ptr getWidowMine();
-
 };

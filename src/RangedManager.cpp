@@ -19,7 +19,6 @@ void RangedManager::executeMicro(const CUnits & targets)
 
 void RangedManager::assignTargets(const CUnits & targetsRaw)
 {
-
 	// figure out targets
 	CUnits rangedUnitTargets;
 	for (const auto & target : targetsRaw)
@@ -28,31 +27,31 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 		if (!target->isVisible() && !target->isTownHall()) { continue; }
 		if (target->isType(sc2::UNIT_TYPEID::ZERG_EGG)) { continue; }
 		if (target->isType(sc2::UNIT_TYPEID::ZERG_LARVA)) { continue; }
-		if (target->getPos()==sc2::Point3D()) { continue; }
+		if (target->getPos() == sc2::Point3D()) { continue; }
 		rangedUnitTargets.push_back(target);
 	}
 	const auto sortedUnitTargets = getAttackPriority(rangedUnitTargets);
-	//The idea is now to group the targets/targetPos
+	// The idea is now to group the targets/targetPos
 	std::unordered_map<CUnit_ptr, CUnits> targetsAttackedBy;
 	std::unordered_map<CUnit_ptr, CUnits> targetsMovedTo;
 	CUnits moveToPosition;
-	//For the medivac we need either
-	//Either the most injured
+	// For the medivac we need either
+	// Either the most injured
 	std::map<float, CUnit_ptr> injuredUnits;
-	//Or the soldier in the front
+	// Or the soldier in the front
 	CUnit_ptr frontSoldier = nullptr;
 	sc2::Point2D orderPos = order.getPosition();
 	float minDist = std::numeric_limits<float>::max();
-	//Just checking if only medivacs available
+	// Just checking if only medivacs available
 	bool justMedivacs = true;
 	const CUnits & rangedUnits = getUnits();
-	//Being healed is not a buff. So we need to check every medivac if the injured unit is already healed.
+	// Being healed is not a buff. So we need to check every medivac if the injured unit is already healed.
 	const CUnits medivacs = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_MEDIVAC);
 	for (const auto & injured : rangedUnits)
 	{
 		if (!injured->isAlive())
 		{
-			//its too late
+			// its too late
 			continue;
 		}
 		if (injured->getUnitType().ToType() != sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
@@ -63,7 +62,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 		{
 			continue;
 		}
-		//We can only heal biological units
+		// We can only heal biological units
 		if (injured->hasAttribute(sc2::Attribute::Biological))
 		{
 			const float dist = Util::DistSq(injured->getPos(), orderPos);
@@ -73,7 +72,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 				minDist = dist;
 			}
 			const float healthMissing = injured->getHealthMax() - injured->getHealth();
-			if (healthMissing>0)
+			if (healthMissing > 0.0f)
 			{
 				bool isHealing = false;
 				for (const auto & medivac : medivacs)
@@ -89,23 +88,22 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 					injuredUnits[healthMissing] = injured;
 				}
 			}
-			
 		}
 	}
 	// In case it were really only medivacs
 	if (justMedivacs)
 	{
-		Micro::SmartMove(rangedUnits, m_bot.Bases().getRallyPoint(),m_bot);
+		Micro::SmartMove(rangedUnits, m_bot.Bases().getRallyPoint(), m_bot);
 		return;
 	}
 
-	//Get effects like storm
+	// Get effects like storm
 	const std::vector<sc2::Effect> effects = m_bot.Observation()->GetEffects();
 
 	// for each Unit
 	for (auto & rangedUnit : rangedUnits)
 	{
-		//Don't stand in a storm etc
+		// Don't stand in a storm etc
 		bool fleeYouFools = false;
 		for (const auto & effect : effects)
 		{
@@ -116,7 +114,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 				{
 					Drawing::drawSphere(m_bot, pos, radius, sc2::Colors::Purple);
 					const float dist = Util::DistSq(rangedUnit->getPos(), pos);
-					if (dist<std::powf(radius + 2.0f,2))
+					if (dist < std::powf(radius + 2.0f, 2))
 					{
 						sc2::Point2D fleeingPos;
 						if (effect.positions.size() == 1)
@@ -127,13 +125,13 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 							}
 							else
 							{
-								fleeingPos = pos + sc2::Point2D(1.0f,1.0f);
+								fleeingPos = pos + sc2::Point2D(1.0f, 1.0f);
 							}
 						}
 						else
 						{
 							const sc2::Point2D attackDirection = effect.positions.back() - effect.positions.front();
-							//"Randomly" go right and left
+							// "Randomly" go right and left
 							if (rangedUnit->getTag() % 2)
 							{
 								fleeingPos = rangedUnit->getPos() + Util::normalizeVector(sc2::Point2D(-attackDirection.x, attackDirection.y), radius + 2.0f);
@@ -181,16 +179,16 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 
 		if (rangedUnit->getTag() % speedFactor == counter%speedFactor)
 		{
-			//continue;
+			// continue;
 		}
 		// if the order is to attack or defend
 		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend || order.getType() == SquadOrderTypes::GuardDuty)
 		{
 			// find the best target for this rangedUnit
-			//medivacs have the other ranged units as target.
+			// medivacs have the other ranged units as target.
 			if (rangedUnit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 			{
-				//find the nearest enemy
+				// find the nearest enemy
 				CUnit_ptr nearestEnemy = nullptr;
 				float minDistTarget = std::numeric_limits<float>::max();
 				for (const auto & target : rangedUnitTargets)
@@ -198,19 +196,19 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 					if (target->isAlive() && rangedUnit->canHitMe(target))
 					{
 						float distSq = Util::DistSq(rangedUnit->getPos(), target->getPos());
-						if (distSq<std::powf(target->getAttackRange(),2) && minDistTarget > distSq)
+						if (distSq < std::powf(target->getAttackRange(), 2) && minDistTarget > distSq)
 						{
 							nearestEnemy = target;
 							minDistTarget = distSq;
 						}
 					}
 				}
-				if (injuredUnits.size()>0)
+				if (injuredUnits.size() > 0)
 				{
 					CUnit_ptr mostInjured = (injuredUnits.rbegin())->second;
 					if (nearestEnemy && Util::DistSq(rangedUnit->getPos(), nearestEnemy->getPos()) < Util::DistSq(mostInjured->getPos(), nearestEnemy->getPos()))
 					{
-						Micro::SmartCDAbility(rangedUnit, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS,m_bot);
+						Micro::SmartCDAbility(rangedUnit, sc2::ABILITY_ID::EFFECT_MEDIVACIGNITEAFTERBURNERS, m_bot);
 						sc2::Point2D targetPos = rangedUnit->getPos();
 						sc2::Point2D runningVector = Util::normalizeVector(rangedUnit->getPos() - nearestEnemy->getPos(), nearestEnemy->getAttackRange(rangedUnit) + 2);
 						targetPos += runningVector;
@@ -225,9 +223,8 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 						}
 						else
 						{
-
 							Micro::SmartAbility(rangedUnit, sc2::ABILITY_ID::EFFECT_HEAL, mostInjured, m_bot);
-							injuredUnits.erase(std::prev(injuredUnits.end())); //no idea why rbegin is not working
+							injuredUnits.erase(std::prev(injuredUnits.end()));  // no idea why rbegin is not working
 						}
 					}
 				}
@@ -235,13 +232,13 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 				{
 					if (frontSoldier && (rangedUnit->getOrders().empty() ||  rangedUnit->getOrders()[0].target_unit_tag && rangedUnit->getOrders()[0].target_unit_tag != frontSoldier->getTag()))
 					{
-						Micro::SmartMove(rangedUnit, frontSoldier,m_bot);
+						Micro::SmartMove(rangedUnit, frontSoldier, m_bot);
 					}
 				}
 			}
 			else
 			{
-				//Handling disrupter shots
+				// Handling disrupter shots
 				if (!rangedUnit->isFlying())
 				{
 					const CUnits disruptorShots = m_bot.UnitInfo().getUnits(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_DISRUPTORPHASED);
@@ -271,14 +268,12 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 						continue;
 					}
 				}
-				
 
-
-				//Search for target
+				// Search for target
 				if (!rangedUnitTargets.empty() || (order.getType() == SquadOrderTypes::Defend && Util::DistSq(rangedUnit->getPos(), order.getPosition()) > 42.0f))
 				{
-					//CUnit_ptr target = getTarget(rangedUnit, rangedUnitTargets);
-					//Highest prio in range target, in sight target, visible target
+					// CUnit_ptr target = getTarget(rangedUnit, rangedUnitTargets);
+					// Highest prio in range target, in sight target, visible target
 					const auto targets = getTarget(rangedUnit, sortedUnitTargets);
 					if (targets[2].second)
 					{
@@ -292,10 +287,10 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 					{
 						Drawing::drawLine(m_bot, rangedUnit->getPos(), targets[0].second->getPos(), sc2::Colors::Red);
 					}
-					//if something goes wrong
+					// if something goes wrong
 					if (!targets[2].second)
 					{
-						//This can happen with vikings
+						// This can happen with vikings
 						if (frontSoldier && (rangedUnit->getOrders().empty() || rangedUnit->getOrders().front().target_unit_tag && rangedUnit->getOrders().front().target_unit_tag != frontSoldier->getTag()))
 						{
 							Micro::SmartAttackMoveToPos({ rangedUnit }, frontSoldier->getPos(), m_bot);
@@ -329,7 +324,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 								{
 									if (targets[1].second && Util::DistSq(targets[1].second->getPos(), Bunker.front()->getPos()) > 30.25f)
 									{
-										if (Util::DistSq(targets[1].second->getPos(), rangedUnit->getPos()) <= std::powf(targets[1].second->getAttackRange(rangedUnit),2))
+										if (Util::DistSq(targets[1].second->getPos(), rangedUnit->getPos()) <= std::powf(targets[1].second->getAttackRange(rangedUnit), 2))
 										{
 											if (targets[0].second && rangedUnit->getWeaponCooldown())
 											{
@@ -352,14 +347,14 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 							}
 						}
 					}
-					//We only need fancy micro if we are in range and its not a building
+					// We only need fancy micro if we are in range and its not a building
 					if (rangedUnit->isSelected())
 					{
 						int a = 1;
 					}
 					if (targets[0].second)
 					{
-						//if the target in range is really the best target
+						// if the target in range is really the best target
 						if (targets[0].first == targets[1].first)
 						{
 							if (targets[0].second->isBuilding())
@@ -412,7 +407,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 			}
 		}
 	}
-	//Grouped by target attack command
+	// Grouped by target attack command
 	for (const auto & t : targetsAttackedBy)
 	{
 		Micro::SmartAttackMoveToUnit(t.second, t.first, m_bot);
@@ -428,7 +423,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 			Micro::SmartAttackMoveToPos(t.second, t.first->getPos(), m_bot);
 		}
 	}
-	//Grouped by  position Move command
+	// Grouped by  position Move command
 	if (moveToPosition.size() > 0)
 	{
 		Micro::SmartAttackMoveToPos(moveToPosition, order.getPosition(), m_bot);
@@ -458,7 +453,7 @@ int RangedManager::getAttackPriority(const CUnit_ptr & unit)
 		{
 			return 8;
 		}
-		if (unit->isType(sc2::UNIT_TYPEID::ZERG_MUTALISK) || unit->isType(sc2::UNIT_TYPEID::ZERG_QUEEN))
+		if (unit->isType(sc2::UNIT_TYPEID::ZERG_MUTALISK))
 		{
 			return 7;
 		}
@@ -496,19 +491,19 @@ std::map<float, CUnits, std::greater<float>> RangedManager::getAttackPriority(co
 			if (enemy->canHitMe(unit))
 			{
 				const float distSq = Util::DistSq(unit->getPos(), enemy->getPos());
-				if (distSq <= std::powf(unit->getAttackRange(),2))
+				if (distSq <= std::powf(unit->getAttackRange(), 2))
 				{
-					//One point for being in range
+					// One point for being in range
 					++OpportunityLevel;
 					if (unit->getEngagedTargetTag() == enemy->getTag())
 					{
-						//Second point for being already a target
+						// Second point for being already a target
 						++OpportunityLevel;
 					}
 				}
 			}
 		}
-		//						basic priority	+	alpha*how many are already attacking it	+	beta*health
+		// 						basic priority	+	alpha*how many are already attacking it	+	beta*health
 		const float priority = getAttackPriority(enemy) + 0.5f*(static_cast<float>(OpportunityLevel) / (2.0f*numUnits)) + 0.5f*(1-enemy->getHealth()/enemy->getHealthMax());
 		sortedEnemies[priority].push_back(enemy);
 	}
@@ -517,7 +512,7 @@ std::map<float, CUnits, std::greater<float>> RangedManager::getAttackPriority(co
 
 std::vector<std::pair<float, CUnit_ptr>> RangedManager::getTarget(const CUnit_ptr & unit, const std::map<float, CUnits, std::greater<float>> & sortedEnemies)
 {
-	std::vector<std::pair<float, CUnit_ptr>> targets = { {-1.0f,nullptr},{ -1.0f,nullptr },{ -1.0f,nullptr } };
+	std::vector<std::pair<float, CUnit_ptr>> targets = { {-1.0f, nullptr}, { -1.0f, nullptr }, { -1.0f, nullptr } };
 	const float unitAttackRange = unit->getAttackRange();
 	const float unitSightRange = unit->getSightRange();
 
@@ -543,10 +538,10 @@ std::vector<std::pair<float, CUnit_ptr>> RangedManager::getTarget(const CUnit_pt
 					}
 					else
 					{
-						targets[2] = { enemies.first,enemy };
+						targets[2] = { enemies.first, enemy };
 					}
 				}
-				if (targets[1].first <= priority && distSq < std::pow(unitSightRange,2)) // < because sometime just on the edge they are still invisible
+				if (targets[1].first <= priority && distSq < std::pow(unitSightRange, 2))  // < because sometime just on the edge they are still invisible
 				{
 					if (targets[1].second)
 					{
@@ -559,10 +554,10 @@ std::vector<std::pair<float, CUnit_ptr>> RangedManager::getTarget(const CUnit_pt
 					}
 					else
 					{
-						targets[1] = { enemies.first,enemy };
+						targets[1] = { enemies.first, enemy };
 					}
 				}
-				if (targets[0].first <= priority && distSq <= std::pow(unitAttackRange,2))
+				if (targets[0].first <= priority && distSq <= std::pow(unitAttackRange, 2))
 				{
 					if (targets[0].second)
 					{
@@ -575,7 +570,7 @@ std::vector<std::pair<float, CUnit_ptr>> RangedManager::getTarget(const CUnit_pt
 					}
 					else
 					{
-						targets[0] = { enemies.first,enemy };
+						targets[0] = { enemies.first, enemy };
 					}
 				}
 			}
