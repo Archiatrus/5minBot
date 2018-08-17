@@ -2,7 +2,6 @@
 
 BuildingData::BuildingData()
 {
-
 }
 
 void BuildingData::removeBuilding(const Building & b)
@@ -15,16 +14,21 @@ void BuildingData::removeBuilding(const Building & b)
 	}
 }
 
+/*
 std::vector<Building> & BuildingData::getBuildings()
 {
 	return _buildings;
 }
+*/
 
+/*
 void BuildingData::addBuilding(const Building & b)
 {
 	_buildings.push_back(b);
 }
+*/
 
+/*
 bool BuildingData::isBeingBuilt(sc2::UnitTypeID type)
 {
 	for (auto & b : _buildings)
@@ -37,6 +41,7 @@ bool BuildingData::isBeingBuilt(sc2::UnitTypeID type)
 
 	return false;
 }
+*/
 
 void BuildingData::removeBuildings(const std::vector<Building> & buildings)
 {

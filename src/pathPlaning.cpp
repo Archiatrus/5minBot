@@ -51,21 +51,21 @@ std::shared_ptr<node> pathPlaning::getBestNextNodeAndPop()
 	std::list<std::shared_ptr<node>>::iterator it = m_openList.begin();
 
 	std::list<std::shared_ptr<node>>::iterator bestIt = it;
-	it++;
+	++it;
 	while (it != m_openList.end())
 	{
 		if (isBiggerNode(*bestIt,*it))
 		{
 			bestIt = it;
 		}
-		it++;
+		++it;
 	}
 	sc2::Point2D bestNodePos = (*bestIt)->m_pos;
 	m_openList.erase(bestIt);
 	return map(bestNodePos);
 }
 
-const bool pathPlaning::isBiggerNode(std::shared_ptr<node> nodeA, std::shared_ptr<node> nodeB) const
+const bool pathPlaning::isBiggerNode(std::shared_ptr<node> nodeA, std::shared_ptr<node> nodeB)
 {
 	if (nodeA->m_totalCost > nodeB->m_totalCost)
 	{

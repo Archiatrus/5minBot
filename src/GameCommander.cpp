@@ -330,7 +330,7 @@ void GameCommander::onUnitDestroyed(const sc2::Unit * unit)
 
 void GameCommander::OnUnitEnterVision(CUnit_ptr unit)
 {
-	if (unit->isType(sc2::UNIT_TYPEID::TERRAN_LIBERATOR) || unit->isType(sc2::UNIT_TYPEID::TERRAN_BANSHEE) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_COLOSSUS) || unit->isType(sc2::UNIT_TYPEID::ZERG_BROODLORD) || unit->isType(sc2::UNIT_TYPEID::TERRAN_STARPORTTECHLAB))
+	if (unit->isType(sc2::UNIT_TYPEID::ZERG_MUTALISK) || unit->isType(sc2::UNIT_TYPEID::TERRAN_LIBERATOR) || unit->isType(sc2::UNIT_TYPEID::TERRAN_BANSHEE) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_COLOSSUS) || unit->isType(sc2::UNIT_TYPEID::PROTOSS_VOIDRAY) || unit->isType(sc2::UNIT_TYPEID::ZERG_BROODLORD) || unit->isType(sc2::UNIT_TYPEID::TERRAN_STARPORTTECHLAB))
 	{
 		m_productionManager.requestVikings();
 	}

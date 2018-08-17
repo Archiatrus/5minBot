@@ -39,6 +39,7 @@ class CUnit
 	bool	m_isFlying;
 	bool	m_isBurrowed;
 	float 	m_weaponCooldown;
+	float m_movementSpeed;
 	uint32_t m_abilityCooldown;
 
 	sc2::Weapon m_groundWeapons;
@@ -47,6 +48,7 @@ class CUnit
 	std::pair<Occupation, int> m_occupation;
 
 	size_t m_maybeBanshee;  // -.-
+	bool m_reachable;
 
  public:
 	CUnit(const sc2::Unit * unit, CCBot * bot);
@@ -115,8 +117,11 @@ class CUnit
 	const float getAttackRange(const std::shared_ptr<CUnit> &  target) const;
 	const float getAttackRange(const sc2::Weapon::TargetType & target) const;
 	const float getAttackRange() const;
+	const float getMovementSpeed() const;
 	std::shared_ptr<CUnit> getTarget();
 	const sc2::Unit * getUnit_ptr() const;
+	void testReachable();
+	bool isReachable() const;
 	const sc2::AvailableAbilities getAbilities(const bool ignoreRequirements = false);
 	const std::vector<sc2::Attribute> getAttributes() const;
 	const bool hasAttribute(sc2::Attribute attribute) const;
@@ -126,6 +131,7 @@ class CUnit
 	bool isIdle() const;
 	bool isVisible() const;
 	bool CUnit::isType(sc2::UnitTypeID type) const;
+	bool isOnCreep() const;
 	void drawSphere() const;
 	const uint32_t getAbilityCoolDown() const;
 	void newAbilityCoolDown(const uint32_t CD);

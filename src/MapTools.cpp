@@ -265,7 +265,7 @@ bool MapTools::isBuildable(int x, int y) const
 
 bool MapTools::canBuildTypeAtPosition(float x, float y, sc2::UnitTypeID type) const
 {
-	return m_bot.Query()->Placement(m_bot.Data(type).buildAbility, sc2::Point2D(x,y));
+	return m_bot.Query()->Placement(m_bot.Data(type).buildAbility, sc2::Point2D(x, y));
 }
 
 bool MapTools::isBuildable(const sc2::Point2D & tile) const
@@ -740,15 +740,6 @@ sc2::Point2D MapTools::getBunkerPosition() const
 		}
 		return bPoint;
 	}
-}
-
-bool MapTools::isNextToRamp(int x, int y) const
-{
-	if (m_ramp[x][y + 1]) { return true; }  // above
-	if (m_ramp[x][y - 1]) { return true; }  // Below
-	if (m_ramp[x - 1][y]) { return true; }  // left
-	if (m_ramp[x + 1][y]) { return true; }  // right
-	return false;
 }
 
 std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart, const sc2::Point2D posEnd) const
@@ -1241,6 +1232,7 @@ const float MapTools::calcThreatLvl(sc2::Point2D pos, const sc2::Weapon::TargetT
 	return threatLvl;
 }
 
+/*
 void MapTools::printMap() const
 {
 	std::stringstream ss;
@@ -1258,3 +1250,4 @@ void MapTools::printMap() const
 	out << ss.str();
 	out.close();
 }
+*/

@@ -67,10 +67,31 @@ void CCBot::OnGameStart()
 
 void CCBot::OnStep()
 {
-	//  if (Observation()->GetGameLoop() == 10)
-	//  {
-	//  	Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_HIGHTEMPLAR, Bases().getNewestExpansion(Players::Self), Players::Self, 2);
-	//  }
+	/*
+	const auto actionTags = Actions()->Commands();
+	std::cout << "number of tags: " << actionTags.size() << std::endl;
+	if (actionTags.size() > 30)
+	{
+		for (const auto & tag : actionTags)
+		{
+			const auto unit = GetUnit(tag);
+			if (unit)
+			{
+				auto order = unit->getOrders();
+				std::cout << "Unit: " << Observation()->GetUnitTypeData()[unit->getUnitType()].name;
+				if (!order.empty())
+				{
+					std::cout << ", Ability: " << Observation()->GetAbilityData()[order.front().ability_id].friendly_name;
+				}
+				std::cout << std::endl;
+			}
+		}
+	}
+	*/
+	// if (Observation()->GetGameLoop() == 10)
+	// {
+	//  	Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::ZERG_HYDRALISK, Bases().getNewestExpansion(Players::Self), Players::Self, 2);
+	// }
 	Timer t;
 	t.start();
 	// Control()->GetObservation();
@@ -178,40 +199,72 @@ void CCBot::OnCloakDetected(const sc2::UNIT_TYPEID & type, const sc2::Point2D & 
 
 void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 {
+	bool shouldWeAttack = (GetPlayerRace(Players::Enemy) == sc2::Race::Zerg && false)
+		|| (GetPlayerRace(Players::Enemy) == sc2::Race::Protoss && Bases().getOccupiedBaseLocations(Players::Enemy).size() > Bases().getOccupiedBaseLocations(Players::Self).size())
+		|| (GetPlayerRace(Players::Enemy) == sc2::Race::Terran && Bases().getOccupiedBaseLocations(Players::Enemy).size() > Bases().getOccupiedBaseLocations(Players::Self).size());
+	std::cout << "shouldWeAttack " << shouldWeAttack << " (" << Bases().getOccupiedBaseLocations(Players::Enemy).size() << " > " << Bases().getOccupiedBaseLocations(Players::Self).size() << ")" << std::endl;
 	if (upgrade == sc2::UPGRADE_ID::SHIELDWALL && !underAttack())
 	{
-		m_gameCommander.attack(true);
+		if (shouldWeAttack)
+		{
+			m_gameCommander.attack(true);
+			std::cout << "Attacking " << shouldWeAttack << std::endl;
+		}
 	}
 
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL3)
 	{
 		m_armorBio = 3;
-		m_gameCommander.attack(true);
+		if (shouldWeAttack)
+		{
+			m_gameCommander.attack(true);
+			std::cout << "Attacking " << shouldWeAttack << std::endl;
+		}
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL2)
 	{
 		m_armorBio = 2;
-		m_gameCommander.attack(true);
+		if (shouldWeAttack)
+		{
+			m_gameCommander.attack(true);
+			std::cout << "Attacking " << shouldWeAttack << std::endl;
+		}
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL1)
 	{
 		m_armorBio = 1;
-		m_gameCommander.attack(true);
+		if (shouldWeAttack)
+		{
+			m_gameCommander.attack(true);
+			std::cout << "Attacking " << shouldWeAttack << std::endl;
+		}
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL3)
 	{
 		m_weaponsBio = 3;
-		m_gameCommander.attack(true);
+		if (shouldWeAttack)
+		{
+			m_gameCommander.attack(true);
+			std::cout << "Attacking " << shouldWeAttack << std::endl;
+		}
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL2)
 	{
 		m_weaponsBio = 2;
-		m_gameCommander.attack(true);
+		if (shouldWeAttack)
+		{
+			m_gameCommander.attack(true);
+			std::cout << "Attacking " << shouldWeAttack << std::endl;
+		}
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL1)
 	{
 		m_weaponsBio = 1;
-		m_gameCommander.attack(true);
+		if (shouldWeAttack)
+		{
+			m_gameCommander.attack(true);
+			std::cout << "Attacking " << shouldWeAttack << std::endl;
+		}
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANVEHICLEWEAPONSLEVEL3)
 	{
@@ -225,7 +278,6 @@ void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 	{
 		m_weaponsMech = 1;
 	}
-
 }
 
 void CCBot::retreat()

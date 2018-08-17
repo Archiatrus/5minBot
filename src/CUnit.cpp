@@ -31,7 +31,7 @@ CUnit::CUnit(const sc2::Unit * unit, CCBot * bot):
 	m_mineralContents(unit->mineral_contents),
 	m_vespeneContents(unit->vespene_contents),
 	m_isFlying(unit->is_flying),
-	m_isBurrowed(unit->is_burrowed),
+	m_isBurrowed(Util::IsBurrowedType(unit->unit_type)),
 	m_weaponCooldown(unit->weapon_cooldown),
 	m_abilityCooldown(bot->Observation()->GetGameLoop()),
 	m_AAWeapons(sc2::Weapon{}),
@@ -53,7 +53,9 @@ CUnit::CUnit(const sc2::Unit * unit, CCBot * bot):
 				}
 			return { Occupation::None, 0 };
 		}()),
-	m_maybeBanshee(0)
+	m_maybeBanshee(0),
+	m_reachable(true)
+
 {
 	// The default constructor is not setting the values...
 	m_AAWeapons.type = sc2::Weapon::TargetType::Air;
@@ -71,18 +73,26 @@ CUnit::CUnit(const sc2::Unit * unit, CCBot * bot):
 		if (weapon.type == sc2::Weapon::TargetType::Air || weapon.type == sc2::Weapon::TargetType::Any)
 		{
 			m_AAWeapons = weapon;
-			if (isType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET))
+			if (isType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET) || isType(sc2::UNIT_TYPEID::ZERG_HYDRALISK))
 			{
-				m_AAWeapons.range += 1.0f;  // We never know when Hi-Sec Auto Tracking is researched
+				m_AAWeapons.range += 1.0f;  // We never know when range is researched
+			}
+			else if (isType(sc2::UNIT_TYPEID::PROTOSS_PHOENIX))
+			{
+				m_AAWeapons.range += 2.0f;
 			}
 		}
 		if ((weapon.type == sc2::Weapon::TargetType::Ground || weapon.type == sc2::Weapon::TargetType::Any)
 			&& weapon.range > m_groundWeapons.range)  // Siege tanks
 		{
 			m_groundWeapons = weapon;
-			if (m_groundWeapons.range < 0.11f)  // melee. Not exactly 0.1
+			if (isType(sc2::UNIT_TYPEID::ZERG_HYDRALISK))
 			{
-				m_groundWeapons.range += unit->radius;
+				m_groundWeapons.range += 1.0f;  // We never know when range is researched
+			}
+			else if (isType(sc2::UNIT_TYPEID::PROTOSS_COLOSSUS))
+			{
+				m_groundWeapons.range += 2.0f;
 			}
 		}
 	}
@@ -255,7 +265,7 @@ void CUnit::update()
 {
 	if (isVisible())
 	{
-		if (getOwner() == Players::Self)
+		if (getAlliance() == Players::Self)
 		{
 			if (m_bot->GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
 			{
@@ -497,10 +507,57 @@ const float CUnit::getAttackRange() const
 	return m_groundWeapons.range > m_AAWeapons.range ? m_groundWeapons.range : m_AAWeapons.range;
 }
 
+const float CUnit::getMovementSpeed() const
+{
+	if (getAlliance() == Players::Enemy)
+	{
+		switch (getUnitType().ToType())
+		{
+		case (sc2::UNIT_TYPEID::PROTOSS_ZEALOT): return 2.75f;
+
+		case (sc2::UNIT_TYPEID::TERRAN_MARINE): return 3.375f;
+		case (sc2::UNIT_TYPEID::TERRAN_MARAUDER): return 3.375f;
+
+		case (sc2::UNIT_TYPEID::ZERG_ZERGLING): { return isOnCreep() ? 6.10883f : 4.6991f; }
+		case (sc2::UNIT_TYPEID::ZERG_ROACH): { return isOnCreep() ? 3.9f : 3.0f; }
+		case (sc2::UNIT_TYPEID::ZERG_HYDRALISK): { return isOnCreep() ? 3.657142f : 2.8125f; }
+		case (sc2::UNIT_TYPEID::ZERG_BANELING): { return isOnCreep() ? 3.83903f : 2.9531f; }
+		case (sc2::UNIT_TYPEID::ZERG_ULTRALISK): { return isOnCreep() ? 3.83903f : 2.9531f; }
+		case (sc2::UNIT_TYPEID::ZERG_INFESTOR): { return isOnCreep() ? 2.925f : 2.25f; }
+		case (sc2::UNIT_TYPEID::ZERG_SWARMHOSTMP): { return isOnCreep() ? 2.925f : 2.25f; }
+		case (sc2::UNIT_TYPEID::ZERG_INFESTORTERRAN): { return isOnCreep() ? 1.21875f : 0.9375f; }
+		case (sc2::UNIT_TYPEID::ZERG_QUEEN): { return isOnCreep() ? 2.5f : 0.9375f; }
+		}
+	}
+	return m_bot->Observation()->GetUnitTypeData()[getUnitType()].movement_speed;
+}
+
 const sc2::Unit * CUnit::getUnit_ptr() const
 {
 	const sc2::Unit * unit_ptr = m_bot->Observation()->GetUnit(getTag());
 	return unit_ptr ? unit_ptr:m_unit;
+}
+
+void CUnit::testReachable()
+{
+	if (isType(sc2::UNIT_TYPEID::PROTOSS_FORGE))
+	{
+		int a = 1;
+	}
+	if (isBuilding() && getAlliance() == Players::Enemy)
+	{
+		auto worker = m_bot->Workers().getClosestMineralWorkerTo(getPos());
+		if (worker)
+		{
+			const float dist = m_bot->Query()->PathingDistance(worker->getUnit_ptr(), getPos());
+			m_reachable = dist > 0;
+		}
+	}
+}
+
+bool CUnit::isReachable() const
+{
+	return m_reachable;
 }
 
 const sc2::AvailableAbilities CUnit::getAbilities(const bool ignoreRequirements)
@@ -562,6 +619,11 @@ bool CUnit::isVisible() const
 bool CUnit::isType(sc2::UnitTypeID type) const
 {
 	return m_unitTypeId == type;
+}
+
+bool CUnit::isOnCreep() const
+{
+	return m_bot->Observation()->HasCreep(getPos());
 }
 
 void CUnit::drawSphere() const
@@ -665,11 +727,19 @@ void CUnitsData::removeDead(CCBot & bot)
 		{
 			const CUnit_ptr newUnit = bot.UnitInfo().getUnit(unit->getTag());
 			newUnit->setOccupation(unit->getOccupation());
+			if (Util::IsBurrowedType(newUnit->getUnitType()))
+			{
+				bot.OnCloakDetected(newUnit->getUnitType(), newUnit->getPos());
+			}
 			return true;
 		}
 		if (!unit->isVisible())
 		{
 			unit->update();
+		}
+		if (bot.Observation()->GetGameLoop() % 1000 == unit->getTag() % 1000)
+		{
+			unit->testReachable();
 		}
 		return false;
 	}), m_units.end());

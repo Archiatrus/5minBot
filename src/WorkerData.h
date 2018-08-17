@@ -33,14 +33,14 @@ public:
     void    updateAllWorkerData();
     void    updateWorker(const CUnit_ptr unit);
     void    setWorkerJob(const CUnit_ptr unit, int job, const CUnit_ptr jobUnit = nullptr);
-    void    drawDepotDebugInfo();
+    void    drawDepotDebugInfo() const;
     size_t  getNumWorkers() const;
     int     getWorkerJobCount(int job) const;
     int     getNumAssignedWorkers(const CUnit_ptr unit);
     int     getWorkerJob(const CUnit_ptr unit) const;
     const CUnit_ptr getMineralToMine(const CUnit_ptr unit) const;
     const CUnit_ptr getWorkerDepot(const CUnit_ptr unit) const;
-    const char * getJobCode(const CUnit_ptr unit);
+    const char * getJobCode(const CUnit_ptr unit) const;
     const CUnits & getWorkers() const;
 	const CUnits getMineralWorkers() const;
 	const CUnits getCombatWorkers() const;

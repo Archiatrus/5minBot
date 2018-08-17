@@ -19,15 +19,19 @@ BuildOrder::BuildOrder(const sc2::Race & race, const std::vector<BuildType> & ve
 
 }
 
+/*
 void BuildOrder::add(const BuildType & type)
 {
 	m_buildOrder.push_back(type);
 }
+*/
 
+/*
 const sc2::Race & BuildOrder::getRace() const
 {
 	return m_race;
 }
+*/
 
 size_t BuildOrder::size() const
 {

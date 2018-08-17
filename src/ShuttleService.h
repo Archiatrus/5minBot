@@ -28,7 +28,7 @@ class shuttle
 	void unloadPassangers();
 
 public:
-	shuttle(CCBot * const bot, CUnits passengers, sc2::Point2D targetPos);
+	shuttle(CCBot * const bot, const CUnits & passengers, sc2::Point2D targetPos);
 	~shuttle();
 	//Really bad at naming things rn
 	void hereItGoes();

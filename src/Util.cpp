@@ -10,7 +10,7 @@ Util::IsUnit::IsUnit(sc2::UNIT_TYPEID type)
 {
 }
  
-bool Util::IsUnit::operator()(const sc2::Unit * unit, const sc2::ObservationInterface*) 
+bool Util::IsUnit::operator()(const sc2::Unit * unit, const sc2::ObservationInterface*) const
 { 
 	return unit->unit_type == m_type; 
 };
@@ -31,17 +31,21 @@ bool Util::IsTownHallType(const sc2::UnitTypeID & type)
 	}
 }
 
+/*
 bool Util::IsTownHall(const sc2::Unit * unit)
 {
 	BOT_ASSERT(unit, "Unit pointer was null");
 	return IsTownHallType(unit->unit_type);
 }
+*/
 
+/*
 bool Util::IsRefinery(const sc2::Unit * unit)
 {
 	BOT_ASSERT(unit, "Unit pointer was null");
 	return IsRefineryType(unit->unit_type);
 }
+*/
 
 bool Util::IsRefineryType(const sc2::UnitTypeID & type)
 {
@@ -54,6 +58,7 @@ bool Util::IsRefineryType(const sc2::UnitTypeID & type)
 	}
 }
 
+/*
 bool Util::IsGeyser(const sc2::Unit * unit)
 {
 	BOT_ASSERT(unit, "Unit pointer was null");
@@ -68,7 +73,9 @@ bool Util::IsGeyser(const sc2::Unit * unit)
 		default: return false;
 	}
 }
+*/
 
+/*
 bool Util::IsMineral(const sc2::Unit * unit)
 {
 	BOT_ASSERT(unit, "Unit pointer was null");
@@ -89,12 +96,15 @@ bool Util::IsMineral(const sc2::Unit * unit)
 		default: return false;
 	}
 }
+*/
 
+/*
 bool Util::IsWorker(const sc2::Unit * unit)
 {
 	BOT_ASSERT(unit, "Unit pointer was null");
 	return IsWorkerType(unit->unit_type);
 }
+*/
 
 bool Util::IsWorkerType(const sc2::UnitTypeID & unit)
 {
@@ -135,18 +145,23 @@ sc2::UnitTypeID Util::GetTownHall(const sc2::Race & race)
 	}
 }
 
+/*
 bool Util::IsCompleted(const sc2::Unit * unit)
 {
 	BOT_ASSERT(unit, "Unit pointer was null");
 	return unit->build_progress == 1.0f;
 }
+*/
 
+/*
 bool Util::IsIdle(const sc2::Unit * unit)
 {
 	BOT_ASSERT(unit, "Unit pointer was null");
 	return unit->orders.empty();
 }
+*/
 
+/*
 const BaseLocation * Util::getClosestBase(sc2::Point2D pos,const CCBot &bot)
 {
 	const std::vector<const BaseLocation *> bases = bot.Bases().getBaseLocations();
@@ -163,6 +178,7 @@ const BaseLocation * Util::getClosestBase(sc2::Point2D pos,const CCBot &bot)
 	}
 	return closestBase;
 }
+*/
 
 int Util::GetUnitTypeMineralPrice(const sc2::UnitTypeID type, const CCBot & bot)
 {
@@ -198,10 +214,12 @@ const float Util::GetUnitTypeSight(const sc2::UnitTypeID type, const CCBot & bot
 	return bot.Observation()->GetUnitTypeData()[type].sight_range;
 }
 
+/*
 bool Util::UnitOutrangesMe(const sc2::UnitTypeID me, const sc2::UnitTypeID attacker, const CCBot & bot)
 {
 	return bot.Observation()->GetUnitTypeData()[me].weapons[0].range<= bot.Observation()->GetUnitTypeData()[attacker].weapons[0].range;
 }
+*/
 
 sc2::Point2D Util::CalcCenter(const CUnits & units)
 {
@@ -223,12 +241,15 @@ sc2::Point2D Util::CalcCenter(const CUnits & units)
 	return sc2::Point2D(cx / units.size(), cy / units.size());
 }
 
+/*
 bool Util::IsDetector(const sc2::Unit * unit)
 {
 	BOT_ASSERT(unit, "Unit pointer was null");
 	return IsDetectorType(unit->unit_type);
 }
+*/
 
+/*
 float Util::GetAttackRange(const sc2::UnitTypeID & type, CCBot & bot)
 {
 	auto & weapons = bot.Observation()->GetUnitTypeData()[type].weapons;
@@ -253,6 +274,7 @@ float Util::GetAttackRange(const sc2::UnitTypeID & type, CCBot & bot)
 
 	return maxRange;
 }
+*/
 
 bool Util::IsDetectorType(const sc2::UnitTypeID & type)
 {
@@ -320,11 +342,13 @@ bool Util::IsCombatUnitType(const sc2::UnitTypeID & type, CCBot & bot)
 	return true;
 }
 
+/*
 bool Util::IsCombatUnit(const sc2::Unit * unit, CCBot & bot)
 {
 	BOT_ASSERT(unit, "Unit pointer was null");
 	return IsCombatUnitType(unit->unit_type, bot);
 }
+*/
 
 bool Util::IsSupplyProviderType(const sc2::UnitTypeID & type)
 {
@@ -381,6 +405,13 @@ float Util::fastsqrt(const float S)
 		x = 0.5f*(x + S / x);
 	}
 	return x;
+}
+
+float Util::Dist(const CUnit_ptr a, const CUnit_ptr b)
+{
+	return fastsqrt(DistSq(a->getPos(), b->getPos())) - a->getRadius() - b->getRadius();
+	//return std::sqrtf(DistSq(a->getPos(), b->getPos())) - a->getRadius() - b->getRadius();
+	//return sqrtf(Util::DistSq(p1,p2));
 }
 
 float Util::Dist(const sc2::Point2D & p1, const sc2::Point2D & p2)
@@ -452,6 +483,13 @@ float Util::TerainHeight(const sc2::GameInfo & info, const sc2::Point2D & point)
 	return decodedHeight;
 }
 
+sc2::Point2D Util::insideMap(const sc2::Point2D & pos, CCBot & bot)
+{
+	return { std::min<float>(bot.Observation()->GetGameInfo().playable_max.x, std::max<float>(bot.Observation()->GetGameInfo().playable_min.x, pos.x)),
+			std::min<float>(bot.Observation()->GetGameInfo().playable_max.y, std::max<float>(bot.Observation()->GetGameInfo().playable_min.y, pos.y)) };
+}
+
+/*
 void Util::VisualizeGrids(const sc2::ObservationInterface * obs, sc2::DebugInterface * debug) 
 {
 	if (!useDebug)
@@ -478,6 +516,7 @@ void Util::VisualizeGrids(const sc2::ObservationInterface * obs, sc2::DebugInter
 	}
 
 }
+*/
 
 std::string Util::GetStringFromRace(const sc2::Race & race)
 {
@@ -490,24 +529,24 @@ std::string Util::GetStringFromRace(const sc2::Race & race)
 	}
 }
 
-sc2::Race Util::GetRaceFromString(const std::string & raceIn)
+sc2::Race Util::GetRaceFromString(const std::string & race)
 {
-	std::string race(raceIn);
-	std::transform(race.begin(), race.end(), race.begin(), [](char c) {return static_cast<char>(::toupper(c)); });
+	std::string race2(race);
+	std::transform(race2.begin(), race2.end(), race2.begin(), [](char c) {return static_cast<char>(::toupper(c)); });
 
-	if (race == "terran")
+	if (race2 == "terran")
 	{
 		return sc2::Race::Terran;
 	}
-	else if (race == "protoss")
+	else if (race2 == "protoss")
 	{
 		return sc2::Race::Protoss;
 	}
-	else if (race == "zerg")
+	else if (race2 == "zerg")
 	{
 		return sc2::Race::Zerg;
 	}
-	else if (race == "random")
+	else if (race2 == "random")
 	{
 		return sc2::Race::Random;
 	}
@@ -542,6 +581,7 @@ sc2::UpgradeID Util::GetUpgradeIDFromName(const std::string & name, CCBot & bot)
 	return 0;
 }
 
+/*
 sc2::BuffID Util::GetBuffIDFromName(const std::string & name, CCBot & bot)
 {
 	for (const sc2::BuffData & data : bot.Observation()->GetBuffData())
@@ -554,7 +594,9 @@ sc2::BuffID Util::GetBuffIDFromName(const std::string & name, CCBot & bot)
 
 	return 0;
 }
+*/
 
+/*
 sc2::AbilityID Util::GetAbilityIDFromName(const std::string & name, CCBot & bot)
 {
 	for (const sc2::AbilityData & data : bot.Observation()->GetAbilityData())
@@ -567,7 +609,7 @@ sc2::AbilityID Util::GetAbilityIDFromName(const std::string & name, CCBot & bot)
 
 	return 0;
 }
-
+*/
 
 UnitTag GetClosestEnemyUnitTo(const sc2::Unit * ourUnit, const sc2::ObservationInterface * obs)
 {
@@ -588,6 +630,7 @@ UnitTag GetClosestEnemyUnitTo(const sc2::Unit * ourUnit, const sc2::ObservationI
 	return closestTag;
 }
 
+/*
 // checks where a given unit can make a given unit type now
 // this is done by iterating its legal abilities for the build command to make the unit
 bool Util::UnitCanBuildTypeNow(const sc2::Unit * unit, const sc2::UnitTypeID & type, CCBot & m_bot)
@@ -615,6 +658,7 @@ bool Util::UnitCanBuildTypeNow(const sc2::Unit * unit, const sc2::UnitTypeID & t
 
 	return false;
 }
+*/
 
 bool Util::canHitMe(const sc2::Unit * me, const sc2::Unit * hitter, CCBot & bot)
 {
@@ -663,7 +707,7 @@ const CUnit_ptr Util::getClostestMineral(sc2::Point2D pos, CCBot & bot)
 	{
 		//We don't care for not finished bases.
 		const CUnit_ptr townHall = base->getTownHall();
-		if (!townHall || (townHall && (townHall->getBuildProgress() != 1.0f || townHall->getAssignedHarvesters()>1.5f*townHall->getIdealHarvesters())))
+		if (!townHall || townHall->getBuildProgress() != 1.0f || townHall->getAssignedHarvesters()>1.5f*townHall->getIdealHarvesters())
 		{
 			continue;
 		}
@@ -763,7 +807,9 @@ std::vector<sc2::UNIT_TYPEID> Util::getAntiMedivacTypes()
 		sc2::UNIT_TYPEID::ZERG_CORRUPTOR,
 		sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER,
 		sc2::UNIT_TYPEID::PROTOSS_PHOENIX,
-		sc2::UNIT_TYPEID::ZERG_SPIRE };
+		sc2::UNIT_TYPEID::PROTOSS_VOIDRAY,
+		sc2::UNIT_TYPEID::ZERG_SPIRE,
+		sc2::UNIT_TYPEID::PROTOSS_STARGATE };
 	return anitAir;
 }
 
@@ -779,7 +825,7 @@ std::vector<sc2::UNIT_TYPEID> Util::getWorkerTypes()
 }
 
 
-
+/*
 const sc2::UpgradeID Util::abilityIDToUpgradeID(const sc2::ABILITY_ID id)
 {
 	switch (id)
@@ -794,7 +840,7 @@ const sc2::UpgradeID Util::abilityIDToUpgradeID(const sc2::ABILITY_ID id)
 	}
 	return 0;
 }
-
+*/
 
 sc2::Point3D Util::get3DPoint(const sc2::Point2D pos, CCBot & bot)
 {

@@ -73,7 +73,14 @@ const size_t UnitInfoManager::getFoodCombatUnits(int player) const
 	{
 		if (Util::IsCombatUnitType(units.first, m_bot))
 		{
-			numFoodCombatUnits += static_cast<float>(units.second.getUnits().size())*data[units.first].food_required;
+			if (units.first.ToType() == sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON || units.first.ToType() == sc2::UNIT_TYPEID::ZERG_SPINECRAWLER)
+			{
+				numFoodCombatUnits += static_cast<float>(units.second.getUnits().size())*4.0f;
+			}
+			else
+			{
+				numFoodCombatUnits += static_cast<float>(units.second.getUnits().size())*data[units.first].food_required;
+			}
 		}
 	}
 	return static_cast<size_t>(numFoodCombatUnits);
@@ -88,6 +95,7 @@ static std::string GetAbilityText(sc2::AbilityID ability_id) {
 	return str;
 }
 
+/*
 void UnitInfoManager::drawSelectedUnitDebugInfo()
 {
 	if (!useDebug)
@@ -206,6 +214,7 @@ void UnitInfoManager::drawSelectedUnitDebugInfo()
 	}
 	
 }
+*/
 
 const size_t UnitInfoManager::getUnitTypeCount(int player, sc2::UnitTypeID type, bool completed) const
 {
@@ -261,6 +270,7 @@ const size_t UnitInfoManager::getUnitTypeCount(int player, std::vector<sc2::UNIT
 	return count;
 }
 
+/*
 // is the unit valid?
 bool UnitInfoManager::isValidUnit(const sc2::Unit * unit)
 {
@@ -287,6 +297,8 @@ bool UnitInfoManager::isValidUnit(const sc2::Unit * unit)
 	// s'all good baby baby
 	return true;
 }
+*/
+
 const CUnit_ptr UnitInfoManager::OnUnitCreate(const sc2::Unit * unit)
 {
 	return m_unitDataBase[unit->alliance][unit->unit_type].insert(unit, m_bot);

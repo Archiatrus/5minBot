@@ -8,8 +8,8 @@ SquadOrder::SquadOrder()
 
 SquadOrder::SquadOrder(int type, const sc2::Point2D & position, float radius, std::string status)
 	: m_type	(type)
-	, m_position(position)
 	, m_radius  (radius)
+	, m_position(position)
 	, m_status  (status)
 {
 }

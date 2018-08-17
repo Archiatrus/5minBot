@@ -163,10 +163,12 @@ void WorkerData::clearPreviousJob(const CUnit_ptr unit)
 	m_workerJobMap.erase(unit);
 }
 
+/*
 size_t WorkerData::getNumWorkers() const
 {
 	return m_workers.size();
 }
+*/
 
 int WorkerData::getWorkerJobCount(int job) const
 {
@@ -250,7 +252,7 @@ int WorkerData::getNumAssignedWorkers(const CUnit_ptr unit)
     return 0;
 }
 
-const char * WorkerData::getJobCode(const CUnit_ptr unit)
+const char * WorkerData::getJobCode(const CUnit_ptr unit) const
 {
 	const int j = getWorkerJob(unit);
 
@@ -266,7 +268,7 @@ const char * WorkerData::getJobCode(const CUnit_ptr unit)
 	return "X";
 }
 
-void WorkerData::drawDepotDebugInfo()
+void WorkerData::drawDepotDebugInfo() const
 {
 	return;
 	/*

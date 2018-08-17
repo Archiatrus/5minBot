@@ -535,6 +535,7 @@ void BuildingManager::drawBuildingInformation()
 	Drawing::drawTextScreen(m_bot, sc2::Point2D(0.05f, 0.05f), ss.str());
 }
 
+/*
 std::vector<sc2::UnitTypeID> BuildingManager::buildingsQueued() const
 {
 	std::vector<sc2::UnitTypeID> buildingsQueued;
@@ -549,6 +550,7 @@ std::vector<sc2::UnitTypeID> BuildingManager::buildingsQueued() const
 
 	return buildingsQueued;
 }
+*/
 
 int BuildingManager::getNumBuildingsQueued(sc2::UnitTypeID type) const
 {

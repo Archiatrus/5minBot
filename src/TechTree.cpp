@@ -369,6 +369,7 @@ const TypeData & TechTree::getData(const BuildType & type) const
 	return m_unitTypeData.at(0);
 }
 
+/*
 void TechTree::outputJSON(const std::string & filename) const
 {
 	std::ofstream out(filename);
@@ -424,3 +425,4 @@ void TechTree::outputJSON(const std::string & filename) const
 	out << "}";
 	out.close();
 }
+*/

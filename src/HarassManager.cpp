@@ -1221,6 +1221,22 @@ const BaseLocation * HarassManager::getLiberatorTarget()
 			}
 		}
 	}
+	if (!target)
+	{
+		for (const auto & base : bases)
+		{
+			auto minerals = base->getMinerals();
+			if (std::find_if(minerals.begin(), minerals.end(), [](const auto & mineral) { return mineral->getDisplayType() == sc2::Unit::DisplayType::Snapshot || mineral->isAlive() && mineral->getMineralContents() > 100; }) != minerals.end())
+			{
+				float dist = Util::DistSq(home->getCenterOfBase(), base->getCenterOfBase());
+				if (minDist > dist)
+				{
+					minDist = dist;
+					target = base;
+				}
+			}
+		}
+	}
 	return target;
 }
 
@@ -1269,7 +1285,9 @@ CUnits HarassManager::getMarines()
 	return marines;
 }
 
+/*
 CUnit_ptr HarassManager::getWidowMine()
 {
 	return m_WMHarass.getwidowMine();
 }
+*/

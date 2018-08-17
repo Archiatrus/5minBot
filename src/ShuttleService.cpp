@@ -4,7 +4,7 @@
 #include "Util.h"
 #include "CCBot.h"
 
-shuttle::shuttle(CCBot * const bot, CUnits passengers, sc2::Point2D targetPos) :
+shuttle::shuttle(CCBot * const bot, const CUnits & passengers, sc2::Point2D targetPos) :
 	m_bot(bot),
 	m_shuttle(nullptr),
 	m_passengers(passengers),

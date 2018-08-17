@@ -91,51 +91,60 @@ void HarassLiberator::planPath()
 		return;
 	}
 	m_pathPlanCounter = m_bot.Observation()->GetGameLoop();
-	// Where we want to shot
-	const sc2::Point2D targetSpot = m_target->getCenterOfMinerals() + Util::normalizeVector(m_target->getCenterOfMinerals() - m_target->getCenterOfBase(), 3);
-	Drawing::drawSphere(m_bot, targetSpot, 3, sc2::Colors::Green);
-	// Where we want to siege up
-	const sc2::Point2D siegeSpot = targetSpot + Util::normalizeVector(targetSpot - m_target->getCenterOfBase(), siegeRange);
-	Drawing::drawSphere(m_bot, siegeSpot, 2, sc2::Colors::Yellow);
-	// find save target spot
-	sc2::Point2D saveSiegeSpot{};
+	// Check for nearby static D
 	CUnits staticDs = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UNIT_TYPEID>({ sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON, sc2::UNIT_TYPEID::ZERG_SPORECRAWLER, sc2::UNIT_TYPEID::TERRAN_MISSILETURRET }));
 	staticDs.erase(std::remove_if(staticDs.begin(), staticDs.end(), [&](const auto & staticD) {
-		return Util::Dist(staticD->getPos(), siegeSpot) > 20.0f;
+		return Util::Dist(staticD->getPos(), m_target->getCenterOfMinerals()) > 20.0f;
 	}), staticDs.end());
-
-	const std::vector<sc2::Point2D> & tiles = m_bot.Map().getClosestTilesToAir(siegeSpot);
-
-	for (const auto & tile : tiles)
+	for (const auto & mineral : m_target->getMinerals())
 	{
-		if (Util::DistSq(targetSpot, tile) > std::pow(siegeRange, 2) + 0.001f)  // -.-
+		// Where we want to shot
+		sc2::Point2D targetSpot = mineral->getPos() + Util::normalizeVector(mineral->getPos() - m_target->getCenterOfBase(), 3);
+		targetSpot = Util::insideMap(targetSpot, m_bot);
+		Drawing::drawSphere(m_bot, targetSpot, 3, sc2::Colors::Green);
+		// Where we want to siege up
+		sc2::Point2D siegeSpot = targetSpot + Util::normalizeVector(targetSpot - m_target->getCenterOfBase(), siegeRange);
+		siegeSpot = Util::insideMap(siegeSpot, m_bot);
+		Drawing::drawSphere(m_bot, siegeSpot, 2, sc2::Colors::Yellow);
+		// find save target spot
+		sc2::Point2D saveSiegeSpot{};
+
+
+		const std::vector<sc2::Point2D> & tiles = m_bot.Map().getClosestTilesToAir(siegeSpot);
+
+		for (const auto & tile : tiles)
+		{
+			if (Util::DistSq(targetSpot, tile) > std::pow(siegeRange, 2) + 0.001f)  // -.-
+			{
+				continue;
+			}
+			float threatLvl = 0.0f;
+			for (const auto & staticD : staticDs)
+			{
+				const float range = staticD->getAttackRange();
+				const float dist = Util::Dist(staticD->getPos(), tile);
+				threatLvl += std::max(3.0f + range - dist, 0.0f);
+			}
+			if (threatLvl == 0.0f)
+			{
+				saveSiegeSpot = tile;
+				break;
+			}
+			if (Util::Dist(siegeSpot, tile) > 25.0f)
+			{
+				break;
+			}
+		}
+		Drawing::drawSphere(m_bot, saveSiegeSpot, 2, sc2::Colors::Purple);
+		if (saveSiegeSpot == sc2::Point2D())
 		{
 			continue;
 		}
-		float threatLvl = 0.0f;
-		for (const auto & staticD : staticDs)
-		{
-			const float range = staticD->getAttackRange();
-			const float dist = Util::Dist(staticD->getPos(), tile);
-			threatLvl += std::max(3.0f + range - dist, 0.0f);
-		}
-		if (threatLvl == 0.0f)
-		{
-			saveSiegeSpot = tile;
-			break;
-		}
-		if (Util::Dist(siegeSpot, tile) > 25.0f)
-		{
-			break;
-		}
+		m_wayPoints = m_bot.Map().getEdgePath(m_liberator->getPos(), saveSiegeSpot);
+		m_status = Status::onMyWay;
+		m_targetSpot = targetSpot;
+		break;
 	}
-	Drawing::drawSphere(m_bot, saveSiegeSpot, 2, sc2::Colors::Purple);
-	if (saveSiegeSpot == sc2::Point2D())
-	{
-		return;
-	}
-	m_wayPoints = m_bot.Map().getEdgePath(m_liberator->getPos(), saveSiegeSpot);
-	m_status = Status::onMyWay;
 }
 
 
@@ -143,8 +152,7 @@ void HarassLiberator::travelToDestination()
 {
 	if (m_wayPoints.empty())
 	{
-		const sc2::Point2D targetSpot = m_target->getCenterOfMinerals() + Util::normalizeVector(m_target->getCenterOfMinerals() - m_target->getCenterOfBase(), 3);
-		if (Util::DistSq(m_liberator->getPos(), targetSpot) > std::pow(siegeRange, 2) + 5.0f)  // -.-
+		if (Util::DistSq(m_liberator->getPos(), m_targetSpot) > std::pow(siegeRange, 2) + 5.0f)  // -.-
 		{
 			m_status = Status::idle;
 		}
@@ -177,6 +185,16 @@ void HarassLiberator::travelToDestination()
 
 void HarassLiberator::ActivateSiege()
 {
+	if (m_target && !m_target->isOccupiedByPlayer(Players::Enemy))
+	{
+		if (m_liberator->isType(sc2::UNIT_TYPEID::TERRAN_LIBERATORAG))
+		{
+			Micro::SmartAbility(m_liberator, sc2::ABILITY_ID::MORPH_LIBERATORAAMODE, m_bot);
+			return;
+		}
+		m_status = Status::idle;
+		return;
+	}
 	const CUnits enemies = m_liberator->getEnemyUnitsInSight();
 	bool enemyInRange = false;
 	for (const auto & e : enemies)
@@ -195,8 +213,7 @@ void HarassLiberator::ActivateSiege()
 		}
 		else
 		{
-			const sc2::Point2D targetSpot = m_target->getCenterOfMinerals() + Util::normalizeVector(m_target->getCenterOfMinerals() - m_target->getCenterOfBase(), 3);
-			Micro::SmartAbility(m_liberator, sc2::ABILITY_ID::MORPH_LIBERATORAGMODE, targetSpot, m_bot);
+			Micro::SmartAbility(m_liberator, sc2::ABILITY_ID::MORPH_LIBERATORAGMODE, m_targetSpot, m_bot);
 		}
 	}
 	else
@@ -214,14 +231,27 @@ void HarassLiberator::ActivateSiege()
 				{
 					if (effect.effect_id == sc2::EffectID(sc2::EFFECT_ID::LIBERATORMORPHED) && Util::DistSq(m_liberator->getPos(), effect.positions.front()) < 26.0f)
 					{
+						CUnit_ptr worker = nullptr;
 						for (const auto & enemy : enemies)
 						{
 							const float radius = m_bot.Observation()->GetEffectData()[sc2::EffectID(sc2::EFFECT_ID::LIBERATORMORPHED)].radius;
-							if (Util::DistSq(effect.positions.front(), enemy->getPos()) < std::pow(radius, 2) && m_liberator->canHitMe(enemy))
+							if (Util::DistSq(effect.positions.front(), enemy->getPos()) < std::pow(radius, 2))
 							{
-								Micro::SmartAttackUnit(m_liberator, enemy, m_bot);
-								return;
+								if (m_liberator->canHitMe(enemy))
+								{
+									Micro::SmartAttackUnit(m_liberator, enemy, m_bot);
+									return;
+								}
+								if (enemy->isWorker())
+								{
+									worker = enemy;
+								}
 							}
+						}
+						if (worker)
+						{
+							Micro::SmartAttackUnit(m_liberator, worker, m_bot);
+							return;
 						}
 					}
 				}

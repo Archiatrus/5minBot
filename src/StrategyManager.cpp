@@ -35,6 +35,7 @@ void StrategyManager::onFrame()
 
 }
 
+/*
 const BuildOrder & StrategyManager::getOpeningBookBuildOrder() const
 {
 	auto buildOrderIt = m_strategies.find(m_bot.Config().StrategyName);
@@ -50,6 +51,7 @@ const BuildOrder & StrategyManager::getOpeningBookBuildOrder() const
 		return m_emptyBuildOrder;
 	}
 }
+*/
 
 /*
 bool StrategyManager::shouldExpandNow() const
@@ -58,36 +60,47 @@ bool StrategyManager::shouldExpandNow() const
 }
 */
 
+/*
 void StrategyManager::addStrategy(const std::string & name, const Strategy & strategy)
 {
 	m_strategies[name] = strategy;
 }
+*/
 
+/*
 const UnitPairVector StrategyManager::getBuildOrderGoal() const
 {
 	return std::vector<UnitPair>();
 }
+*/
 
+/*
 const UnitPairVector StrategyManager::getProtossBuildOrderGoal() const
 {
 	return std::vector<UnitPair>();
 }
+*/
 
+/*
 const UnitPairVector StrategyManager::getTerranBuildOrderGoal() const
 {
 	return std::vector<UnitPair>();
 }
+*/
 
+/*
 const UnitPairVector StrategyManager::getZergBuildOrderGoal() const
 {
 	return std::vector<UnitPair>();
 }
+*/
 
-
+/*
 void StrategyManager::onEnd(const bool isWinner)
 {
 
 }
+*/
 
 void StrategyManager::readStrategyFile(const std::string & filename)
 {

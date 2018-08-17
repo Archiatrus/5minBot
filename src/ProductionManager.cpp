@@ -26,6 +26,10 @@ ProductionManager::ProductionManager(CCBot & bot)
 void ProductionManager::onStart()
 {
 	m_buildingManager.onStart();
+	if (m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Zerg)
+	{
+		m_liberatorRequested = true;
+	}
 }
 
 void ProductionManager::onFrame()
@@ -94,7 +98,7 @@ void ProductionManager::create(BuildOrderItem item)
 			bool protectedBase = false;
 			for (const auto & mt : m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_MISSILETURRET))
 			{
-				if (Util::DistSq(base->getCenterOfMinerals(), mt->getPos()) < 400.0f)
+				if (Util::DistSq(base->getCenterOfMinerals(), mt->getPos()) < 225.0f)
 				{
 					protectedBase = true;
 					break;
@@ -327,7 +331,7 @@ void ProductionManager::defaultMacro()
 				if (unit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER && numRaxFinished > 0)
 				{
 					const BaseLocation * targetBase = m_bot.Bases().getBaseLocation(unit->getPos());
-					if (Util::DistSq(unit->getPos(), targetBase->getCenterOfBase()) > 0.01f && m_bot.Query()->Placement(sc2::ABILITY_ID::LAND_COMMANDCENTER, targetBase->getCenterOfBase()))
+					if (targetBase && Util::DistSq(unit->getPos(), targetBase->getCenterOfBase()) > 0.01f && m_bot.Query()->Placement(sc2::ABILITY_ID::LAND_COMMANDCENTER, targetBase->getCenterOfBase()))
 					{
 						Micro::SmartAbility(unit, sc2::ABILITY_ID::LIFT, m_bot);
 						return;
@@ -387,7 +391,7 @@ void ProductionManager::defaultMacro()
 		}
 	}
 	// turrets
-	if (m_turretsRequested && numEngibaysFinished > 0)
+	if (m_turretsRequested && numEngibaysFinished > 0 && minerals < 300)
 	{
 		if (m_bot.Bases().getOccupiedBaseLocations(Players::Self).size() + m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER) > m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_MISSILETURRET, false) + static_cast<size_t>(howOftenQueued(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET)))
 		{
@@ -747,7 +751,7 @@ void ProductionManager::defaultMacro()
 			if (unit->isIdle() || (addon && addon->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR && unit->getOrders().size() == 1))
 			{
 				// Building the scout has priority
-				if (m_scoutRequested)
+				if (m_scoutRequested && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_REAPER).supplyCost)
 				{
 					if (gas >= 50)
 					{
@@ -798,11 +802,23 @@ void ProductionManager::defaultMacro()
 					}
 					// techlab ->marauder
 					{
-						if (minerals >= 100 && gas >= 25 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARAUDER).supplyCost)
+						if (m_bot.UnitInfo().getUnits(Players::Enemy, Util::getAntiMedivacTypes()).size() > 3)
 						{
-							Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_MARAUDER, m_bot);
-							std::cout << "Marauder" << std::endl;
-							return;
+							if (minerals >= 50 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
+							{
+								m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_MARINE);
+								std::cout << "Marine" << std::endl;
+								return;
+							}
+						}
+						else
+						{
+							if (minerals >= 100 && gas >= 25 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARAUDER).supplyCost)
+							{
+								Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_MARAUDER, m_bot);
+								std::cout << "Marauder" << std::endl;
+								return;
+							}
 						}
 					}
 				}

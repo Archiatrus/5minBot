@@ -463,7 +463,7 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
 		if (defenderToAdd)
 		{
 			m_squadData.assignUnitToSquad(defenderToAdd, defenseSquad);
-			defendersAdded+=2;
+			defendersAdded+=1;
 		}
 		else
 		{
@@ -471,6 +471,11 @@ void CombatCommander::updateDefenseSquadUnits(Squad & defenseSquad, const size_t
 		}
 	}
 	// Emergency draft of workers
+	const size_t numCannons = m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON, true);
+	if (numCannons > 0 && m_bot.Bases().getOccupiedBaseLocations(Players::Self).size() == 1)
+	{
+		return;
+	}
 	const CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
 	const CUnits worker = m_bot.Workers().getMineralWorkers();
 	size_t workerCounter = worker.size();
@@ -679,7 +684,7 @@ void CombatCommander::checkForProxyOrCheese()
 			const size_t bases = m_bot.UnitInfo().getUnitTypeCount(Players::Self, Util::getTownHallTypes());
 			if (bases <= 1)
 			{
-				const CUnits enemyProduction = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UnitTypeID>({ sc2::UNIT_TYPEID::TERRAN_BARRACKS, sc2::UNIT_TYPEID::PROTOSS_GATEWAY }));
+				const CUnits enemyProduction = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UnitTypeID>({ sc2::UNIT_TYPEID::TERRAN_BARRACKS, sc2::UNIT_TYPEID::TERRAN_FACTORY, sc2::UNIT_TYPEID::PROTOSS_GATEWAY, sc2::UNIT_TYPEID::PROTOSS_FORGE }));
 				if (enemyProduction.empty())
 				{
 					m_underAttack = true;

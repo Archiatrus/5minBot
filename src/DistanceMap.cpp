@@ -123,7 +123,9 @@ void DistanceMap::draw(CCBot & bot) const
 	}
 }
 
+/*
 const sc2::Point2D & DistanceMap::getStartTile() const
 {
 	return m_startTile;
 }
+*/

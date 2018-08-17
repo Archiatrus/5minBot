@@ -358,6 +358,7 @@ sc2::Point2D BuildingPlacer::getRefineryPosition()
 	return closestGeyser;
 }
 
+/*
 bool BuildingPlacer::isReserved(int x, int y) const
 {
 	int rwidth = static_cast<int>(m_reserveMap.size());
@@ -369,3 +370,4 @@ bool BuildingPlacer::isReserved(int x, int y) const
 
 	return m_reserveMap[x][y];
 }
+*/

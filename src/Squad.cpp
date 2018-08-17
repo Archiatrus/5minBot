@@ -89,6 +89,18 @@ void Squad::setAllUnits()
 {
 	// clean up the _units vector just in case one of them died
 	CUnits goodUnits;
+	CUnits cannonRush;
+	if (m_order.getType() == SquadOrderTypes::Defend && m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
+	{
+		const CUnits cannons = m_bot.UnitInfo().getUnits(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_PHOTONCANNON);
+		for (const auto & cannon : cannons)
+		{
+			if (Util::DistSq(cannon->getPos(), m_order.getPosition()) < std::pow(m_order.getRadius(), 2))
+			{
+				cannonRush.push_back(cannon);
+			}
+		}
+	}
 	for (const auto & unit : m_units)
 	{
 		if (!unit) { continue; }
@@ -101,6 +113,7 @@ void Squad::setAllUnits()
 		if (unit->getOccupation().first == CUnit::Occupation::Scout) { continue; }
 		if (unit->getOccupation().first == CUnit::Occupation::Worker && unit->getOccupation().second != WorkerJobs::Combat) { continue; }
 		if (unit->changedUnitType()) { continue; }
+		if (m_order.getType() == SquadOrderTypes::Defend && m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Protoss && cannonRush.size() > 4 * m_units.size()) { continue; }
 		goodUnits.push_back(unit);
 	}
 
@@ -125,7 +138,7 @@ void Squad::addUnitsToMicroManagers()
 	CUnits meleeUnits;
 	CUnits rangedUnits;
 	CUnits detectorUnits;
-	CUnits transportUnits;
+	// CUnits transportUnits;
 	CUnits siegeUnits;
 
 	// add _units to micro managers
@@ -163,7 +176,7 @@ const bool Squad::needsToRegroup()
 {
 	if (m_order.getType() == SquadOrderTypes::Attack)
 	{
-		std::cout << m_bot.UnitInfo().getFoodCombatUnits(Players::Self) << " < " << m_bot.UnitInfo().getFoodCombatUnits(Players::Enemy) << std::endl;
+		//std::cout << m_bot.UnitInfo().getFoodCombatUnits(Players::Self) << " < " << m_bot.UnitInfo().getFoodCombatUnits(Players::Enemy) << std::endl;
 		if ((m_bot.Observation()->GetFoodArmy() < 100 && m_bot.UnitInfo().getFoodCombatUnits(Players::Self) < m_bot.UnitInfo().getFoodCombatUnits(Players::Enemy)) || (m_bot.Observation()->GetFoodUsed() < 195 && m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER) < m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_COLOSSUS)))
 		{
 			m_bot.retreat();
@@ -340,6 +353,7 @@ bool Squad::isUnitNearEnemy(CUnit_ptr unit) const
 	return false;
 }
 
+/*
 sc2::Point2D Squad::calcCenter() const
 {
 	if (m_units.empty())
@@ -356,6 +370,7 @@ sc2::Point2D Squad::calcCenter() const
 
 	return sc2::Point2D(sum.x / m_units.size(), sum.y / m_units.size());
 }
+*/
 
 sc2::Point2D Squad::calcRegroupPosition() const
 {

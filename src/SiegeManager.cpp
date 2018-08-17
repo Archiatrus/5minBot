@@ -65,7 +65,7 @@ void SiegeManager::assignTargets(const CUnits & targets)
 					else
 					{
 						//Attack if near enough
-						const float dist = Util::Dist(siegeUnit->getPos(), target->getPos());
+						const float dist = Util::Dist(siegeUnit, target);
 						const float range = 13.0;// siegeUnit->getAttackRange(target);
 						if (dist <= range)
 						{
@@ -82,7 +82,7 @@ void SiegeManager::assignTargets(const CUnits & targets)
 				else
 				{
 					// if we're not near the order position
-					if (Util::Dist(siegeUnit->getPos(), order.getPosition()) > 4)
+					if (Util::DistSq(siegeUnit->getPos(), order.getPosition()) > 16.0f)
 					{
 						// move to it
 						if (siegeUnit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED)
@@ -107,7 +107,7 @@ void SiegeManager::assignTargets(const CUnits & targets)
 			else
 			{
 				// if we're not near the order position
-				if (Util::Dist(siegeUnit->getPos(), order.getPosition()) > 4)
+				if (Util::DistSq(siegeUnit->getPos(), order.getPosition()) > 16.0f)
 				{
 					// move to it
 					if (siegeUnit->getUnitType() == sc2::UNIT_TYPEID::TERRAN_SIEGETANKSIEGED)
@@ -132,7 +132,7 @@ void SiegeManager::assignTargets(const CUnits & targets)
 }
 
 // get a target for the meleeUnit to attack
-const CUnit_ptr SiegeManager::getTarget(const CUnit_ptr siegeUnit, const CUnits & targets)
+const CUnit_ptr SiegeManager::getTarget(const CUnit_ptr siegeUnit, const CUnits & targets) const
 {
 	BOT_ASSERT(siegeUnit, "null melee unit in getTarget");
 
@@ -163,7 +163,7 @@ const CUnit_ptr SiegeManager::getTarget(const CUnit_ptr siegeUnit, const CUnits 
 		{
 			priority += 0.5;
 		}
-		float distance = Util::Dist(siegeUnit->getPos(), targetUnit->getPos());
+		const float distance = Util::Dist(siegeUnit, targetUnit);
 		//Tanks have a minimum range
 		if (distance < 2.0f)
 		{
@@ -196,11 +196,11 @@ const CUnit_ptr SiegeManager::getTarget(const CUnit_ptr siegeUnit, const CUnits 
 		}
 
 	}
-	return weakestTargetInsideRange&&highPriorityNear>1.5 ? weakestTargetInsideRange : closestTargetOutsideRange;
+	return weakestTargetInsideRange&&highPriorityNear > 1.5 ? weakestTargetInsideRange : closestTargetOutsideRange;
 }
 
 // get the attack priority of a type in relation to a zergling
-float SiegeManager::getAttackPriority(const CUnit_ptr attacker, const CUnit_ptr unit) const
+float SiegeManager::getAttackPriority(const CUnit_ptr attacker, const CUnit_ptr unit)
 {
 	BOT_ASSERT(unit, "null unit in getAttackPriority");
 

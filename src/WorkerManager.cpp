@@ -221,7 +221,7 @@ void WorkerManager::handleMineralWorkers()
 	}
 	else
 	{
-		const CUnits bunkers = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
+		const CUnits bunkers = m_bot.UnitInfo().getUnits(Players::Self, std::vector<sc2::UNIT_TYPEID>{ sc2::UNIT_TYPEID::TERRAN_BUNKER, sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS });
 		const CUnits enemies = m_bot.UnitInfo().getUnits(Players::Enemy);
 		for (const auto & worker : getMineralWorkers())
 		{
@@ -266,9 +266,12 @@ void WorkerManager::handleMineralWorkers()
 					}
 				}
 				CUnit_ptr mineralPatch = nullptr;
-				if (closestBunker && distToBunker > 400.0f)
+				if (closestBunker)
 				{
-					mineralPatch = Util::getClostestMineral(closestBunker->getPos(), m_bot);
+					if (distToBunker > 400.0f)
+					{
+						mineralPatch = Util::getClostestMineral(closestBunker->getPos(), m_bot);
+					}
 				}
 				else
 				{
@@ -431,6 +434,7 @@ void WorkerManager::setMineralWorker(const CUnit_ptr unit)
 	}
 }
 
+/*
 const CUnit_ptr WorkerManager::getClosestDepot(const CUnit_ptr worker) const
 {
     CUnit_ptr closestDepot = nullptr;
@@ -453,7 +457,7 @@ const CUnit_ptr WorkerManager::getClosestDepot(const CUnit_ptr worker) const
 
     return closestDepot;
 }
-
+*/
 
 // other managers that need workers call this when they're done with a unit
 void WorkerManager::finishedWithWorker(const CUnit_ptr unit)
@@ -466,10 +470,12 @@ const CUnit_ptr WorkerManager::getGasWorker(const CUnit_ptr refinery) const
     return getClosestMineralWorkerTo(refinery->getPos());
 }
 
+/*
 void WorkerManager::setBuildingWorker(const CUnit_ptr worker, Building & b)
 {
 	m_workerData.setWorkerJob(worker, WorkerJobs::Build, b.buildingUnit);
 }
+*/
 
 // gets a builder for BuildingManager to use
 // if setJobAsBuilder is true (default), it will be flagged as a builder unit
@@ -488,14 +494,14 @@ const CUnit_ptr WorkerManager::getBuilder(Building & b, bool setJobAsBuilder) co
 }
 
 // sets a worker as a scout
-void WorkerManager::setScoutWorker(const CUnit_ptr workerTag)
+void WorkerManager::setScoutWorker(const CUnit_ptr worker)
 {
-	m_workerData.setWorkerJob(workerTag, WorkerJobs::Scout);
+	m_workerData.setWorkerJob(worker, WorkerJobs::Scout);
 }
 
-void WorkerManager::setCombatWorker(const CUnit_ptr workerTag)
+void WorkerManager::setCombatWorker(const CUnit_ptr worker)
 {
-	m_workerData.setWorkerJob(workerTag, WorkerJobs::Combat);
+	m_workerData.setWorkerJob(worker, WorkerJobs::Combat);
 }
 
 void WorkerManager::drawResourceDebugInfo()
@@ -542,10 +548,12 @@ bool WorkerManager::isFree(const CUnit_ptr worker) const
 	return worker->getUnitType() != sc2::UNIT_TYPEID::TERRAN_MULE && (m_workerData.getWorkerJob(worker) == WorkerJobs::Minerals || m_workerData.getWorkerJob(worker) == WorkerJobs::Idle);
 }
 
+/*
 bool WorkerManager::isWorkerScout(const CUnit_ptr worker) const
 {
 	return (m_workerData.getWorkerJob(worker) == WorkerJobs::Scout);
 }
+*/
 
 bool WorkerManager::isRepairWorker(const CUnit_ptr worker) const
 {
@@ -558,15 +566,19 @@ bool WorkerManager::isBuilder(const CUnit_ptr worker) const
 	return (m_workerData.getWorkerJob(worker) == WorkerJobs::Build);
 }
 
+/*
 int WorkerManager::getNumMineralWorkers()
 {
 	return m_workerData.getWorkerJobCount(WorkerJobs::Minerals);
 }
+*/
 
+/*
 int WorkerManager::getNumGasWorkers()
 {
 	return m_workerData.getWorkerJobCount(WorkerJobs::Gas);
 }
+*/
 
 const CUnits WorkerManager::getMineralWorkers() const
 {

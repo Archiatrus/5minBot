@@ -94,7 +94,7 @@ void Micro::SmartAttackMoveToUnit(const CUnits & attacker, const CUnit_ptr targe
 		{
 			if (a->getWeaponCooldown() > 0.0f)
 			{
-				if (a->getOrders().empty() || a->getOrders().front().ability_id != sc2::ABILITY_ID::MOVE || Util::DistSq(a->getOrders().front().target_pos,target->getPos())>0.1f)
+				if (a->getOrders().empty() || a->getOrders().front().ability_id != sc2::ABILITY_ID::MOVE || Util::DistSq(a->getOrders().front().target_pos,target->getPos())>0.01f)
 				{
 					attackerThatNeedToMove.push_back(a->getUnit_ptr());
 				}

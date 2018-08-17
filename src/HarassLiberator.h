@@ -19,6 +19,7 @@ public:
 	std::queue<sc2::Point2D> m_wayPoints;
 	int m_pathPlanCounter;
 	const BaseLocation *m_target;
+	sc2::Point2D m_targetSpot;
 	sc2::Point2D m_stalemateCheck;
 
 	void planPath();

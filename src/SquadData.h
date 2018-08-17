@@ -11,7 +11,7 @@ class SquadData
 	std::map<std::string, Squad> m_squads;
 
 	void	updateAllSquads();
-	void	verifySquadUniqueMembership();
+	void	verifySquadUniqueMembership() const;
 
 public:
 

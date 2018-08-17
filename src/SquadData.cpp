@@ -34,6 +34,7 @@ void SquadData::clearSquadData()
 	m_squads.clear();
 }
 
+/*
 void SquadData::removeSquad(const std::string & squadName)
 {
 	const auto & squadPtr = m_squads.find(squadName);
@@ -56,6 +57,7 @@ void SquadData::removeSquad(const std::string & squadName)
 
 	m_squads.erase(squadName);
 }
+*/
 
 const std::map<std::string, Squad> & SquadData::getSquads() const
 {
@@ -114,7 +116,7 @@ void SquadData::drawSquadInformation()
 	Drawing::drawTextScreen(m_bot,sc2::Point2D(0.5f, 0.2f), ss.str(), sc2::Colors::Red);
 }
 
-void SquadData::verifySquadUniqueMembership()
+void SquadData::verifySquadUniqueMembership() const
 {
 	CUnits assigned;
 

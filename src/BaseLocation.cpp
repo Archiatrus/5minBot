@@ -347,10 +347,12 @@ void BaseLocation::incrementNumEnemyCombatUnits()
 	++m_numEnemyCombatUnits;
 }
 
+/*
 const int BaseLocation::getNumEnemyCombatUnits() const
 {
 	return m_numEnemyCombatUnits;
 }
+*/
 
 const int BaseLocation::getNumEnemyStaticD() const
 {

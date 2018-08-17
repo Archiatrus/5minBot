@@ -38,6 +38,7 @@ void UnitData::updateUnit(const sc2::Unit * unit)
 }
 */
 
+/*
 void UnitData::killUnit(const sc2::Unit * unit)
 {
 	//_mineralsLost += unit->getType().mineralPrice();
@@ -48,7 +49,9 @@ void UnitData::killUnit(const sc2::Unit * unit)
 	m_unitMap.erase(unit);
 	//m_buildings[unit->unit_type.ToType()].erase(unit);
 }
+*/
 
+/*
 void UnitData::lostPosition(const sc2::Unit * unit)
 {
 	const auto & it = m_unitMap.find(unit);
@@ -57,7 +60,9 @@ void UnitData::lostPosition(const sc2::Unit * unit)
 	UnitInfo & ui = m_unitMap[unit];
 	ui.m_lastPosition = sc2::Point3D(0.0f,0.0f,0.0f);
 }
+*/
 
+/*
 void UnitData::removeBadUnits()
 {
 	for (auto iter = m_unitMap.begin(); iter != m_unitMap.end();)
@@ -73,6 +78,7 @@ void UnitData::removeBadUnits()
 		}
 	}
 }
+*/
 
 bool UnitData::badUnitInfo(const UnitInfo & ui) const
 {
@@ -84,27 +90,37 @@ bool UnitData::badUnitInfo(const UnitInfo & ui) const
 	return false;
 }
 
+/*
 int UnitData::getGasLost() const
 {
 	return m_gasLost;
 }
+*/
 
+/*
 int UnitData::getMineralsLost() const
 {
 	return m_mineralsLost;
 }
+*/
 
+/*
 int UnitData::getNumUnits(sc2::UnitTypeID t) const
 {
 	return m_numUnits[t];
 }
+*/
 
+/*
 int UnitData::getNumDeadUnits(sc2::UnitTypeID t) const
 {
 	return m_numDeadUnits[t];
 }
+*/
 
+/*
 const std::map<const sc2::Unit *, UnitInfo> & UnitData::getUnitInfoMap() const
 {
 	return m_unitMap;
 }
+*/

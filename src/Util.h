@@ -13,7 +13,7 @@ namespace Util
 		sc2::UNIT_TYPEID m_type;
 
 		IsUnit(sc2::UNIT_TYPEID type);
-		bool operator()(const sc2::Unit * unit, const sc2::ObservationInterface*);
+		bool operator()(const sc2::Unit * unit, const sc2::ObservationInterface*) const;
 	};
 
 	struct IsNoSnapShot
@@ -31,7 +31,7 @@ namespace Util
     bool IsTownHallType(const sc2::UnitTypeID & type);
     bool IsRefinery(const sc2::Unit * unit);
     bool IsRefineryType(const sc2::UnitTypeID & type);
-    bool IsDetector(const sc2::Unit * type);
+    bool IsDetector(const sc2::Unit * unit);
     bool IsDetectorType(const sc2::UnitTypeID & type);
 	bool IsBurrowedType(const sc2::UnitTypeID & type);
 	bool IsGeyser(const sc2::Unit * unit);
@@ -44,7 +44,7 @@ namespace Util
 	const BaseLocation * getClosestBase(sc2::Point2D pos, const CCBot & bot);
 	
 	bool UnitCanBuildTypeNow(const sc2::Unit * unit, const sc2::UnitTypeID & type, CCBot & m_bot);
-	bool canHitMe(const sc2::Unit * unit, const sc2::Unit * enemy, CCBot & bot);
+	bool canHitMe(const sc2::Unit * me, const sc2::Unit * hitter, CCBot & bot);
 	int GetUnitTypeWidth(const sc2::UnitTypeID type, const CCBot & bot);
 	int GetUnitTypeHeight(const sc2::UnitTypeID type, const CCBot & bot);
 	float GetUnitTypeRange(const sc2::UnitTypeID type, const CCBot & bot);
@@ -68,8 +68,10 @@ namespace Util
 
 	float fastsqrt(const float S);
 
+
 	float Dist(const sc2::Point2D & p1, const sc2::Point2D & p2);
 	float Dist(const sc2::Point2D & p1);
+	float Dist(const CUnit_ptr a, const CUnit_ptr b);
 	float DistSq(const sc2::Point2D & p1, const sc2::Point2D & p2);
 	float DistSq(const sc2::Point2D & p1);
 	
@@ -81,6 +83,7 @@ namespace Util
 
     void    VisualizeGrids(const sc2::ObservationInterface* obs, sc2::DebugInterface* debug);
     float   TerainHeight(const sc2::GameInfo& info, const sc2::Point2D& point);
+	sc2::Point2D insideMap(const sc2::Point2D & pos, CCBot & bot);
     bool    Placement(const sc2::GameInfo& info, const sc2::Point2D& point);
     bool    Pathable(const sc2::GameInfo& info, const sc2::Point2D& point);
 	const CUnit_ptr getClostestMineral(sc2::Point2D pos, CCBot & bot);

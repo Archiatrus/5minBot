@@ -50,15 +50,19 @@ const size_t & BuildType::getBuildType() const
 	return m_type;
 }
 
+/*
 bool BuildType::isUnit() const
 {
 	return m_type == BuildTypes::Unit;
 }
+*/
 
+/*
 bool BuildType::isUpgrade() const
 {
 	return m_type == BuildTypes::Upgrade;
 }
+*/
 
 const sc2::Race & BuildType::getRace() const
 {
