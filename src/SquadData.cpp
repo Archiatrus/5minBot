@@ -126,7 +126,7 @@ void SquadData::verifySquadUniqueMembership() const
 		{
 			if (std::find_if(assigned.begin(), assigned.end(), [unit](CUnit_ptr & newUnit) {return unit->getTag() == newUnit->getTag(); }) != assigned.end())
 			{
-				std::cout << "Warning: Unit is in at least two squads: " << unit->getTag() << "\n";
+				Drawing::cout{} << "Warning: Unit is in at least two squads: " << unit->getTag() << "\n";
 			}
 
 			assigned.push_back(unit);

@@ -169,7 +169,7 @@ bool ProductionManager::detectBuildOrderDeadlock()
 	return false;
 }
 
-int ProductionManager::getFreeMinerals()
+size_t ProductionManager::getFreeMinerals()
 {
 	int reserved = m_buildingManager.getReservedMinerals();
 	if (reserved > 1000 || reserved < 0)
@@ -180,7 +180,7 @@ int ProductionManager::getFreeMinerals()
 	return m_bot.Observation()->GetMinerals() - m_buildingManager.getReservedMinerals();
 }
 
-int ProductionManager::getFreeGas()
+size_t ProductionManager::getFreeGas()
 {
 	return m_bot.Observation()->GetVespene() - m_buildingManager.getReservedGas();
 }
@@ -257,7 +257,7 @@ void ProductionManager::defaultMacro()
 	if (m_bot.underAttack() && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
 	{
 		// If we are under attack marines have priority
-		// std::cout << "Under attack!" << std::endl;
+        // Drawing::cout{} << "Under attack!" << std::endl;
 		for (const auto & unit : Rax)
 		{
 			// Any finished rax
@@ -270,7 +270,7 @@ void ProductionManager::defaultMacro()
 					if (minerals >= 50 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
 					{
 						m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_MARINE);
-						std::cout << "Marine" << std::endl;
+                        Drawing::cout{} << "Marine" << std::endl;
 						return;
 					}
 				}
@@ -280,7 +280,7 @@ void ProductionManager::defaultMacro()
 		if (m_bot.Workers().getMineralWorkers().size() > 5 && Bunker.size() + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BUNKER) < 1)
 		{
 			m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BUNKER), BUILDING, false));
-			std::cout << "Bunker" << std::endl;
+            Drawing::cout{} << "Bunker" << std::endl;
 			return;
 		}
 	}
@@ -294,12 +294,12 @@ void ProductionManager::defaultMacro()
 			{
 				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER), BUILDING, false));
 				m_needCC = false;
-				std::cout << "CC" << std::endl;
+                Drawing::cout{} << "CC" << std::endl;
 			}
 			else
 			{
 				m_needCC = true;
-				std::cout << "Need CC" << std::endl;
+                Drawing::cout{} << "Need CC" << std::endl;
 			}
 			return;
 		}
@@ -314,11 +314,11 @@ void ProductionManager::defaultMacro()
 			if (minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT).mineralCost || (numDepots == 0 && minerals >= 50 && m_bot.Observation()->GetFoodWorkers() == 13))
 			{
 				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT), BUILDING, false));
-				std::cout << "Depot" << std::endl;
+                Drawing::cout{} << "Depot" << std::endl;
 			}
 			else
 			{
-				std::cout << "Saving minerals for depot" << std::endl;
+                Drawing::cout{} << "Saving minerals for depot" << std::endl;
 			}
 			return;
 		}
@@ -343,11 +343,11 @@ void ProductionManager::defaultMacro()
 						if (minerals >= 150)
 						{
 							Micro::SmartAbility(unit, sc2::ABILITY_ID::MORPH_ORBITALCOMMAND, m_bot);
-							std::cout << "OC" << std::endl;
+                            Drawing::cout{} << "OC" << std::endl;
 						}
 						else
 						{
-							std::cout << "Saving minerals for OC" << std::endl;
+                            Drawing::cout{} << "Saving minerals for OC" << std::endl;
 						}
 						return;
 					}
@@ -358,11 +358,11 @@ void ProductionManager::defaultMacro()
 							if (minerals >= 150)
 							{
 								Micro::SmartAbility(unit, sc2::ABILITY_ID::MORPH_PLANETARYFORTRESS, m_bot);
-								std::cout << "PF" << std::endl;
+                                Drawing::cout{} << "PF" << std::endl;
 							}
 							else
 							{
-								std::cout << "Saving minerals for PF" << std::endl;
+                                Drawing::cout{} << "Saving minerals for PF" << std::endl;
 							}
 							return;
 						}
@@ -376,7 +376,7 @@ void ProductionManager::defaultMacro()
 					if (supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_SCV).supplyCost)
 					{
 						Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_SCV, m_bot);
-						std::cout << "TrainSCV" << std::endl;
+                        Drawing::cout{} << "TrainSCV" << std::endl;
 						return;
 					}
 				}
@@ -402,11 +402,11 @@ void ProductionManager::defaultMacro()
 				if (minerals >= 100)
 				{
 					m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_MISSILETURRET), BUILDING, false));
-					std::cout << "MISSILETURRET " << std::endl;
+                    Drawing::cout{} << "MISSILETURRET " << std::endl;
 				}
 				else
 				{
-					std::cout << "Saving for MISSILETURRET " << std::endl;
+                    Drawing::cout{} << "Saving for MISSILETURRET " << std::endl;
 				}
 				return;
 			}
@@ -417,7 +417,7 @@ void ProductionManager::defaultMacro()
 	if (gas <= 500 && numRax > 0 && minerals >= 75 && ((m_bot.Observation()->GetFoodWorkers() >= 15 && numOfRefinaries == 0) || (m_bot.Observation()->GetFoodWorkers() >= 21 && !m_bot.underAttack() && numOfRefinaries == 1) || (m_bot.Observation()->GetFoodWorkers() >= 40 && numOfRefinaries <= 3)))
 	{
 		m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_REFINERY), BUILDING, false));
-		std::cout << "Refinary" << std::endl;
+        Drawing::cout{} << "Refinary" << std::endl;
 		return;
 	}
 	// Upgrades techlab
@@ -437,7 +437,7 @@ void ProductionManager::defaultMacro()
 					{
 						Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_COMBATSHIELD, m_bot);
 					}
-					std::cout << "CombatShield" << std::endl;
+                    Drawing::cout{} << "CombatShield" << std::endl;
 					return;
 				}
 			}
@@ -450,7 +450,7 @@ void ProductionManager::defaultMacro()
 					{
 						Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_STIMPACK, m_bot);
 					}
-					std::cout << "Stim" << std::endl;
+                    Drawing::cout{} << "Stim" << std::endl;
 					return;
 				}
 			}
@@ -463,7 +463,7 @@ void ProductionManager::defaultMacro()
 					{
 						Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_CONCUSSIVESHELLS, m_bot);
 					}
-					std::cout << "Concussiv" << std::endl;
+                    Drawing::cout{} << "Concussiv" << std::endl;
 					return;
 				}
 			}
@@ -492,7 +492,7 @@ void ProductionManager::defaultMacro()
 					{
 						Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYWEAPONS, m_bot);
 					}
-					std::cout << "Weapon ++" << std::endl;
+                    Drawing::cout{} << "Weapon ++" << std::endl;
 					return;
 				}
 				else
@@ -510,7 +510,7 @@ void ProductionManager::defaultMacro()
 					{
 						Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_TERRANINFANTRYARMOR, m_bot);
 					}
-					std::cout << "Armor ++" << std::endl;
+                    Drawing::cout{} << "Armor ++" << std::endl;
 					return;
 				}
 				else
@@ -581,7 +581,7 @@ void ProductionManager::defaultMacro()
 							{
 								Micro::SmartAbility(unit, sc2::ABILITY_ID::RESEARCH_TERRANVEHICLEWEAPONS, m_bot);
 							}
-							std::cout << "Weapon ++" << std::endl;
+                            Drawing::cout{} << "Weapon ++" << std::endl;
 							return;
 						}
 					}
@@ -607,7 +607,7 @@ void ProductionManager::defaultMacro()
 						if (minerals >= 50 && gas >= 50 && numStarport == 1)
 						{
 							Micro::SmartAbility(unit, sc2::ABILITY_ID::BUILD_REACTOR_FACTORY, m_bot);
-							std::cout << "ReactorFactory" << std::endl;
+                            Drawing::cout{} << "ReactorFactory" << std::endl;
 							return;
 						}
 					}
@@ -616,7 +616,7 @@ void ProductionManager::defaultMacro()
 						if (minerals >= 50 && gas >= 25)
 						{
 							Micro::SmartAbility(unit, sc2::ABILITY_ID::BUILD_TECHLAB_FACTORY, m_bot);
-							std::cout << "TechlabFactory" << std::endl;
+                            Drawing::cout{} << "TechlabFactory" << std::endl;
 							return;
 						}
 					}
@@ -631,20 +631,20 @@ void ProductionManager::defaultMacro()
 						if (minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_THOR).mineralCost && gas >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_THOR).gasCost && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_THOR).supplyCost)
 						{
 							Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_THOR, m_bot);
-							std::cout << "Thor" << std::endl;
+                            Drawing::cout{} << "Thor" << std::endl;
 							return;
 						}
 					}
 					else if (numTanks > 0 && numWidowMines == 0 && minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).mineralCost && gas >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).gasCost && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_WIDOWMINE).supplyCost)
 					{
 						Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_WIDOWMINE, m_bot);
-						std::cout << "WM" << std::endl;
+                        Drawing::cout{} << "WM" << std::endl;
 						return;
 					}
 					else if (minerals >= 150 && gas >= 125 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_SIEGETANK).supplyCost)
 					{
 						Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_SIEGETANK, m_bot);
-						std::cout << "Tank" << std::endl;
+                        Drawing::cout{} << "Tank" << std::endl;
 						return;
 					}
 				}
@@ -670,7 +670,7 @@ void ProductionManager::defaultMacro()
 						if ((factory->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORY && factory->getOrders().empty() && factory->getAddOnTag() && !unit->isFlying()) || (factory->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_FACTORYFLYING && factory->getOrders().empty() && unit->isFlying()))
 						{
 							Util::swapBuildings(unit, factory, m_bot);
-							std::cout << "Swap" << std::endl;
+                            Drawing::cout{} << "Swap" << std::endl;
 							return;
 						}
 						else
@@ -681,7 +681,7 @@ void ProductionManager::defaultMacro()
 								if (minerals >= 50 && gas >= 25)
 								{
 									Micro::SmartAbility(unit, sc2::ABILITY_ID::BUILD_REACTOR_STARPORT, m_bot);
-									std::cout << "ReactorStarport" << std::endl;
+                                    Drawing::cout{} << "ReactorStarport" << std::endl;
 									return;
 								}
 							}
@@ -698,11 +698,11 @@ void ProductionManager::defaultMacro()
 							{
 								m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_LIBERATOR);
 								m_liberatorRequested = false;
-								std::cout << "Liberator" << std::endl;
+                                Drawing::cout{} << "Liberator" << std::endl;
 							}
 							else
 							{
-								std::cout << "Saving for Liberator" << std::endl;
+                                Drawing::cout{} << "Saving for Liberator" << std::endl;
 							}
 							return;
 						}
@@ -718,11 +718,11 @@ void ProductionManager::defaultMacro()
 								if (minerals >= 100)
 								{
 									m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_MEDIVAC);
-									std::cout << "Medivac" << std::endl;
+                                    Drawing::cout{} << "Medivac" << std::endl;
 								}
 								else
 								{
-									std::cout << "Saving for Medivac" << std::endl;
+                                    Drawing::cout{} << "Saving for Medivac" << std::endl;
 								}
 								return;
 							}
@@ -732,7 +732,7 @@ void ProductionManager::defaultMacro()
 							if (minerals >= 150 && gas >= 75 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER).supplyCost)
 							{
 								m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_VIKINGFIGHTER);
-								std::cout << "Viking" << std::endl;
+                                Drawing::cout{} << "Viking" << std::endl;
 								return;
 							}
 						}
@@ -762,7 +762,7 @@ void ProductionManager::defaultMacro()
                             Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_REAPER, m_bot);
 							m_scoutRequested = false;
 						}
-						std::cout << "Scout" << std::endl;
+                        Drawing::cout{} << "Scout" << std::endl;
 						return;
 					}
 				}
@@ -775,7 +775,7 @@ void ProductionManager::defaultMacro()
 						if (minerals >= 50 && gas >= 50)
 						{
 							Micro::SmartAbility(unit, sc2::ABILITY_ID::BUILD_REACTOR_BARRACKS, m_bot);
-							std::cout << "ReactorBarracks" << std::endl;
+                            Drawing::cout{} << "ReactorBarracks" << std::endl;
 							return;
 						}
 					}
@@ -784,7 +784,7 @@ void ProductionManager::defaultMacro()
 						if (minerals >= 50 && gas >= 25)
 						{
 							Micro::SmartAbility(unit, sc2::ABILITY_ID::BUILD_TECHLAB_BARRACKS, m_bot);
-							std::cout << "TechlabBarracks" << std::endl;
+                            Drawing::cout{} << "TechlabBarracks" << std::endl;
 							return;
 						}
 					}
@@ -798,7 +798,7 @@ void ProductionManager::defaultMacro()
 						if (minerals >= 50 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
 						{
 							m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_MARINE);
-							std::cout << "Marine" << std::endl;
+                            Drawing::cout{} << "Marine" << std::endl;
 							return;
 						}
 					}
@@ -809,7 +809,7 @@ void ProductionManager::defaultMacro()
 							if (minerals >= 50 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
 							{
 								m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_MARINE);
-								std::cout << "Marine" << std::endl;
+                                Drawing::cout{} << "Marine" << std::endl;
 								return;
 							}
 						}
@@ -818,7 +818,7 @@ void ProductionManager::defaultMacro()
 							if (minerals >= 100 && gas >= 25 && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARAUDER).supplyCost)
 							{
 								Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_MARAUDER, m_bot);
-								std::cout << "Marauder" << std::endl;
+                                Drawing::cout{} << "Marauder" << std::endl;
 								return;
 							}
 						}
@@ -833,7 +833,7 @@ void ProductionManager::defaultMacro()
 		if (Bunker.size() + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BUNKER) < 1)
 		{
 			m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BUNKER), BUILDING, false));
-			std::cout << "Bunker" << std::endl;
+            Drawing::cout{} << "Bunker" << std::endl;
 			return;
 		}
 	}
@@ -845,7 +845,7 @@ void ProductionManager::defaultMacro()
 		|| (numEngibays + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY) == 1 && numEngibaysFinished == 1)))
 	{
 		m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_ENGINEERINGBAY), BUILDING, false));
-		std::cout << "Engineering Bay" << std::endl;
+        Drawing::cout{} << "Engineering Bay" << std::endl;
 		return;
 	}
 
@@ -853,14 +853,14 @@ void ProductionManager::defaultMacro()
 	if (numBases> 1 && minerals >= 150 && gas >= 100 && numFactory + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_FACTORY) == 0 && bReactor.size() > 0)
 	{
 		m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_FACTORY), BUILDING, false));
-		std::cout << "Factory" << std::endl;
+        Drawing::cout{} << "Factory" << std::endl;
 		return;
 	}
 	// Starports. For now just one.
 	if (numBases> 1 && minerals >= 150 && gas >= 100 && numFactoryFinished > 0 && numStarport + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_STARPORT) == 0)
 	{
 		m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_STARPORT), BUILDING, false));
-		std::cout << "Starport" << std::endl;
+        Drawing::cout{} << "Starport" << std::endl;
 		return;
 	}
 	// On one base save a little to get an expansion
@@ -871,7 +871,7 @@ void ProductionManager::defaultMacro()
 			if (numDepotsFinished > 0 && minerals >= 150 && numRax + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 2)
 			{
 				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
-				std::cout << "Barracks" << std::endl;
+                Drawing::cout{} << "Barracks" << std::endl;
 				return;
 			}
 		}
@@ -880,7 +880,7 @@ void ProductionManager::defaultMacro()
 			if (numDepotsFinished > 0 && minerals >= 150 && numRax + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 1)
 			{
 				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
-				std::cout << "Barracks" << std::endl;
+                Drawing::cout{} << "Barracks" << std::endl;
 				return;
 			}
 		}
@@ -893,7 +893,7 @@ void ProductionManager::defaultMacro()
 			if (minerals >= 150 && numRax + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 3 * numBases - 4 && numRax <= 9)
 			{
 				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
-				std::cout << "Barracks" << std::endl;
+                Drawing::cout{} << "Barracks" << std::endl;
 				return;
 			}
 		}
@@ -902,7 +902,7 @@ void ProductionManager::defaultMacro()
 	if (minerals >= 400 && numBases - numBasesFinished + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER) == 0 && m_bot.Bases().getNextExpansion(Players::Self) != sc2::Point2D{})
 	{
 		m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER), BUILDING, false));
-		std::cout << "CC" << std::endl;
+        Drawing::cout{} << "CC" << std::endl;
 		return;
 	}
 	// When we did nothing...

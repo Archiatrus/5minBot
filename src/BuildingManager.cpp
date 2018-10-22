@@ -238,7 +238,7 @@ void BuildingManager::constructAssignedBuildings()
 					}
 					else
 					{
-						std::cout << "WARNING: NO VALID GEYSER UNIT FOUND TO BUILD ON, SKIPPING REFINERY\n";
+                        Drawing::cout{} << "WARNING: NO VALID GEYSER UNIT FOUND TO BUILD ON, SKIPPING REFINERY\n";
 					}
 				}
 				// if it's not a refinery, we build right on the position
@@ -305,7 +305,7 @@ void BuildingManager::checkForStartedConstruction()
 			{
 				if (b.buildingUnit != nullptr)
 				{
-					std::cout << "Building mis-match somehow\n";
+                    Drawing::cout{} << "Building mis-match somehow\n";
 				}
 
 				// the resources should now be spent, so unreserve them

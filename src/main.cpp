@@ -78,13 +78,13 @@ static void ParseArguments(int argc, char *argv[], ConnectionOptions &connect_op
 	}
 	else
 	{
-		std::cout << std::endl << "Could not read race option. Please provide it via --HumanRace \"Zerg/Protoss/Terran\". Using default: Zerg" << std::endl << std::endl;
+		Drawing::cout{} << std::endl << "Could not read race option. Please provide it via --HumanRace \"Zerg/Protoss/Terran\". Using default: Zerg" << std::endl << std::endl;
 		connect_options.HumanRace = sc2::Zerg;
 	}
 
 	if (!arg_parser.Get("Map", connect_options.map))
 	{
-		std::cout << "Could not read map option. Please provide it via --Map \"InterloperLE.SC2Map\". Using default: DreamcatcherLE.SC2Map" << std::endl << std::endl;
+		Drawing::cout{} << "Could not read map option. Please provide it via --Map \"InterloperLE.SC2Map\". Using default: DreamcatcherLE.SC2Map" << std::endl << std::endl;
 		connect_options.map = "DreamcatcherLE.SC2Map";
 	}
 	std::string realTime;
@@ -92,7 +92,7 @@ static void ParseArguments(int argc, char *argv[], ConnectionOptions &connect_op
 	{
 		if (realTime == "true" || realTime == "True" || realTime == "1")
 		{
-			std::cout << "Real time on. Not extensively tested." << std::endl << std::endl;
+			Drawing::cout{} << "Real time on. Not extensively tested." << std::endl << std::endl;
 			connect_options.rt = true;
 		}
 		else
@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
 	sc2::Coordinator coordinator;
 	if (!coordinator.LoadSettings(argc, argv))
 	{
-		std::cout << "Unable to find or parse settings." << std::endl;
+		Drawing::cout{} << "Unable to find or parse settings." << std::endl;
 		return 1;
 	}
 	// WARNING: Bot logic has not been thorougly tested on step sizes > 1
@@ -164,7 +164,7 @@ int main(int argc, char* argv[])
 				sc2::Coordinator coordinator;
 				if (!coordinator.LoadSettings(argc, argv))
 				{
-					std::cout << "Unable to find or parse settings." << std::endl;
+					Drawing::cout{} << "Unable to find or parse settings." << std::endl;
 					return 1;
 				}
 				// WARNING: Bot logic has not been thorougly tested on step sizes > 1
@@ -195,17 +195,17 @@ int main(int argc, char* argv[])
 					mapScore[map] += sc2::Point2D(0, 1);
 					raceScore[opponent] += sc2::Point2D(0, 1);
 				}
-				std::cout << std::endl;
+				Drawing::cout{} << std::endl;
 				for (const auto & rs : raceScore)
 				{
-					std::cout << Util::GetStringFromRace(rs.first) << " = " << rs.second.x << " : " << rs.second.y << " (" << roundf(rs.second.x / (rs.second.x + rs.second.y) * 100.0f) / 100.0f << "%)" << std::endl;
+					Drawing::cout{} << Util::GetStringFromRace(rs.first) << " = " << rs.second.x << " : " << rs.second.y << " (" << roundf(rs.second.x / (rs.second.x + rs.second.y) * 100.0f) / 100.0f << "%)" << std::endl;
 				}
-				std::cout << std::endl;
+				Drawing::cout{} << std::endl;
 				for (const auto & ms : mapScore)
 				{
-					std::cout << ms.first << " = " << ms.second.x << " : " << ms.second.y << " (" << roundf(ms.second.x / (ms.second.x + ms.second.y) * 100.0f) / 100.0f << "%)" << std::endl;
+					Drawing::cout{} << ms.first << " = " << ms.second.x << " : " << ms.second.y << " (" << roundf(ms.second.x / (ms.second.x + ms.second.y) * 100.0f) / 100.0f << "%)" << std::endl;
 				}
-				std::cout << std::endl << std::endl;
+				Drawing::cout{} << std::endl << std::endl;
 				coordinator.LeaveGame();
 				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 			}

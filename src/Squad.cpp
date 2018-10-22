@@ -177,7 +177,7 @@ bool Squad::needsToRegroup()
 {
 	if (m_order.getType() == SquadOrderTypes::Attack)
 	{
-		//std::cout << m_bot.UnitInfo().getFoodCombatUnits(Players::Self) << " < " << m_bot.UnitInfo().getFoodCombatUnits(Players::Enemy) << std::endl;
+		//Drawing::cout{} << m_bot.UnitInfo().getFoodCombatUnits(Players::Self) << " < " << m_bot.UnitInfo().getFoodCombatUnits(Players::Enemy) << std::endl;
 		if ((m_bot.Observation()->GetFoodArmy() < 100 && m_bot.UnitInfo().getFoodCombatUnits(Players::Self) < m_bot.UnitInfo().getFoodCombatUnits(Players::Enemy)) || (m_bot.Observation()->GetFoodUsed() < 195 && m_bot.UnitInfo().getUnitTypeCount(Players::Self, sc2::UNIT_TYPEID::TERRAN_VIKINGFIGHTER) < m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::PROTOSS_COLOSSUS)))
 		{
 			m_bot.retreat();
@@ -259,8 +259,8 @@ bool Squad::needsToRegroup()
 			sc2::Point2D delta2 = unit->getPos() - mean;
 			variance += sc2::Point2D(delta.x*delta2.x, delta.y*delta2.y);
 		}
-		// std::cout << "std x = " << std::sqrt(variance.x / (n - 1)) << ", std y = " << std::sqrt(variance.y / (n - 1)) << std::endl;
-		// std::cout << "std = " << std::sqrt((variance.x/m_bot.Map().width() + variance.y / m_bot.Map().height()) / (n - 1)) << std::endl;
+		// Drawing::cout{} << "std x = " << std::sqrt(variance.x / (n - 1)) << ", std y = " << std::sqrt(variance.y / (n - 1)) << std::endl;
+		// Drawing::cout{} << "std = " << std::sqrt((variance.x/m_bot.Map().width() + variance.y / m_bot.Map().height()) / (n - 1)) << std::endl;
 		// Lets see if this is good. Actually, you should look this up. 
 		const float scattering = std::sqrt((variance.x / m_bot.Map().width() + variance.y / m_bot.Map().height()) / (n - 1));
 		// if we are retreating, we want to do it for a while

@@ -9,6 +9,23 @@ class CCBot;
 
 namespace Drawing
 {
+
+    class cout : public std::ostringstream
+    {
+    public:
+        cout() = default;
+
+        ~cout()
+        {
+            if (useDebug)
+            {
+                std::time_t t = std::time(nullptr);
+                std::tm tm = *std::localtime(&t);
+                std::cout<<std::put_time(&tm, "%d-%m-%Y %H-%M-%S")<<": "<<this->str();
+            }
+        }
+    };
+
 	void	drawLine(CCBot & bot, float x1, float y1, float x2, float y2, const sc2::Color & color = sc2::Colors::White);
 	void	drawLine(CCBot & bot, const sc2::Point2D & min, const sc2::Point2D & max, const sc2::Color & color = sc2::Colors::White);
 	void	drawLine(CCBot & bot, const sc2::Point3D & min, const sc2::Point3D & max, const sc2::Color & color = sc2::Colors::White);

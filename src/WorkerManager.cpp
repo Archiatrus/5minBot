@@ -349,7 +349,7 @@ void WorkerManager::handleRepairWorkers()
 					const size_t bases = m_bot.UnitInfo().getUnitTypeCount(Players::Self, Util::getTownHallTypes());
 					if (bases <= 1)
 					{
-						// std::cout << "We are under attack so prepair repair workers!" << std::endl;
+						// Drawing::cout{} << "We are under attack so prepair repair workers!" << std::endl;
 						setRepairWorker(b, 3);
 					}
 				}

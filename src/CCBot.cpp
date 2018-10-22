@@ -69,7 +69,7 @@ void CCBot::OnStep()
 {
 	/*
 	const auto actionTags = Actions()->Commands();
-	std::cout << "number of tags: " << actionTags.size() << std::endl;
+	Drawing::cout{} << "number of tags: " << actionTags.size() << std::endl;
 	if (actionTags.size() > 30)
 	{
 		for (const auto & tag : actionTags)
@@ -78,12 +78,12 @@ void CCBot::OnStep()
 			if (unit)
 			{
 				auto order = unit->getOrders();
-				std::cout << "Unit: " << Observation()->GetUnitTypeData()[unit->getUnitType()].name;
+				Drawing::cout{} << "Unit: " << Observation()->GetUnitTypeData()[unit->getUnitType()].name;
 				if (!order.empty())
 				{
-					std::cout << ", Ability: " << Observation()->GetAbilityData()[order.front().ability_id].friendly_name;
+					Drawing::cout{} << ", Ability: " << Observation()->GetAbilityData()[order.front().ability_id].friendly_name;
 				}
-				std::cout << std::endl;
+				Drawing::cout{} << std::endl;
 			}
 		}
 	}
@@ -202,13 +202,13 @@ void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 	bool shouldWeAttack = (GetPlayerRace(Players::Enemy) == sc2::Race::Zerg && false)
 		|| (GetPlayerRace(Players::Enemy) == sc2::Race::Protoss && Bases().getOccupiedBaseLocations(Players::Enemy).size() > Bases().getOccupiedBaseLocations(Players::Self).size())
 		|| (GetPlayerRace(Players::Enemy) == sc2::Race::Terran && Bases().getOccupiedBaseLocations(Players::Enemy).size() > Bases().getOccupiedBaseLocations(Players::Self).size());
-	std::cout << "shouldWeAttack " << shouldWeAttack << " (" << Bases().getOccupiedBaseLocations(Players::Enemy).size() << " > " << Bases().getOccupiedBaseLocations(Players::Self).size() << ")" << std::endl;
+	Drawing::cout{} << "shouldWeAttack " << shouldWeAttack << " (" << Bases().getOccupiedBaseLocations(Players::Enemy).size() << " > " << Bases().getOccupiedBaseLocations(Players::Self).size() << ")" << std::endl;
 	if (upgrade == sc2::UPGRADE_ID::SHIELDWALL && !underAttack())
 	{
 		if (shouldWeAttack)
 		{
 			m_gameCommander.attack(true);
-			std::cout << "Attacking " << shouldWeAttack << std::endl;
+			Drawing::cout{} << "Attacking " << shouldWeAttack << std::endl;
 		}
 	}
 
@@ -218,7 +218,7 @@ void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 		if (shouldWeAttack)
 		{
 			m_gameCommander.attack(true);
-			std::cout << "Attacking " << shouldWeAttack << std::endl;
+			Drawing::cout{} << "Attacking " << shouldWeAttack << std::endl;
 		}
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL2)
@@ -227,7 +227,7 @@ void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 		if (shouldWeAttack)
 		{
 			m_gameCommander.attack(true);
-			std::cout << "Attacking " << shouldWeAttack << std::endl;
+			Drawing::cout{} << "Attacking " << shouldWeAttack << std::endl;
 		}
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYARMORSLEVEL1)
@@ -236,7 +236,7 @@ void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 		if (shouldWeAttack)
 		{
 			m_gameCommander.attack(true);
-			std::cout << "Attacking " << shouldWeAttack << std::endl;
+			Drawing::cout{} << "Attacking " << shouldWeAttack << std::endl;
 		}
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL3)
@@ -245,7 +245,7 @@ void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 		if (shouldWeAttack)
 		{
 			m_gameCommander.attack(true);
-			std::cout << "Attacking " << shouldWeAttack << std::endl;
+			Drawing::cout{} << "Attacking " << shouldWeAttack << std::endl;
 		}
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL2)
@@ -254,7 +254,7 @@ void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 		if (shouldWeAttack)
 		{
 			m_gameCommander.attack(true);
-			std::cout << "Attacking " << shouldWeAttack << std::endl;
+			Drawing::cout{} << "Attacking " << shouldWeAttack << std::endl;
 		}
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANINFANTRYWEAPONSLEVEL1)
@@ -263,7 +263,7 @@ void CCBot::OnUpgradeCompleted(sc2::UpgradeID upgrade)
 		if (shouldWeAttack)
 		{
 			m_gameCommander.attack(true);
-			std::cout << "Attacking " << shouldWeAttack << std::endl;
+			Drawing::cout{} << "Attacking " << shouldWeAttack << std::endl;
 		}
 	}
 	if (upgrade == sc2::UPGRADE_ID::TERRANVEHICLEWEAPONSLEVEL3)

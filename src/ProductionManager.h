@@ -17,17 +17,17 @@ class ProductionManager
 	bool m_scoutRequested;
 	bool m_vikingRequested;
 	bool m_liberatorRequested;
-	int m_scansRequested;
-	int m_defaultMacroSleep;
-	const int m_defaultMacroSleepMax;
+    size_t m_scansRequested;
+    size_t m_defaultMacroSleep;
+    const size_t m_defaultMacroSleepMax;
 	bool m_turretsRequested;
 	bool m_needCC;
 
 	bool    detectBuildOrderDeadlock();
 	void    create(BuildOrderItem item);
 	void    manageBuildOrderQueue();
-	int     getFreeMinerals();
-	int     getFreeGas();
+    size_t     getFreeMinerals();
+    size_t     getFreeGas();
 
 	
 

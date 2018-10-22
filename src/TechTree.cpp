@@ -280,7 +280,7 @@ const TypeData & TechTree::getData(const sc2::UnitTypeID & type) const
 {
 	if (m_unitTypeData.find(type) == m_unitTypeData.end())
 	{
-		//std::cout << "WARNING: Unit type not found: " << sc2::UnitTypeToName(type) << "\n";
+		//Drawing::cout{} << "WARNING: Unit type not found: " << sc2::UnitTypeToName(type) << "\n";
 		BOT_ASSERT(m_unitTypeData.size() > 0, "Techtree not initialized");
 		//Collect all the unknown types for now
 		if (type != sc2::UNIT_TYPEID::TERRAN_KD8CHARGE
@@ -337,7 +337,7 @@ const TypeData & TechTree::getData(const sc2::UpgradeID & type)  const
 {
 	if (m_upgradeData.find(type) == m_upgradeData.end())
 	{
-		//std::cout << "WARNING: Upgrade not found: " << sc2::UpgradeIDToName(type) << "\n";
+		//Drawing::cout{} << "WARNING: Upgrade not found: " << sc2::UpgradeIDToName(type) << "\n";
 		return m_upgradeData.begin()->second;
 	}
 

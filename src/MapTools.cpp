@@ -68,8 +68,8 @@ void MapTools::onStart()
 
 	// overseerMap.setBot(&m_bot); //ADD THIS LINE (OVERSEER)
 	// overseerMap.Initialize(); //ADD THIS LINE (OVERSEER)
-    // std::cout << "Number of tiles on map: " << overseerMap.size() << std::endl;  // ADD THIS LINE (OVERSEER)
-    // std::cout << "Number of regions: " << overseerMap.getRegions().size() << std::endl;  // ADD THIS LINE (OVERSEER)
+    // Drawing::cout{} << "Number of tiles on map: " << overseerMap.size() << std::endl;  // ADD THIS LINE (OVERSEER)
+    // Drawing::cout{} << "Number of regions: " << overseerMap.getRegions().size() << std::endl;  // ADD THIS LINE (OVERSEER)
 }
 
 void MapTools::onFrame()
@@ -86,9 +86,9 @@ void MapTools::computeConnectivity()
 	int sectorNumber = 0;
 
 	// for every tile on the map, do a connected flood fill using BFS
-	for (int x=0; x < m_width; ++x)
+    for (size_t x=0; x < m_width; ++x)
 	{
-		for (int y=0; y < m_height; ++y)
+        for (size_t y=0; y < m_height; ++y)
 		{
 			// if the sector is not currently 0, or the map isn't walkable here, then we can skip this tile
 			if (getSectorNumber(x, y) != 0 || !isWalkable(x, y))
@@ -225,7 +225,7 @@ int MapTools::getSectorNumber(const sc2::Point2D & pos) const
 
 bool MapTools::isValid(int x, int y) const
 {
-	return x >= 0 && y >= 0 && x < m_width && y < m_height;
+    return x >= 0 && y >= 0 && x < static_cast<int>(m_width) && y < static_cast<int>(m_height);
 }
 
 bool MapTools::isValid(const sc2::Point2D & pos) const
@@ -662,7 +662,7 @@ sc2::Point2D MapTools::getWallPositionDepot(const BaseLocation * base) const
 		placementBatched.push_back({ depotID, pos });
 	}
 	std::vector<bool> result = m_bot.Query()->Placement(placementBatched);
-	for (int i = 0; i < result.size(); ++i)
+    for (size_t i = 0; i < result.size(); ++i)
 	{
 		if (result[i])
 		{
