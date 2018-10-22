@@ -325,7 +325,7 @@ const std::set<const BaseLocation *> & BaseLocationManager::getOccupiedBaseLocat
 	return m_occupiedBaseLocations.at(player);
 }
 
-const bool BaseLocationManager::isOccupiedBy(int player, sc2::Point2D pos) const
+bool BaseLocationManager::isOccupiedBy(int player, sc2::Point2D pos) const
 {
 	const auto base = getBaseLocation(pos);
 	return base && base->isOccupiedByPlayer(player);

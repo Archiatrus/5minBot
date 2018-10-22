@@ -29,7 +29,7 @@ public:
 	BaseLocation * getBaseLocation(const sc2::Point2D & pos) const;
 	const std::vector<const BaseLocation *> & getStartingBaseLocations() const;
 	const std::set<const BaseLocation *> & getOccupiedBaseLocations(int player) const;
-	const bool isOccupiedBy(int player, sc2::Point2D pos) const;
+    bool isOccupiedBy(int player, sc2::Point2D pos) const;
 	const sc2::Point2D getBuildingLocation() const;
 	const BaseLocation * getPlayerStartingBaseLocation(int player) const;
 

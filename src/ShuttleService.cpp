@@ -161,7 +161,7 @@ void shuttle::updateTargetPos(const sc2::Point2D newTargetPos)
 	m_targetPos = newTargetPos;
 }
 
-const bool shuttle::needShuttleUnit() const
+bool shuttle::needShuttleUnit() const
 {
 	return m_status == ShuttleStatus::lookingForShuttle;
 }

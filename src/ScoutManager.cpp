@@ -9,9 +9,9 @@
 ScoutManager::ScoutManager(CCBot & bot)
 	: m_bot(bot)
 	, m_scoutUnit(nullptr)
+    , m_scoutStatus("None")
 	, m_numScouts(-1)
-	, m_scoutUnderAttack(false)
-	, m_scoutStatus("None")
+    , m_scoutUnderAttack(false)
 	, m_previousScoutHP(0.0f)
 	, m_targetBasesPositions(std::queue<sc2::Point2D>())
 	, m_foundProxy(false)
@@ -594,7 +594,7 @@ void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos, int player)
 	std::vector<const BaseLocation *> bases = m_bot.Bases().getBaseLocations();
 	// We use that map is ordered
 	std::map<int, const BaseLocation *> allTargetBases;
-	int numBasesEnemy = 0;
+    size_t numBasesEnemy = 0;
 	for (const auto & base : bases)
 	{
 		if (base->isOccupiedByPlayer(player))
@@ -627,7 +627,7 @@ void ScoutManager::updateNearestUnoccupiedBases(sc2::Point2D pos, int player)
 	}
 }
 
-const bool ScoutManager::dontBlowYourselfUp() const
+bool ScoutManager::dontBlowYourselfUp() const
 {
 	CUnits grenades = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_KD8CHARGE);
 	if (grenades.size() > 0)

@@ -48,7 +48,7 @@ namespace Util
 	int GetUnitTypeWidth(const sc2::UnitTypeID type, const CCBot & bot);
 	int GetUnitTypeHeight(const sc2::UnitTypeID type, const CCBot & bot);
 	float GetUnitTypeRange(const sc2::UnitTypeID type, const CCBot & bot);
-	const float GetUnitTypeSight(const sc2::UnitTypeID type, const CCBot & bot);
+    float GetUnitTypeSight(const sc2::UnitTypeID type, const CCBot & bot);
 	bool UnitOutrangesMe(const sc2::UnitTypeID me, const sc2::UnitTypeID attacker, const CCBot & bot);
 	int GetUnitTypeMineralPrice(const sc2::UnitTypeID type, const CCBot & bot);
 	int GetUnitTypeGasPrice(const sc2::UnitTypeID type, const CCBot & bot);
@@ -79,7 +79,7 @@ namespace Util
 
 	sc2::Point2D normalizeVector(const sc2::Point2D pos, const float length=1.0f);
 
-	const bool isBadEffect(sc2::EffectID id, bool flying);
+    bool isBadEffect(sc2::EffectID id, bool flying);
 
     void    VisualizeGrids(const sc2::ObservationInterface* obs, sc2::DebugInterface* debug);
     float   TerainHeight(const sc2::GameInfo& info, const sc2::Point2D& point);

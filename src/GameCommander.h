@@ -35,7 +35,7 @@ class GameCommander
 	std::vector<timePlace> m_needDetections;
 	uint32_t m_baseScanTime;
 
-	bool					m_initialScoutSet;
+    bool					m_initialScoutSet;
 
 	void assignUnit(CUnit_ptr, CUnits & units);
 	bool isAssigned(CUnit_ptr unit) const;
@@ -77,6 +77,6 @@ public:
 	void handleScans();
 	void requestGuards(const bool req);
 	std::shared_ptr<shuttle> requestShuttleService(CUnits passengers, const sc2::Point2D targetPos);
-	const bool underAttack() const;
+    bool underAttack() const;
 	void attack(const bool attack);
 };

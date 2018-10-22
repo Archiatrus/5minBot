@@ -114,7 +114,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 				{
 					Drawing::drawSphere(m_bot, pos, radius, sc2::Colors::Purple);
 					const float dist = Util::DistSq(rangedUnit->getPos(), pos);
-					if (dist < std::powf(radius + 2.0f, 2))
+                    if (dist < std::pow(radius + 2.0f, 2))
 					{
 						sc2::Point2D fleeingPos;
 						if (effect.positions.size() == 1)
@@ -248,7 +248,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 				}
 				else
 				{
-					if (frontSoldier && (rangedUnit->getOrders().empty() ||  rangedUnit->getOrders()[0].target_unit_tag && rangedUnit->getOrders()[0].target_unit_tag != frontSoldier->getTag()))
+                    if (frontSoldier && (rangedUnit->getOrders().empty() ||  (rangedUnit->getOrders()[0].target_unit_tag && rangedUnit->getOrders()[0].target_unit_tag != frontSoldier->getTag())))
 					{
 						Micro::SmartMove(rangedUnit, frontSoldier, m_bot);
 					}

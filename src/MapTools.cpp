@@ -22,7 +22,7 @@ MapTools::MapTools(CCBot & bot)
 	, m_height(0)
 	, m_maxZ(0.0f)
 	, m_frame(0)
-	, overseerMap()
+    // , overseerMap()
 {
 }
 
@@ -68,8 +68,8 @@ void MapTools::onStart()
 
 	// overseerMap.setBot(&m_bot); //ADD THIS LINE (OVERSEER)
 	// overseerMap.Initialize(); //ADD THIS LINE (OVERSEER)
-	std::cout << "Number of tiles on map: " << overseerMap.size() << std::endl;  // ADD THIS LINE (OVERSEER)
-	std::cout << "Number of regions: " << overseerMap.getRegions().size() << std::endl;  // ADD THIS LINE (OVERSEER)
+    // std::cout << "Number of tiles on map: " << overseerMap.size() << std::endl;  // ADD THIS LINE (OVERSEER)
+    // std::cout << "Number of regions: " << overseerMap.getRegions().size() << std::endl;  // ADD THIS LINE (OVERSEER)
 }
 
 void MapTools::onFrame()
@@ -762,7 +762,7 @@ std::queue<sc2::Point2D> MapTools::getEdgePath(const sc2::Point2D posStart, cons
 		wayPoints.push(posA);
 	}
 	// other side
-	else if (posA.x == x_min && posB.x == x_max || posA.x == x_max && posB.x == x_min || posA.y == y_min && posB.y == y_max || posA.y == y_max && posB.y == y_min)
+    else if ((posA.x == x_min && posB.x == x_max) || (posA.x == x_max && posB.x == x_min) || (posA.y == y_min && posB.y == y_max) || (posA.y == y_max && posB.y == y_min))
 	{
 		// Left to right
 		if (posA.x == x_min)
@@ -1115,7 +1115,7 @@ const sc2::Point2D MapTools::getClosestBorderPoint(sc2::Point2D pos, int margin)
 	}
 }
 
-const bool MapTools::hasPocketBase() const
+bool MapTools::hasPocketBase() const
 {
 	const BaseLocation * homeBase = m_bot.Bases().getPlayerStartingBaseLocation(Players::Self);
 	const BaseLocation * firstExe = nullptr;
@@ -1161,11 +1161,11 @@ const CUnit_ptr MapTools::workerSlideMineral(const sc2::Point2D workerPos, const
 	return slideMineral;
 }
 
-const float MapTools::getHeight(const sc2::Point2D pos) const
+float MapTools::getHeight(const sc2::Point2D pos) const
 {
 	return m_bot.Observation()->TerrainHeight(pos);
 }
-const float MapTools::getHeight(const float x, const float y) const
+float MapTools::getHeight(const float x, const float y) const
 {
 	return m_bot.Observation()->TerrainHeight(sc2::Point2D(x, y));
 }
@@ -1203,7 +1203,7 @@ void MapTools::draw() const
 	}
 }
 
-const float MapTools::calcThreatLvl(sc2::Point2D pos, const sc2::Weapon::TargetType & targetType) const
+float MapTools::calcThreatLvl(sc2::Point2D pos, const sc2::Weapon::TargetType & targetType) const
 {
 	float threatLvl = 0.0f;
 	for (const auto & enemy : m_bot.UnitInfo().getUnits(Players::Enemy))

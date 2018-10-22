@@ -198,7 +198,7 @@ void Micro::SmartMove(CUnit_ptr attacker, const sc2::Point2D & targetPosition, C
 {
 	BOT_ASSERT(attacker != nullptr, "Attacker is null");
 	// If we are already going there we do not have to spam it
-	if (!attacker->getOrders().empty() && attacker->getOrders().back().ability_id == sc2::ABILITY_ID::MOVE && Util::DistSq(attacker->getOrders().back().target_pos,targetPosition) < 0.01f || Util::DistSq(attacker->getPos(),targetPosition) < 0.01f)
+    if ((!attacker->getOrders().empty() && attacker->getOrders().back().ability_id == sc2::ABILITY_ID::MOVE && Util::DistSq(attacker->getOrders().back().target_pos,targetPosition) < 0.01f) || (Util::DistSq(attacker->getPos(),targetPosition) < 0.01f))
 	{
 		return;
 	}
@@ -279,7 +279,7 @@ void Micro::SmartMove(CUnits attackers, const sc2::Point2D & targetPosition, CCB
 	for (const auto & attacker : attackers)
 	{
 		//If we are already going there we do not have to spam it
-		if (!attacker->getOrders().empty() && attacker->getOrders().back().ability_id == sc2::ABILITY_ID::MOVE && Util::DistSq(attacker->getOrders().back().target_pos, targetPosition) < 0.01f || Util::DistSq(attacker->getPos(), targetPosition) < 0.01f)
+        if ((!attacker->getOrders().empty() && attacker->getOrders().back().ability_id == sc2::ABILITY_ID::MOVE && Util::DistSq(attacker->getOrders().back().target_pos, targetPosition) < 0.01f) || (Util::DistSq(attacker->getPos(), targetPosition) < 0.01f))
 		{
 			continue;
 		}

@@ -708,6 +708,6 @@ bool BuildingManager::isBuildingOrder(sc2::ABILITY_ID id)
 	case sc2::ABILITY_ID::BUILD_TEMPLARARCHIVE: return true;
 	case sc2::ABILITY_ID::BUILD_TWILIGHTCOUNCIL: return true;
 	case sc2::ABILITY_ID::BUILD_ULTRALISKCAVERN: return true;
-	}
-	return false;
+    default: return false;
+    }
 }

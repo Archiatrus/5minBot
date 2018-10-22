@@ -33,7 +33,7 @@ public:
 	//Really bad at naming things rn
 	void hereItGoes();
 	void updateTargetPos(const sc2::Point2D newTargetPos);
-	const bool needShuttleUnit() const;
+    bool needShuttleUnit() const;
 	void assignShuttleUnit(CUnit_ptr unit);
 	int getShuttleStatus() const;
 	sc2::Point2D getPos() const;

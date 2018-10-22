@@ -34,12 +34,12 @@ class pathPlaning
 	void setMap(sc2::Point2D pos, std::shared_ptr<node> node);
 	void activateNode(sc2::Point2D pos, std::shared_ptr<node> parent);
 	static void updateNode(std::shared_ptr<node> updateNode, std::shared_ptr<node> parent);
-	const float calcHeuristic(sc2::Point2D pos) const;
+    float calcHeuristic(sc2::Point2D pos) const;
 
 
 	std::shared_ptr<node> getBestNextNodeAndPop();
-	static const bool isBiggerNode(std::shared_ptr<node> nodeA, std::shared_ptr<node> nodeB);
-	const bool reachedEndPos(sc2::Point2D currentPos) const;
+    static bool isBiggerNode(std::shared_ptr<node> nodeA, std::shared_ptr<node> nodeB);
+    bool reachedEndPos(sc2::Point2D currentPos) const;
 	
 	void expandFrontNode(std::shared_ptr<node> frontNode);
 	std::vector<sc2::Point2D> constructPath(std::shared_ptr<const node> frontNode) const;

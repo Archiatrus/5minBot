@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 #else  // DEBUG
 int main(int argc, char* argv[])
 {
-	std::vector<std::string> maps = { "RedShift.SC2Map", "16BitLE.SC2Map", "LostAndFoundLE.SC2Map", "DarknessSanctuaryLE.SC2Map", "AcidPlantLE.SC2Map", "DreamcatcherLE.SC2Map", "CatalystLE.SC2Map"};
+    std::vector<std::string> maps = {"test.SC2Map"};  // { "RedShift.SC2Map", "16BitLE.SC2Map", "LostAndFoundLE.SC2Map", "DarknessSanctuaryLE.SC2Map", "AcidPlantLE.SC2Map", "DreamcatcherLE.SC2Map", "CatalystLE.SC2Map"};
 	std::vector<sc2::Race> opponents = { sc2::Race::Terran, sc2::Race::Zerg, sc2::Race::Protoss};
 	std::map<std::string, sc2::Point2D> mapScore;
 	std::map<sc2::Race, sc2::Point2D> raceScore;

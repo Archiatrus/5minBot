@@ -32,9 +32,9 @@ public:
 	HarassLiberator(CCBot & bot);
 	~HarassLiberator();
 
-	const bool needLiberator();
+    bool needLiberator();
 
-	const Status getStatus() const;
-	const bool setLiberator(const CUnit_ptr liberator);
+    Status getStatus() const;
+    bool setLiberator(const CUnit_ptr liberator);
 	bool harass(const BaseLocation *pos = nullptr);
 };

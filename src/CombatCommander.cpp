@@ -652,7 +652,7 @@ const CUnit_ptr CombatCommander::findClosestWorkerTo(const CUnits & unitsToAssig
 	return closestMineralWorker;
 }
 
-const bool CombatCommander::underAttack() const
+bool CombatCommander::underAttack() const
 {
 	return m_underAttack;
 }
@@ -796,7 +796,7 @@ void CombatCommander::handleCloakedUnits()
 		}
 	}
 	const float scanRadiusSq = std::pow(m_bot.Observation()->GetEffectData()[sc2::EffectID(sc2::EFFECT_ID::SCANNERSWEEP)].radius, 2);
-	m_cloakedUnits.erase(std::remove_if(m_cloakedUnits.begin(), m_cloakedUnits.end(), [&](const auto & unit)
+    m_cloakedUnits.erase(std::remove_if(m_cloakedUnits.begin(), m_cloakedUnits.end(), [&currentLoop,&scanPoints,&scanRadiusSq](const auto & unit)
 	{
 		if (currentLoop - std::get<0>(unit) > 224)
 		{

@@ -20,7 +20,7 @@ HarassLiberator::~HarassLiberator()
 	}
 }
 
-const bool HarassLiberator::needLiberator()
+bool HarassLiberator::needLiberator()
 {
 	if (m_status == Status::Dead && m_target)
 	{
@@ -30,12 +30,12 @@ const bool HarassLiberator::needLiberator()
 	return false;
 }
 
-const HarassLiberator::Status HarassLiberator::getStatus() const
+HarassLiberator::Status HarassLiberator::getStatus() const
 {
 	return m_status;
 }
 
-const bool HarassLiberator::setLiberator(const CUnit_ptr liberator)
+bool HarassLiberator::setLiberator(const CUnit_ptr liberator)
 {
 	if (m_liberator && m_liberator->isAlive())
 	{
@@ -53,7 +53,7 @@ bool HarassLiberator::harass(const BaseLocation * target)
 	{
 		m_liberator = m_bot.UnitInfo().getUnit(m_liberator->getUnit_ptr());
 	}
-	if (m_status != Status::init && (m_liberator && !m_liberator->isAlive() || !m_liberator))
+    if (m_status != Status::init && ((m_liberator && !m_liberator->isAlive()) || !m_liberator))
 	{
 		m_status = Status::Dead;
 	}
@@ -80,6 +80,7 @@ bool HarassLiberator::harass(const BaseLocation * target)
 	case Status::onMyWay: travelToDestination(); break;
 	case Status::Harass: ActivateSiege(); break;
 	case Status::Dead: break;
+    default: break;
 	}
 	return true;
 }

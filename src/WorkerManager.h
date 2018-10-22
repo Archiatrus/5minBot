@@ -35,7 +35,7 @@ public:
 	void	setCombatWorker(const CUnit_ptr worker);
 	void	setBuildingWorker(const CUnit_ptr worker, Building & b);
 	void	setRepairWorker(const CUnit_ptr worker,const CUnit_ptr unitToRepair);
-	void	setRepairWorker(const CUnit_ptr unitToRepair, int numWorkers = 1);
+    void	setRepairWorker(const CUnit_ptr unitToRepair, size_t numWorkers = 1);
 	void	stopRepairing(const CUnit_ptr worker);
 
 	int	getNumMineralWorkers();
@@ -55,6 +55,6 @@ public:
 
 	const CUnit_ptr getClosestCombatWorkerTo(const sc2::Point2D & pos) const;
 
-	const size_t isBeingRepairedNum(const CUnit_ptr unit) const;
+    size_t isBeingRepairedNum(const CUnit_ptr unit) const;
 };
 

@@ -23,7 +23,7 @@ struct buildingPlace
 	{
 	}
 
-	const bool operator==(const buildingPlace & rhs) const
+    bool operator==(const buildingPlace & rhs) const
 	{
 		if (this->m_seed.x == rhs.m_seed.x
 			&& this->m_seed.y == rhs.m_seed.y

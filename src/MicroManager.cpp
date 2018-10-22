@@ -94,7 +94,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 	{
 		for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
 		{
-			if (Util::DistSq(enemyUnit->getPos(), order.getPosition()) < std::powf(order.getRadius(), 2))
+            if (Util::DistSq(enemyUnit->getPos(), order.getPosition()) < std::pow(order.getRadius(), 2))
 			{
 				nearbyEnemies.push_back(enemyUnit);
 			}

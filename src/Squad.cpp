@@ -1,6 +1,7 @@
 #include "Squad.h"
 #include "CCBot.h"
 #include "Util.h"
+#include <cmath>
 
 Squad::Squad(CCBot & bot)
 	: m_bot(bot)
@@ -172,7 +173,7 @@ void Squad::addUnitsToMicroManagers()
 	m_siegeManager.setUnits(siegeUnits);
 }
 
-const bool Squad::needsToRegroup()
+bool Squad::needsToRegroup()
 {
 	if (m_order.getType() == SquadOrderTypes::Attack)
 	{
@@ -291,7 +292,7 @@ const bool Squad::needsToRegroup()
 		const sc2::Point2D regroup = calcRegroupPosition();
 		for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
 		{
-			if (enemyUnit->isVisible() && Util::DistSq(enemyUnit->getPos(), m_order.getPosition()) < std::powf(m_order.getRadius(), 2))
+			if (enemyUnit->isVisible() && Util::DistSq(enemyUnit->getPos(), m_order.getPosition()) < std::pow(m_order.getRadius(), 2))
 			{
 				nearbyEnemies.push_back(enemyUnit);
 			}

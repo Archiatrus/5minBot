@@ -344,7 +344,7 @@ const TypeData & TechTree::getData(const sc2::UpgradeID & type)  const
 	return m_upgradeData.at(type);
 }
 
-const int TechTree::getData(const sc2::AbilityID & type)  const
+int TechTree::getData(const sc2::AbilityID & type)  const
 {
 	if (m_abilityCooldown.find(type) == m_abilityCooldown.end())
 	{

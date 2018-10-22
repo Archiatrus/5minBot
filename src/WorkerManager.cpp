@@ -30,9 +30,9 @@ void WorkerManager::onFrame()
 	m_workerData.drawDepotDebugInfo();
 }
 
-void WorkerManager::setRepairWorker(const CUnit_ptr unitToRepair, int numWorkers)
+void WorkerManager::setRepairWorker(const CUnit_ptr unitToRepair, size_t numWorkers)
 {
-	if (isBeingRepairedNum(unitToRepair) < numWorkers)
+    if (isBeingRepairedNum(unitToRepair) < numWorkers)
 	{
 		const CUnit_ptr worker = getClosestMineralWorkerTo(unitToRepair->getPos());
 		if (worker)
@@ -416,7 +416,7 @@ const CUnit_ptr WorkerManager::getClosestCombatWorkerTo(const sc2::Point2D & pos
 	return closestMineralWorker;
 }
 
-const size_t WorkerManager::isBeingRepairedNum(const CUnit_ptr unit) const
+size_t WorkerManager::isBeingRepairedNum(const CUnit_ptr unit) const
 {
 	return m_workerData.isBeingRepairedNum(unit);
 }

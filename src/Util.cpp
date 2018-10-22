@@ -209,7 +209,7 @@ float Util::GetUnitTypeRange(const sc2::UnitTypeID type, const CCBot & bot)
 	return 0.f;
 }
 
-const float Util::GetUnitTypeSight(const sc2::UnitTypeID type, const CCBot & bot)
+float Util::GetUnitTypeSight(const sc2::UnitTypeID type, const CCBot & bot)
 {
 	return bot.Observation()->GetUnitTypeData()[type].sight_range;
 }
@@ -449,7 +449,7 @@ bool Util::Pathable(const sc2::GameInfo & info, const sc2::Point2D & point)
 		return false;
 	}
 
-	assert(info.pathing_grid.data.size() == info.width * info.height);
+    assert(info.pathing_grid.data.size() == static_cast<size_t>(info.width * info.height));
 	unsigned char encodedPlacement = info.pathing_grid.data[pointI.x + ((info.height - 1) - pointI.y) * info.width];
 	bool decodedPlacement = encodedPlacement == 255 ? false : true;
 	return decodedPlacement;
@@ -463,7 +463,7 @@ bool Util::Placement(const sc2::GameInfo & info, const sc2::Point2D & point)
 		return false;
 	}
 
-	assert(info.placement_grid.data.size() == info.width * info.height);
+    assert(info.placement_grid.data.size() == static_cast<size_t>(info.width * info.height));
 	unsigned char encodedPlacement = info.placement_grid.data[pointI.x + ((info.height - 1) - pointI.y) * info.width];
 	bool decodedPlacement = encodedPlacement == 255 ? true : false;
 	return decodedPlacement;
@@ -477,7 +477,7 @@ float Util::TerainHeight(const sc2::GameInfo & info, const sc2::Point2D & point)
 		return 0.0f;
 	}
 
-	assert(info.terrain_height.data.size() == info.width * info.height);
+    assert(info.terrain_height.data.size() == static_cast<size_t>(info.width * info.height));
 	unsigned char encodedHeight = info.terrain_height.data[pointI.x + ((info.height - 1) - pointI.y) * info.width];
 	float decodedHeight = -100.0f + 200.0f * float(encodedHeight) / 255.0f;
 	return decodedHeight;
@@ -856,7 +856,7 @@ sc2::Point2D Util::normalizeVector(const sc2::Point2D pos, const float length)
 	return (length / Util::Dist(pos)) * pos;
 }
 
-const bool Util::isBadEffect(const sc2::EffectID id, bool flying)
+bool Util::isBadEffect(const sc2::EffectID id, bool flying)
 {
 	switch (id.ToType())
 	{
@@ -870,6 +870,6 @@ const bool Util::isBadEffect(const sc2::EffectID id, bool flying)
 	case sc2::EFFECT_ID::CORROSIVEBILE:
 	// case sc2::EFFECT_ID::THERMALLANCES:
 		return true;
-	}
-	return false;
+    default: return false;
+    }
 }

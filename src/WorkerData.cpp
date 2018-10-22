@@ -326,7 +326,7 @@ const CUnits WorkerData::getGasWorkers() const
 	return gasWorkers;
 }
 
-const size_t WorkerData::isBeingRepairedNum(const CUnit_ptr unit) const
+size_t WorkerData::isBeingRepairedNum(const CUnit_ptr unit) const
 {
 	if (m_repair_map.find(unit->getTag()) == m_repair_map.end())
 	{

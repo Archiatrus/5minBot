@@ -43,7 +43,7 @@ public:
 	void setScout(CUnit_ptr unit);
 	int getNumScouts();
 	void updateNearestUnoccupiedBases(sc2::Point2D pos,int player);
-	const bool dontBlowYourselfUp() const;
+    bool dontBlowYourselfUp() const;
 	void scoutRequested();
 	void raiseAlarm(CUnits enemyUnitsInSight);
 };

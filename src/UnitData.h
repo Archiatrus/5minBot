@@ -1,3 +1,4 @@
+/*
 #pragma once
 
 #include "Common.h"
@@ -70,3 +71,4 @@ public:
 	int		getNumDeadUnits(sc2::UnitTypeID t)		  const;
 	const	std::map<const sc2::Unit *, UnitInfo> & getUnitInfoMap()  const;
 };
+*/

@@ -41,6 +41,7 @@ public:
 	void    drawProductionInformation();
 
 	void defaultMacro();
+    void macroMechanic();
 
 	void requestScout();
 	void requestVikings();

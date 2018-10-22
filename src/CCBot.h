@@ -19,7 +19,7 @@ class CCBot : public sc2::Agent
 {
 	std::map<int,sc2::Race> m_playerRace;
 
-	MapTools                m_map;
+    MapTools                m_map;
 	BaseLocationManager     m_bases;
 	UnitInfoManager         m_unitInfo;
 	WorkerManager           m_workers;
@@ -66,17 +66,17 @@ public:
 	const TypeData & Data(const sc2::UnitTypeID & type) const;
 	const TypeData & Data(const sc2::UpgradeID & type) const;
 	const TypeData & Data(const BuildType & type) const;
-	const int Data(const sc2::AbilityID & type) const;
+    int Data(const sc2::AbilityID & type) const;
 	const sc2::Race & GetPlayerRace(int player) const;
 	sc2::Point2D GetStartLocation() const;
 	const CUnit_ptr GetUnit(const UnitTag & tag);
 	void requestGuards(const bool req);
 	std::shared_ptr<shuttle> requestShuttleService(const CUnits passengers, const sc2::Point2D targetPos);
 
-	const int getArmorBio() const;
-	const int getWeaponBio() const;
-	const int getWeaponMech() const;
-	const bool underAttack() const;
+    int getArmorBio() const;
+    int getWeaponBio() const;
+    int getWeaponMech() const;
+    bool underAttack() const;
 	void setPlayerRace(int player, sc2::Race race);
 	void retreat();
 };

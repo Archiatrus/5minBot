@@ -29,15 +29,15 @@ public:
 	void					onStart();
 
 
-    const size_t                  getUnitTypeCount(int player, sc2::UnitTypeID type, bool completed = true) const;
+    size_t                  getUnitTypeCount(int player, sc2::UnitTypeID type, bool completed = true) const;
 
-	const size_t getUnitTypeCount(int player, std::vector<sc2::UnitTypeID> types, bool completed = true) const;
-	const size_t getUnitTypeCount(int player, std::vector<sc2::UNIT_TYPEID> types, bool completed = true) const;
+    size_t getUnitTypeCount(int player, std::vector<sc2::UnitTypeID> types, bool completed = true) const;
+    size_t getUnitTypeCount(int player, std::vector<sc2::UNIT_TYPEID> types, bool completed = true) const;
 
     //bool                  enemyHasCloakedUnits() const;
-	const size_t getNumCombatUnits(int player) const;
+    size_t getNumCombatUnits(int player) const;
 
-	const size_t getFoodCombatUnits(int player) const;
+    size_t getFoodCombatUnits(int player) const;
 
 	const CUnit_ptr OnUnitCreate(const sc2::Unit * unit);
 	const std::shared_ptr<CUnit> getUnit(sc2::Tag unitTag);

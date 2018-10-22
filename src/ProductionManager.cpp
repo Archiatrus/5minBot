@@ -34,7 +34,14 @@ void ProductionManager::onStart()
 
 void ProductionManager::onFrame()
 {
-	defaultMacro();
+
+    // This avoids repeating the same command twice.
+    ++m_defaultMacroSleep;
+    if (m_defaultMacroSleep >= m_defaultMacroSleepMax)
+    {
+        macroMechanic();
+        defaultMacro();
+    }
 
 	detectBuildOrderDeadlock();
 	// ADD THINGS TO THE QUEUE BEFORE THIS POINT! IT WILL BE TAKEN FROM THE QUEUE BUT ONLY APPLIED AT THE END OF THE FRAME!!
@@ -178,46 +185,40 @@ int ProductionManager::getFreeGas()
 	return m_bot.Observation()->GetVespene() - m_buildingManager.getReservedGas();
 }
 
+void ProductionManager::macroMechanic()
+{
+    const CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, Util::getTownHallTypes());
+    size_t scansAvailable = 0;
+    for (const auto & unit : CommandCenters)
+    {
+        if (unit->isCompleted() && !unit->isFlying())
+        {
+            if (unit->getEnergy() >= 50)
+            {
+                scansAvailable+=static_cast<size_t>(std::floor(unit->getEnergy()/50.0f));
+                if (scansAvailable > m_scansRequested)
+                {
+                    const CUnit_ptr mineralPatch = Util::getClostestMineral(unit->getPos(), m_bot);
+                    if (mineralPatch && mineralPatch->getDisplayType() == sc2::Unit::DisplayType::Visible)
+                    {
+                        Micro::SmartAbility(unit, sc2::ABILITY_ID::EFFECT_CALLDOWNMULE, mineralPatch, m_bot);
+                    }
+                }
+            }
+            // Sometimes we have a problem here
+            if (unit->getAssignedHarvesters() == 0 || unit->getEnergy() > 60)
+            {
+                m_bot.Bases().assignTownhallToBase(unit);
+            }
+        }
+    }
+}
+
 void ProductionManager::defaultMacro()
 {
-	// This avoids repeating the same command twice.
-	++m_defaultMacroSleep;
-	if (m_defaultMacroSleep < m_defaultMacroSleepMax)
-	{
-		return;
-	}
 	m_defaultMacroSleep = 0;
-
-	// Even without money we can drop mules
-	const CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, Util::getTownHallTypes());
-	int scansAvailable = 0;
-	for (const auto & unit : CommandCenters)
-	{
-		if (unit->isCompleted() && !unit->isFlying())
-		{
-			if (unit->getEnergy() >= 50)
-			{
-				scansAvailable+=static_cast<int>(std::floor(unit->getEnergy()/50.0f));
-				if (scansAvailable > m_scansRequested)
-				{
-					const CUnit_ptr mineralPatch = Util::getClostestMineral(unit->getPos(), m_bot);
-					if (mineralPatch && mineralPatch->getDisplayType() == sc2::Unit::DisplayType::Visible)
-					{
-						Micro::SmartAbility(unit, sc2::ABILITY_ID::EFFECT_CALLDOWNMULE, mineralPatch, m_bot);
-					}
-				}
-			}
-			// Sometimes we have a problem here
-			if (unit->getAssignedHarvesters() == 0 || unit->getEnergy() > 60)
-			{
-				m_bot.Bases().assignTownhallToBase(unit);
-			}
-		}
-	}
-
-
 	int32_t minerals = getFreeMinerals();
-	// but not much else
+    // no money
 	if (minerals < 50)
 	{
 		m_defaultMacroSleep = m_defaultMacroSleepMax;
@@ -233,6 +234,7 @@ void ProductionManager::defaultMacro()
 	const int numDepots = static_cast<int>(Depots.size());
 	const int numDepotsFinished = buildingsFinished(Depots);
 
+    const CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, Util::getTownHallTypes());
 	const int numBases = static_cast<int>(CommandCenters.size());
 	const int numBasesFinished = buildingsFinished(CommandCenters);
 
@@ -471,7 +473,7 @@ void ProductionManager::defaultMacro()
 	// upgrades
 	const CUnits Armories = m_bot.UnitInfo().getUnits(sc2::Unit::Alliance::Self, sc2::UNIT_TYPEID::TERRAN_ARMORY);
 	const int numArmories = static_cast<int>(Armories.size());
-	const int numArmoriesFinished = buildingsFinished(Armories);
+    //const int numArmoriesFinished = buildingsFinished(Armories);
 
 	const int weaponBio = m_bot.getWeaponBio();
 	const int armorBio = m_bot.getArmorBio();
@@ -600,7 +602,7 @@ void ProductionManager::defaultMacro()
 				if (!unit->getAddOnTag())
 				{
 					// Build a reactor for the first starport
-					if (numStarport == 0 || numStarport == 1 && numStarportFinished == 0)
+                    if (numStarport == 0 || (numStarport == 1 && numStarportFinished == 0))
 					{
 						if (minerals >= 50 && gas >= 50 && numStarport == 1)
 						{
@@ -657,7 +659,7 @@ void ProductionManager::defaultMacro()
 		{
 			// that is idle
 			const auto addon = m_bot.UnitInfo().getUnit(unit->getAddOnTag());
-			if (unit->isIdle() || unit->getOrders().size() == 1 && addon && addon->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_STARPORTREACTOR)
+            if (unit->isIdle() || (unit->getOrders().size() == 1 && addon && addon->getUnitType().ToType() == sc2::UNIT_TYPEID::TERRAN_STARPORTREACTOR))
 			{
 				// if it is only a Starport build addon
 				if (!addon)
@@ -757,7 +759,7 @@ void ProductionManager::defaultMacro()
 					{
 						if (minerals >= 50)
 						{
-							Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_REAPER, m_bot);
+                            Micro::SmartAbility(unit, sc2::ABILITY_ID::TRAIN_REAPER, m_bot);
 							m_scoutRequested = false;
 						}
 						std::cout << "Scout" << std::endl;
@@ -768,8 +770,8 @@ void ProductionManager::defaultMacro()
 				if (!addon)
 				{
 					// The second barracks gets a lab
-					if (bReactor.size() == 0 || bTechLab.size() >= std::max(1ULL, m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::TERRAN_FACTORY, false)))
-					{
+                    if (bReactor.size() == 0 || bTechLab.size() >= static_cast<size_t>(std::max(1, static_cast<int>(m_bot.UnitInfo().getUnitTypeCount(Players::Enemy, sc2::UNIT_TYPEID::TERRAN_FACTORY, false)))))
+                    {
 						if (minerals >= 50 && gas >= 50)
 						{
 							Micro::SmartAbility(unit, sc2::ABILITY_ID::BUILD_REACTOR_BARRACKS, m_bot);

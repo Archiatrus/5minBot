@@ -35,23 +35,23 @@ class Hitsquad
 	void checkForCasualties();
 	CUnit_ptr getTargetMarines(CUnits targets) const;
 	void stalemateCheck();
-	const bool manhattenMove(const BaseLocation * target);
+    bool manhattenMove(const BaseLocation * target);
 	CUnits getNearbyEnemyUnits() const;
 	const BaseLocation * getSavePosition() const;
-	const bool shouldWeFlee(CUnits targets, int threshold) const;
+    bool shouldWeFlee(CUnits targets, int threshold) const;
 	void escapePathPlaning();
-	const bool haveNoTarget() const;
+    bool haveNoTarget() const;
 
  public:
 	Hitsquad(CCBot & bot, CUnit_ptr medivac);
 	~Hitsquad();
 
-	const bool	addMedivac(CUnit_ptr medivac);
-	const bool	addMarine(CUnit_ptr marine);
-	const int	getNumMarines() const;
+    bool	addMedivac(CUnit_ptr medivac);
+    bool	addMarine(CUnit_ptr marine);
+    int	getNumMarines() const;
 	CUnits	getMarines() const;
 	CUnit_ptr getMedivac() const;
-	const int getStatus() const;
+    int getStatus() const;
 	bool harass(const BaseLocation *pos = nullptr);
 };
 
@@ -70,7 +70,7 @@ class WMHarass
 	WMHarass(CCBot & bot);
 
 
-	const bool	addWidowMine(CUnit_ptr widowMine);
+    bool	addWidowMine(CUnit_ptr widowMine);
 	CUnit_ptr getwidowMine() const;
 	void harass(const sc2::Point2D pos);
 };
@@ -99,15 +99,15 @@ class HarassManager
 	void onStart();
 	void onFrame();
 
-	const bool needMedivac() const;
-	const bool needMarine() const;
-	const bool needLiberator();
-	const bool needWidowMine() const;
+    bool needMedivac() const;
+    bool needMarine() const;
+    bool needLiberator();
+    bool needWidowMine() const;
 
-	const bool setMedivac(CUnit_ptr medivac);
-	const bool setMarine(CUnit_ptr marine);
-	const bool setLiberator(const CUnit_ptr liberator);
-	const bool setWidowMine(CUnit_ptr widowMine);
+    bool setMedivac(CUnit_ptr medivac);
+    bool setMarine(CUnit_ptr marine);
+    bool setLiberator(const CUnit_ptr liberator);
+    bool setWidowMine(CUnit_ptr widowMine);
 
 	CUnits getMedivacs();
 	CUnits getMarines();

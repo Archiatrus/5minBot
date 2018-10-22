@@ -42,8 +42,8 @@ class CUnit
 	float m_movementSpeed;
 	uint32_t m_abilityCooldown;
 
-	sc2::Weapon m_groundWeapons;
-	sc2::Weapon m_AAWeapons;
+    sc2::Weapon m_AAWeapons;
+    sc2::Weapon m_groundWeapons;
 
 	std::pair<Occupation, int> m_occupation;
 
@@ -87,8 +87,8 @@ class CUnit
 	std::vector<sc2::UnitOrder> getOrders() const;
 	sc2::Tag getAddOnTag() const;
 	std::vector<sc2::PassengerUnit> getPassengers() const;
-	int getCargoSpaceTaken() const;
-	int getCargoSpaceMax() const;
+    size_t getCargoSpaceTaken() const;
+    size_t getCargoSpaceMax() const;
 	int getAssignedHarvesters() const;
 	int getIdealHarvesters() const;
 	sc2::Tag getEngagedTargetTag() const;
@@ -112,28 +112,28 @@ class CUnit
 	bool canHitMe(const std::shared_ptr<CUnit> & enemy) const;
 	float hasBonusDmgAgainst(const std::shared_ptr<CUnit>& enemy) const;
 	std::vector<std::shared_ptr<CUnit>> getEnemyUnitsInSight() const;
-	const float getSightRange() const;
+	float getSightRange() const;
 	const sc2::Weapon & getWeapon(sc2::Weapon::TargetType type = sc2::Weapon::TargetType::Any) const;
-	const float getAttackRange(const std::shared_ptr<CUnit> &  target) const;
-	const float getAttackRange(const sc2::Weapon::TargetType & target) const;
-	const float getAttackRange() const;
-	const float getMovementSpeed() const;
+	float getAttackRange(const std::shared_ptr<CUnit> &  target) const;
+	float getAttackRange(const sc2::Weapon::TargetType & target) const;
+	float getAttackRange() const;
+	float getMovementSpeed() const;
 	std::shared_ptr<CUnit> getTarget();
 	const sc2::Unit * getUnit_ptr() const;
 	void testReachable();
 	bool isReachable() const;
 	const sc2::AvailableAbilities getAbilities(const bool ignoreRequirements = false);
 	const std::vector<sc2::Attribute> getAttributes() const;
-	const bool hasAttribute(sc2::Attribute attribute) const;
+	bool hasAttribute(sc2::Attribute attribute) const;
 	bool isDetector() const;
 	bool IsRefineryType() const;
 	bool isCompleted() const;
 	bool isIdle() const;
 	bool isVisible() const;
-	bool CUnit::isType(sc2::UnitTypeID type) const;
+	bool isType(sc2::UnitTypeID type) const;
 	bool isOnCreep() const;
 	void drawSphere() const;
-	const uint32_t getAbilityCoolDown() const;
+    uint32_t getAbilityCoolDown() const;
 	void newAbilityCoolDown(const uint32_t CD);
 	const std::pair<CUnit::Occupation, int> getOccupation() const;
 	void setOccupation(std::pair<CUnit::Occupation, int> occupation);

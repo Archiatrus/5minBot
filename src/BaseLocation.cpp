@@ -354,7 +354,7 @@ const int BaseLocation::getNumEnemyCombatUnits() const
 }
 */
 
-const int BaseLocation::getNumEnemyStaticD() const
+int BaseLocation::getNumEnemyStaticD() const
 {
 	int threadLvl = 0;
 	CUnits pfs = m_bot.UnitInfo().getUnits(Players::Enemy, sc2::UNIT_TYPEID::TERRAN_PLANETARYFORTRESS);
@@ -376,7 +376,7 @@ const int BaseLocation::getNumEnemyStaticD() const
 	return threadLvl;
 }
 
-const int BaseLocation::getBaseID() const
+int BaseLocation::getBaseID() const
 {
 	return m_baseID;
 }

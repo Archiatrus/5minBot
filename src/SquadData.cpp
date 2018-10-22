@@ -207,7 +207,7 @@ Squad & SquadData::getSquad(const std::string & squadName)
 }
 
 
-const bool SquadData::underAttack() const
+bool SquadData::underAttack() const
 {
 	for (const auto & squad : m_squads)
 	{

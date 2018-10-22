@@ -18,10 +18,10 @@ CCBot::CCBot()
 	: m_map(*this)
 	, m_bases(*this)
 	, m_unitInfo(*this)
-	, m_workers(*this)
-	, m_gameCommander(*this)
-	, m_strategy(*this)
+    , m_workers(*this)
+    , m_strategy(*this)
 	, m_techTree(*this)
+    , m_gameCommander(*this)
 	, m_cameraModule(this)
 	, m_armorBio(0)
 	, m_weaponsBio(0)
@@ -331,7 +331,7 @@ const TypeData & CCBot::Data(const BuildType & type) const
 	return m_techTree.getData(type);
 }
 
-const int CCBot::Data(const sc2::AbilityID & type) const
+int CCBot::Data(const sc2::AbilityID & type) const
 {
 	return m_techTree.getData(type);
 }
@@ -371,22 +371,22 @@ std::shared_ptr<shuttle> CCBot::requestShuttleService(const CUnits passengers, c
 	return m_gameCommander.requestShuttleService(passengers,targetPos);
 }
 
-const int CCBot::getArmorBio() const
+int CCBot::getArmorBio() const
 {
 	return m_armorBio;
 }
 
-const int CCBot::getWeaponBio() const
+int CCBot::getWeaponBio() const
 {
 	return m_weaponsBio;
 }
 
-const int CCBot::getWeaponMech() const
+int CCBot::getWeaponMech() const
 {
 	return m_weaponsMech;
 }
 
-const bool CCBot::underAttack() const
+bool CCBot::underAttack() const
 {
 	return m_gameCommander.underAttack();
 }

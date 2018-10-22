@@ -15,8 +15,8 @@ GameCommander::GameCommander(CCBot & bot)
 	, m_scoutManager(bot)
 	, m_harassManager(bot)
 	, m_combatCommander(bot)
-	, m_initialScoutSet(false)
-	, m_baseScanTime(9999)
+    , m_baseScanTime(9999)
+    , m_initialScoutSet(false)
 {
 }
 
@@ -526,7 +526,7 @@ std::shared_ptr<shuttle> GameCommander::requestShuttleService(CUnits passengers,
 	return newShuttle;
 }
 
-const bool GameCommander::underAttack() const
+bool GameCommander::underAttack() const
 {
 	return m_combatCommander.underAttack();
 }

@@ -55,7 +55,7 @@ class CombatCommander
 	void onFrame(const CUnits & combatUnits);
 
 	void drawSquadInformation();
-	const bool underAttack() const;
+    bool underAttack() const;
 	void attack(const bool attack);
 	void requestGuards(const bool req);
 	void addCloakedUnit(const sc2::UNIT_TYPEID & type, const sc2::Point2D & pos);

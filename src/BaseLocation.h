@@ -40,9 +40,9 @@ public:
 	bool isMineralOnly() const;
 	void resetNumEnemyCombatUnits() noexcept;
 	void incrementNumEnemyCombatUnits();
-	const int getNumEnemyCombatUnits() const;
-	const int getNumEnemyStaticD() const;
-	const int getBaseID() const;
+    int getNumEnemyCombatUnits() const;
+    int getNumEnemyStaticD() const;
+    int getBaseID() const;
 	bool containsPosition(const sc2::Point2D & pos) const;
 	//const sc2::Point2D & getDepotPosition() const;
 	const sc2::Point2D & getCenterOfRessources() const noexcept;

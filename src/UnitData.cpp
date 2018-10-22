@@ -1,3 +1,4 @@
+/*
 #include "UnitData.h"
 #include "Util.h"
 
@@ -9,7 +10,7 @@ UnitData::UnitData()
 	m_numDeadUnits		= std::vector<int>(maxTypeID + 1, 0);
 	m_numUnits			= std::vector<int>(maxTypeID + 1, 0);
 }
-
+*/
 /*
 void UnitData::updateUnit(const sc2::Unit * unit)
 {
@@ -80,6 +81,7 @@ void UnitData::removeBadUnits()
 }
 */
 
+/*
 bool UnitData::badUnitInfo(const UnitInfo & ui) const
 {
 	//!ui.unit->is_alive does not seem to work for spines?!
@@ -89,7 +91,7 @@ bool UnitData::badUnitInfo(const UnitInfo & ui) const
 	}
 	return false;
 }
-
+*/
 /*
 int UnitData::getGasLost() const
 {

@@ -37,7 +37,7 @@ private:
 	void setAllUnits();
 
 	bool isUnitNearEnemy(const CUnit_ptr unit) const;
-	const bool needsToRegroup();
+    bool needsToRegroup();
 	int  squadUnitsNear(const sc2::Point2D & pos) const;
 
 public:

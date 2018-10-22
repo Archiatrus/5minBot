@@ -43,7 +43,7 @@ void UnitInfoManager::updateUnitInfo()
 	}
 }
 
-const size_t UnitInfoManager::getNumCombatUnits(int player) const
+size_t UnitInfoManager::getNumCombatUnits(int player) const
 {
 	if (m_unitDataBase.find(player) == m_unitDataBase.end())
 	{
@@ -61,7 +61,7 @@ const size_t UnitInfoManager::getNumCombatUnits(int player) const
 	return numCombatUnits;
 }
 
-const size_t UnitInfoManager::getFoodCombatUnits(int player) const
+size_t UnitInfoManager::getFoodCombatUnits(int player) const
 {
 	if (m_unitDataBase.find(player) == m_unitDataBase.end())
 	{
@@ -216,7 +216,7 @@ void UnitInfoManager::drawSelectedUnitDebugInfo()
 }
 */
 
-const size_t UnitInfoManager::getUnitTypeCount(int player, sc2::UnitTypeID type, bool completed) const
+size_t UnitInfoManager::getUnitTypeCount(int player, sc2::UnitTypeID type, bool completed) const
 {
 	if (!type || m_unitDataBase.find(player) == m_unitDataBase.end() || m_unitDataBase.at(player).find(type)== m_unitDataBase.at(player).end())
 	{
@@ -250,7 +250,7 @@ const size_t UnitInfoManager::getUnitTypeCount(int player, sc2::UnitTypeID type,
 	return count;
 }
 
-const size_t UnitInfoManager::getUnitTypeCount(int player, std::vector<sc2::UnitTypeID> types, bool completed) const
+size_t UnitInfoManager::getUnitTypeCount(int player, std::vector<sc2::UnitTypeID> types, bool completed) const
 {
 	size_t count = 0;
 	for (const auto & type : types)
@@ -260,7 +260,7 @@ const size_t UnitInfoManager::getUnitTypeCount(int player, std::vector<sc2::Unit
 	return count;
 }
 
-const size_t UnitInfoManager::getUnitTypeCount(int player, std::vector<sc2::UNIT_TYPEID> types, bool completed) const
+size_t UnitInfoManager::getUnitTypeCount(int player, std::vector<sc2::UNIT_TYPEID> types, bool completed) const
 {
 	size_t count = 0;
 	for (const auto & type : types)

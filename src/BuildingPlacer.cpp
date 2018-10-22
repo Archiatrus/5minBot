@@ -37,7 +37,7 @@ void BuildingPlacer::expandBuildingTesterOnce()
 			Drawing::drawSphere(m_bot, newPos, sqrtf(static_cast<float>(buildLocationTester.m_footPrintArea))/2.0f, sc2::Colors::Yellow);
 		}
 		// We don't need to find another base right next to the old one
-		if (buildLocationTester.m_canBuildHere || buildLocationTester.m_footPrintArea == 25 || buildLocationTester.m_closestTiles.size() >= buildLocationTester.m_idx)
+        if (buildLocationTester.m_canBuildHere || buildLocationTester.m_footPrintArea == 25 || static_cast<int>(buildLocationTester.m_closestTiles.size()) >= buildLocationTester.m_idx)
 		{
 			continue;
 		}
@@ -90,8 +90,6 @@ bool BuildingPlacer::canBuildHere(float bx, float by, const Building & b) const
 // returns true if we can build this type of unit here with the specified amount of space.
 bool BuildingPlacer::canBuildHereWithSpace(float bx, float by, const Building & b, int buildDist) const
 {
-	
-	sc2::UnitTypeID type = b.m_type;
 	// if we can't build here, we of course can't build here with space
 	if (!canBuildHere(bx, by, b))
 	{
@@ -194,7 +192,7 @@ sc2::Point2D BuildingPlacer::getBuildLocationNear(const Building & b, int buildD
 		}
 	}
 	// iterate through the list until we've found a suitable location
-	for (int i = idx->m_idx; i != idx->m_closestTiles.size(); ++i)
+    for (int i = idx->m_idx; i != static_cast<int>(idx->m_closestTiles.size()); ++i)
 	{
 		sc2::Point2D pos = idx->m_closestTiles[i];
 		// Drawing::drawSphere(m_bot, pos, 1.0f);
@@ -307,9 +305,9 @@ void BuildingPlacer::freeTiles(float bx, float by, float width, float height)
 	int rwidth = static_cast<int>(m_reserveMap.size());
 	int rheight = static_cast<int>(m_reserveMap[0].size());
 
-	for (size_t x = static_cast<size_t>(bx - width / 2.0f); x < static_cast<size_t>(bx + width / 2.0f) && x < rwidth; x++)
+    for (size_t x = static_cast<size_t>(bx - width / 2.0f); x < static_cast<size_t>(bx + width / 2.0f) && x < static_cast<size_t>(rwidth); x++)
 	{
-		for (size_t y = static_cast<size_t>(by - height / 2.0f); y < static_cast<size_t>(by + height / 2.0f) && y < rheight; y++)
+        for (size_t y = static_cast<size_t>(by - height / 2.0f); y < static_cast<size_t>(by + height / 2.0f) && y < static_cast<size_t>(rheight); y++)
 		{
 			m_reserveMap[x][y] = false;
 		}

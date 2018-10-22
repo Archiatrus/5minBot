@@ -10,10 +10,10 @@ Strategy::Strategy()
 }
 Strategy::Strategy(const std::string & name, const sc2::Race & race, const BuildOrder & buildOrder)
 	: m_name(name)
-	, m_race(race)
-	, m_buildOrder(buildOrder)
+    , m_race(race)
 	, m_wins(0)
 	, m_losses(0)
+    , m_buildOrder(buildOrder)
 {
 
 }

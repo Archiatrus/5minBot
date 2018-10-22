@@ -45,6 +45,6 @@ public:
 	const CUnits getMineralWorkers() const;
 	const CUnits getCombatWorkers() const;
 	const CUnits getGasWorkers() const;
-	const size_t isBeingRepairedNum(const CUnit_ptr unit) const;
+    size_t isBeingRepairedNum(const CUnit_ptr unit) const;
 	void checkRepairedBuildings();
 };

@@ -217,13 +217,13 @@ std::vector<sc2::PassengerUnit> CUnit::getPassengers() const
 {
 	return m_unit->passengers;
 }
-int CUnit::getCargoSpaceTaken() const
+size_t CUnit::getCargoSpaceTaken() const
 {
-	return m_unit->cargo_space_taken;
+    return static_cast<size_t>(m_unit->cargo_space_taken);
 }
-int CUnit::getCargoSpaceMax() const
+size_t CUnit::getCargoSpaceMax() const
 {
-	return m_unit->cargo_space_max;
+    return static_cast<size_t>(m_unit->cargo_space_max);
 }
 int CUnit::getAssignedHarvesters() const
 {
@@ -456,7 +456,7 @@ std::vector<std::shared_ptr<CUnit>> CUnit::getEnemyUnitsInSight() const
 	return enemyUnitsInSight;
 }
 
-const float CUnit::getSightRange() const
+float CUnit::getSightRange() const
 {
 	return m_sight;
 }
@@ -470,7 +470,7 @@ const sc2::Weapon & CUnit::getWeapon(sc2::Weapon::TargetType type) const
 	return m_AAWeapons;
 }
 
-const float CUnit::getAttackRange(const std::shared_ptr<CUnit> & target) const
+float CUnit::getAttackRange(const std::shared_ptr<CUnit> & target) const
 {
 	if (getUnitType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 	{
@@ -486,7 +486,7 @@ const float CUnit::getAttackRange(const std::shared_ptr<CUnit> & target) const
 	}
 }
 
-const float CUnit::getAttackRange(const sc2::Weapon::TargetType &target) const
+float CUnit::getAttackRange(const sc2::Weapon::TargetType &target) const
 {
 	if (target == sc2::Weapon::TargetType::Air)
 	{
@@ -498,7 +498,7 @@ const float CUnit::getAttackRange(const sc2::Weapon::TargetType &target) const
 	}
 }
 
-const float CUnit::getAttackRange() const
+float CUnit::getAttackRange() const
 {
 	if (getUnitType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC)
 	{
@@ -507,7 +507,7 @@ const float CUnit::getAttackRange() const
 	return m_groundWeapons.range > m_AAWeapons.range ? m_groundWeapons.range : m_AAWeapons.range;
 }
 
-const float CUnit::getMovementSpeed() const
+float CUnit::getMovementSpeed() const
 {
 	if (getAlliance() == Players::Enemy)
 	{
@@ -527,6 +527,7 @@ const float CUnit::getMovementSpeed() const
 		case (sc2::UNIT_TYPEID::ZERG_SWARMHOSTMP): { return isOnCreep() ? 2.925f : 2.25f; }
 		case (sc2::UNIT_TYPEID::ZERG_INFESTORTERRAN): { return isOnCreep() ? 1.21875f : 0.9375f; }
 		case (sc2::UNIT_TYPEID::ZERG_QUEEN): { return isOnCreep() ? 2.5f : 0.9375f; }
+        default: {}
 		}
 	}
 	return m_bot->Observation()->GetUnitTypeData()[getUnitType()].movement_speed;
@@ -570,7 +571,7 @@ const std::vector<sc2::Attribute> CUnit::getAttributes() const
 	return m_bot->Observation()->GetUnitTypeData()[getUnitType()].attributes;
 }
 
-const bool CUnit::hasAttribute(sc2::Attribute attribute) const
+bool CUnit::hasAttribute(sc2::Attribute attribute) const
 {
 	const std::vector<sc2::Attribute> attributes = getAttributes();
 	return std::find(attributes.begin(), attributes.end(), attribute) != attributes.end();
@@ -645,6 +646,11 @@ void CUnit::drawSphere() const
 		Drawing::drawSphereAroundUnit(*m_bot, m_unit->tag, sc2::Colors::Gray);
 		break;
 	}
+    default:
+    {
+        Drawing::drawSphereAroundUnit(*m_bot, m_unit->tag, sc2::Colors::Yellow);
+        break;
+    }
 	}
 	std::string name = sc2::UnitTypeToName(getUnitType());
 	if (name == "UNKNOWN")
@@ -657,7 +663,7 @@ void CUnit::drawSphere() const
 	}
 }
 
-const uint32_t CUnit::getAbilityCoolDown() const
+uint32_t CUnit::getAbilityCoolDown() const
 {
 	return m_abilityCooldown;
 }

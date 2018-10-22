@@ -47,6 +47,6 @@ public:
 
 	const TypeData & getData(const sc2::UnitTypeID & type) const;
 	const TypeData & getData(const sc2::UpgradeID & type)  const;
-	const int getData(const sc2::AbilityID & type) const;
+    int getData(const sc2::AbilityID & type) const;
 	const TypeData & getData(const BuildType & type)	   const;
 };

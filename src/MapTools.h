@@ -5,7 +5,7 @@
 #include "sc2api/sc2_api.h"
 #include "DistanceMap.h"
 #include "CUnit.h"
-#include "../Overseer/src/MapImpl.h"
+//#include "../Overseer/src/MapImpl.h"
 #include "BaseLocation.h"
 
 class CCBot;
@@ -13,11 +13,11 @@ class CCBot;
 class MapTools
 {
 	CCBot & m_bot;
-	int	 m_width;
-	int	 m_height;
+    size_t	 m_width;
+    size_t	 m_height;
 	float   m_maxZ;
 	int	 m_frame;
-	Overseer::MapImpl overseerMap;
+    //Overseer::MapImpl overseerMap;
 
 	// a cache of already computed distance maps, which is mutable since it only acts as a cache
 	mutable std::map<std::pair<int, int>, DistanceMap>   _allMaps;
@@ -85,12 +85,12 @@ public:
 	const sc2::Point2D getClosestWalkableTo(const sc2::Point2D & pos) const;
 	const sc2::Point2D getClosestBorderPoint(sc2::Point2D pos,int margin) const;
 	const sc2::Point2D getForbiddenCorner(const int margin,const int player=Players::Enemy) const;
-	const bool hasPocketBase() const;
+    bool hasPocketBase() const;
 	const CUnit_ptr workerSlideMineral(const sc2::Point2D workerPos, const sc2::Point2D enemyPos) const;
-	const float getHeight(const sc2::Point2D pos) const;
-	const float getHeight(const float x,const float y) const;
+    float getHeight(const sc2::Point2D pos) const;
+    float getHeight(const float x,const float y) const;
 	void draw() const;
-	const float calcThreatLvl(sc2::Point2D pos, const sc2::Weapon::TargetType & targetType) const;
+    float calcThreatLvl(sc2::Point2D pos, const sc2::Weapon::TargetType & targetType) const;
 	void printMap() const;
 	std::queue<sc2::Point2D> getEdgePath(const sc2::Point2D posStart, const sc2::Point2D posEnd) const;
 	sc2::Point2D findLandingZone(sc2::Point2D pos) const;

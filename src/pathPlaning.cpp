@@ -23,7 +23,7 @@ pathPlaning::pathPlaning(CCBot & bot, sc2::Point2D startPos, sc2::Point2D endPos
 	m_openList.push_front(map(startPos));
 }
 
-const float pathPlaning::calcHeuristic(sc2::Point2D pos) const
+float pathPlaning::calcHeuristic(sc2::Point2D pos) const
 {
 	float xDist = std::abs(pos.x - m_endPos.x);
 	float yDist = std::abs(pos.y - m_endPos.y);
@@ -65,7 +65,7 @@ std::shared_ptr<node> pathPlaning::getBestNextNodeAndPop()
 	return map(bestNodePos);
 }
 
-const bool pathPlaning::isBiggerNode(std::shared_ptr<node> nodeA, std::shared_ptr<node> nodeB)
+bool pathPlaning::isBiggerNode(std::shared_ptr<node> nodeA, std::shared_ptr<node> nodeB)
 {
 	if (nodeA->m_totalCost > nodeB->m_totalCost)
 	{
@@ -108,7 +108,7 @@ void pathPlaning::updateNode(std::shared_ptr<node> updateNode, std::shared_ptr<n
 	}
 }
 
-const bool pathPlaning::reachedEndPos(sc2::Point2D currentPos) const
+bool pathPlaning::reachedEndPos(sc2::Point2D currentPos) const
 {
 	return Util::DistSq(currentPos, m_endPos) <= 0.5*m_stepSize*m_stepSize;
 }
