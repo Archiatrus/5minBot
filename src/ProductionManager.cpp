@@ -295,7 +295,7 @@ void ProductionManager::defaultMacroBio()
 		}
 	}
 	const float mineralRate = m_bot.Observation()->GetScore().score_details.collection_rate_minerals;
-	const int reactorsFinished = buildingsFinished(m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR));
+	const size_t reactorsFinished = buildingsFinished(m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR));
 	if (!m_bot.underAttack() && (m_needCC || mineralRate / static_cast<float>(reactorsFinished) < 350.f) && numBases - numBasesFinished + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER) == 0 && m_bot.Bases().getNextExpansion(Players::Self) != sc2::Point2D{})
 	{
 		if (std::find_if(CommandCenters.begin(), CommandCenters.end(), [](const auto & cc) { return cc->getAssignedHarvesters() < cc->getIdealHarvesters(); }) == CommandCenters.end())
@@ -318,7 +318,7 @@ void ProductionManager::defaultMacroBio()
 	if (supplyCap < 200 && (supplyCap - supply < (numBasesFinished + 2 * numRaxFinished) || (numDepots == 0 && minerals >= 50 && m_bot.Observation()->GetFoodWorkers() == 13)))
 	{
 		// count the building and requested
-		const int numBuildingDepots = numDepots-numDepotsFinished;
+		const size_t numBuildingDepots = numDepots-numDepotsFinished;
 		if (numBuildingDepots + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT) < numBasesFinished)
 		{
 			if (minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_SUPPLYDEPOT).mineralCost || (numDepots == 0 && minerals >= 50 && m_bot.Observation()->GetFoodWorkers() == 13))
@@ -544,7 +544,7 @@ void ProductionManager::defaultMacroBio()
 		{
 			if (engi->getOrders().empty())
 			{
-				maxProgress = std::min<float>(1.0f, m_bot.getWeaponBio());
+				maxProgress = static_cast<float>(std::min(1, m_bot.getWeaponBio()));
 				break;
 			}
 			const float progress = engi->getOrders().front().progress;
@@ -921,7 +921,8 @@ ProductionStatus ProductionManager::pleaseTrain(const sc2::UNIT_TYPEID & unitTyp
                         }
                         if (isItIdle)
                         {
-                            Micro::SmartAbility(unit, data.buildAbility, m_bot);
+                            // Micro::SmartAbility(unit, data.buildAbility, m_bot); // Does not work with reactor
+							m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), data.buildAbility);
                             Drawing::cout{m_bot.Observation()->GetGameLoop()} << Util::GetUnitText(unit->getUnitType()) << " --> " << Util::GetAbilityText(data.buildAbility) << "-->" << Util::GetUnitText(unitType) << std::endl;
                             return ProductionStatus::success;
                         }
@@ -990,8 +991,8 @@ size_t ProductionManager::buildingsFinished(const CUnits units) const
 void ProductionManager::needCC()
 {
 	const CUnits CommandCenters = m_bot.UnitInfo().getUnits(Players::Self, Util::getTownHallTypes());
-	const int numBases = static_cast<int>(CommandCenters.size());
-	const int numBasesFinished = buildingsFinished(CommandCenters);
+	const size_t numBases = CommandCenters.size();
+	const size_t numBasesFinished = buildingsFinished(CommandCenters);
 	if (numBases - numBasesFinished + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER) == 0 && m_bot.Bases().getOccupiedBaseLocations(Players::Self).size() + m_bot.Bases().getOccupiedBaseLocations(Players::Enemy).size() < m_bot.Bases().getBaseLocations().size())
 	{
 		m_needCC = true;

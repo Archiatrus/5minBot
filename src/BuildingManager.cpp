@@ -135,11 +135,11 @@ void BuildingManager::assignWorkersToUnassignedBuildings()
 		// reserve this building's space
 		if (b.m_type == sc2::UNIT_TYPEID::TERRAN_BARRACKS || b.m_type == sc2::UNIT_TYPEID::TERRAN_FACTORY || b.m_type == sc2::UNIT_TYPEID::TERRAN_STARPORT)
 		{
-			m_buildingPlacer.reserveTiles(b.finalPosition.x, b.finalPosition.y, static_cast<float>(Util::GetUnitTypeWidth(b.m_type, m_bot)), Util::GetUnitTypeHeight(b.m_type, m_bot), true);
+			m_buildingPlacer.reserveTiles(b.finalPosition.x, b.finalPosition.y, static_cast<float>(Util::GetUnitTypeWidth(b.m_type, m_bot)), static_cast<float>(Util::GetUnitTypeHeight(b.m_type, m_bot)), true);
 		}
 		else
 		{
-			m_buildingPlacer.reserveTiles(b.finalPosition.x, b.finalPosition.y, static_cast<float>(Util::GetUnitTypeWidth(b.m_type, m_bot)), Util::GetUnitTypeHeight(b.m_type, m_bot));
+			m_buildingPlacer.reserveTiles(b.finalPosition.x, b.finalPosition.y, static_cast<float>(Util::GetUnitTypeWidth(b.m_type, m_bot)), static_cast<float>(Util::GetUnitTypeHeight(b.m_type, m_bot)));
 		}
 
 		b.status = BuildingStatus::Assigned;
@@ -629,7 +629,7 @@ void BuildingManager::removeBuildings(const std::vector<Building> & toRemove)
 			}
 			if (!b.buildingUnit || !b.buildingUnit->isCompleted())
 			{
-				m_buildingPlacer.freeTiles(b.finalPosition.x, b.finalPosition.y, Util::GetUnitTypeWidth(b.m_type, m_bot), Util::GetUnitTypeHeight(b.m_type, m_bot));
+				m_buildingPlacer.freeTiles(b.finalPosition.x, b.finalPosition.y, static_cast<float>(Util::GetUnitTypeWidth(b.m_type, m_bot)), static_cast<float>(Util::GetUnitTypeHeight(b.m_type, m_bot)));
 			}
 			m_buildings.erase(it);
 		}
@@ -645,7 +645,7 @@ void BuildingManager::onBuildingDestroyed(const sc2::Unit * unit)
 {
 	if (Util::IsBuildingType(unit->unit_type, m_bot))
 	{
-		m_buildingPlacer.freeTiles(unit->pos.x, unit->pos.y, Util::GetUnitTypeWidth(unit->unit_type, m_bot), Util::GetUnitTypeHeight(unit->unit_type, m_bot));
+		m_buildingPlacer.freeTiles(unit->pos.x, unit->pos.y, static_cast<float>(Util::GetUnitTypeWidth(unit->unit_type, m_bot)), static_cast<float>(Util::GetUnitTypeHeight(unit->unit_type, m_bot)));
 	}
 }
 

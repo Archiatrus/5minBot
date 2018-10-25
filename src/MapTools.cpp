@@ -86,9 +86,9 @@ void MapTools::computeConnectivity()
 	int sectorNumber = 0;
 
 	// for every tile on the map, do a connected flood fill using BFS
-    for (size_t x=0; x < m_width; ++x)
+    for (int x=0; x < m_width; ++x)
 	{
-        for (size_t y=0; y < m_height; ++y)
+        for (int y=0; y < m_height; ++y)
 		{
 			// if the sector is not currently 0, or the map isn't walkable here, then we can skip this tile
 			if (getSectorNumber(x, y) != 0 || !isWalkable(x, y))
@@ -295,12 +295,12 @@ bool MapTools::isWalkable(const sc2::Point2D & tile) const
 
 int MapTools::width() const
 {
-	return m_width;
+	return static_cast<int>(m_width);
 }
 
 int MapTools::height() const
 {
-	return m_height;
+	return static_cast<int>(m_height);
 }
 
 const std::vector<sc2::Point2D> & MapTools::getClosestTilesTo(const sc2::Point2D & pos) const

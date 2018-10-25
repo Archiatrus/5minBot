@@ -47,7 +47,6 @@ CUnit::CUnit(const sc2::Unit * unit, CCBot * bot):
 			if (m_isBuilding)
 				{
 					return { Occupation::Building, 0 };
-					return { Occupation::Building, 0 };
 				}
 			if (m_isCombatUnit)
 				{

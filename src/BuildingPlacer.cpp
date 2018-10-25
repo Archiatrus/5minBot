@@ -74,7 +74,7 @@ bool BuildingPlacer::canBuildHere(float bx, float by, const Building & b) const
     */
 
 	// if it overlaps a base location return false
-	if (tileOverlapsBaseLocation(bx, by, b.m_type))
+	if (tileOverlapsBaseLocation(static_cast<int>(bx), static_cast<int>(by), b.m_type))
 	{
 		return false;
 	}
@@ -109,10 +109,10 @@ bool BuildingPlacer::canBuildHereWithSpace(float bx, float by, const Building & 
 	int height = Util::GetUnitTypeHeight(b.m_type, m_bot);
 
 	// define the rectangle of the building spot
-	float startx = bx - (width / 2.0 + buildDist);
-	float starty = by - (height / 2.0 + buildDist);
-	float endx   = bx + (width / 2.0 + buildDist);
-	float endy   = by + (height / 2.0 + buildDist);
+	float startx = bx - (width / 2.0f + buildDist);
+	float starty = by - (height / 2.0f + buildDist);
+	float endx   = bx + (width / 2.0f + buildDist);
+	float endy   = by + (height / 2.0f + buildDist);
 
 	if (b.m_type == sc2::UNIT_TYPEID::TERRAN_BARRACKS || b.m_type == sc2::UNIT_TYPEID::TERRAN_FACTORY || b.m_type == sc2::UNIT_TYPEID::TERRAN_STARPORT)
 	{
@@ -142,9 +142,9 @@ bool BuildingPlacer::canBuildHereWithSpace(float bx, float by, const Building & 
 	std::vector<sc2::QueryInterface::PlacementQuery> query;
 	if (!Util::IsRefineryType(b.m_type) && !Util::IsTownHallType(b.m_type))
 	{
-		for (int x = startx; x < endx; x++)
+		for (int x = static_cast<int>(startx); x < endx; x++)
 		{
-			for (int y = starty; y < endy; y++)
+			for (int y = static_cast<int>(starty); y < endy; y++)
 			{
 				if (m_reserveMap[x][y])  // || !buildable(b, x, y))
 				{

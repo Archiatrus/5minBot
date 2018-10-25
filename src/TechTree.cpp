@@ -167,9 +167,9 @@ void TechTree::initUnitTypeData()
         {
             kv.second.buildAbility = UnitData.ability_id;
         }
-        kv.second.supplyCost = UnitData.food_required;
+        kv.second.supplyCost = static_cast<size_t>(UnitData.food_required);
         //a.race =UnitData.race; // Race won't change with patch... hopefully
-        kv.second.buildTime = UnitData.build_time;
+        kv.second.buildTime = static_cast<size_t>(UnitData.build_time);
         //kv.second.needsTechlab = UnitData.require_attached; // DOES NOT WORK!!
 	}
 
