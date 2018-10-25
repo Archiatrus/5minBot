@@ -119,7 +119,7 @@ const CUnit_ptr MeleeManager::getTarget(const CUnit_ptr meleeUnit, const  CUnits
 int MeleeManager::getAttackPriority(const CUnit_ptr attacker, const CUnit_ptr unit)
 {
 	BOT_ASSERT(unit, "null unit in getAttackPriority");
-
+    BOT_ASSERT(attacker->isWorker(), "Melee Manager is Worker combat manager");
 	/*
 	if (unit->isCombatUnit())
 	{

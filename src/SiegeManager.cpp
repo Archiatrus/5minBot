@@ -33,10 +33,10 @@ void SiegeManager::assignTargets(const CUnits & targets)
 	for (const auto & siegeUnit : SiegeUnits)
 	{
 		BOT_ASSERT(siegeUnit, "melee unit is null");
-		if (siegeUnit->isSelected())
-		{
-			int a = 1;
-		}
+        //if (siegeUnit->isSelected())
+        //{
+        //	int a = 1;
+        //}
 		// if the order is to attack or defend
 		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend || order.getType() == SquadOrderTypes::GuardDuty)
 		{
@@ -203,7 +203,7 @@ const CUnit_ptr SiegeManager::getTarget(const CUnit_ptr siegeUnit, const CUnits 
 float SiegeManager::getAttackPriority(const CUnit_ptr attacker, const CUnit_ptr unit)
 {
 	BOT_ASSERT(unit, "null unit in getAttackPriority");
-
+    BOT_ASSERT(attacker, "null unit in getAttackPriority");
 	if (unit->isCombatUnit())
 	{
 		if (unit->getUnitType() == sc2::UNIT_TYPEID::ZERG_BANELING)

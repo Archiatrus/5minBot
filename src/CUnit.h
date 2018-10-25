@@ -119,6 +119,7 @@ class CUnit
 	float getAttackRange() const;
 	float getMovementSpeed() const;
 	std::shared_ptr<CUnit> getTarget();
+    std::shared_ptr<CUnit> getAddOn() const;
 	const sc2::Unit * getUnit_ptr() const;
 	void testReachable();
 	bool isReachable() const;

@@ -93,6 +93,8 @@ namespace Util
 	std::vector<sc2::UNIT_TYPEID> getAntiMedivacTypes();
 	std::vector<sc2::UNIT_TYPEID> getWorkerTypes();
 	const sc2::UpgradeID abilityIDToUpgradeID(const sc2::ABILITY_ID id);
+    std::string GetAbilityText(sc2::AbilityID ability_id);
+    std::string GetUnitText(sc2::UnitTypeID ability_id);
 
 };
 

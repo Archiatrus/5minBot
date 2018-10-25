@@ -167,10 +167,10 @@ void MicroManager::regroup(const sc2::Point2D & regroupPosition, const bool flee
 	CUnits regroupUnitsAttackMove;
 	for (const auto & unit : m_units)
 	{
-		if (unit->isSelected())
-		{
-			int a = 1;
-		}
+        //if (unit->isSelected())
+        //{
+        //	int a = 1;
+        //}
 		if (Util::DistSq(unit->getPos(), regroupPosition) > 56.0f)
 		{
 			if (unit->isType(sc2::UNIT_TYPEID::TERRAN_MEDIVAC))

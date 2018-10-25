@@ -5,15 +5,19 @@
 
 extern bool useDebug;
 
-class CCBot;
+//class CCBot;
 
 namespace Drawing
 {
 
     class cout : public std::ostringstream
     {
+    private:
+        uint32_t m_gameLoop;
     public:
         cout() = default;
+
+        cout(const uint32_t gameLoop): m_gameLoop(gameLoop) {}
 
         ~cout()
         {
@@ -21,7 +25,12 @@ namespace Drawing
             {
                 std::time_t t = std::time(nullptr);
                 std::tm tm = *std::localtime(&t);
-                std::cout<<std::put_time(&tm, "%d-%m-%Y %H-%M-%S")<<": "<<this->str();
+                std::cout<<std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
+                if (m_gameLoop)
+                {
+                    std::cout<<" (" << m_gameLoop <<")";
+                }
+                std::cout<<": "<<this->str();
             }
         }
     };

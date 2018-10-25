@@ -1,3 +1,5 @@
+#pragma GCC diagnostic ignored "-Wenum-compare"
+
 #include "CUnit.h"
 #include "sc2api/sc2_api.h"
 #include "CCBot.h"
@@ -259,6 +261,12 @@ bool CUnit::isAlive() const
 uint32_t CUnit::getLastSeenGameLoop() const
 {
 	return m_unit->last_seen_game_loop;
+}
+
+
+std::shared_ptr<CUnit> CUnit::getAddOn() const
+{
+    return m_bot->UnitInfo().getUnit(getAddOnTag());
 }
 
 void CUnit::update()
@@ -541,10 +549,6 @@ const sc2::Unit * CUnit::getUnit_ptr() const
 
 void CUnit::testReachable()
 {
-	if (isType(sc2::UNIT_TYPEID::PROTOSS_FORGE))
-	{
-		int a = 1;
-	}
 	if (isBuilding() && getAlliance() == Players::Enemy)
 	{
 		auto worker = m_bot->Workers().getClosestMineralWorkerTo(getPos());
@@ -619,6 +623,14 @@ bool CUnit::isVisible() const
 
 bool CUnit::isType(sc2::UnitTypeID type) const
 {
+    if (type == sc2::UNIT_TYPEID::TERRAN_TECHLAB)
+    {
+        return m_unitTypeId == sc2::UNIT_TYPEID::TERRAN_BARRACKSTECHLAB || m_unitTypeId == sc2::UNIT_TYPEID::TERRAN_FACTORYTECHLAB || m_unitTypeId == sc2::UNIT_TYPEID::TERRAN_STARPORTTECHLAB;
+    }
+    if (type == sc2::UNIT_TYPEID::TERRAN_REACTOR)
+    {
+        return m_unitTypeId == sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR || m_unitTypeId == sc2::UNIT_TYPEID::TERRAN_FACTORYREACTOR || m_unitTypeId == sc2::UNIT_TYPEID::TERRAN_STARPORTREACTOR;
+    }
 	return m_unitTypeId == type;
 }
 

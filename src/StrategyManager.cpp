@@ -27,7 +27,7 @@ StrategyManager::StrategyManager(CCBot & bot)
 
 void StrategyManager::onStart()
 {
-	readStrategyFile(m_bot.Config().ConfigFileLocation);
+    //readStrategyFile(m_bot.Config().ConfigFileLocation);
 }
 
 void StrategyManager::onFrame()
@@ -101,12 +101,11 @@ void StrategyManager::onEnd(const bool isWinner)
 
 }
 */
-
+/*
 void StrategyManager::readStrategyFile(const std::string & filename)
 {
 	sc2::Race race = m_bot.GetPlayerRace(Players::Self);
-	std::string ourRace = Util::GetStringFromRace(race);
-	/*
+    std::string ourRace = Util::GetStringFromRace(race);
 	std::string config = JSONTools::ReadFile(filename);
 	rapidjson::Document doc;
 	bool parsingFailed = doc.Parse(config.c_str()).HasParseError();
@@ -197,6 +196,6 @@ void StrategyManager::readStrategyFile(const std::string & filename)
 				addStrategy(name, Strategy(name, strategyRace, buildOrder));
 			}
 		}
-	}*/
-}
+    }
+}*/
 

@@ -86,15 +86,6 @@ size_t UnitInfoManager::getFoodCombatUnits(int player) const
 	return static_cast<size_t>(numFoodCombatUnits);
 }
 
-static std::string GetAbilityText(sc2::AbilityID ability_id) {
-	std::string str;
-	str += sc2::AbilityTypeToName(ability_id);
-	str += " (";
-	str += std::to_string(uint32_t(ability_id));
-	str += ")";
-	return str;
-}
-
 /*
 void UnitInfoManager::drawSelectedUnitDebugInfo()
 {

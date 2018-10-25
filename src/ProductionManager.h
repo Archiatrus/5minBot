@@ -7,9 +7,12 @@
 
 class CCBot;
 
+enum class ProductionStatus{notEnoughSupply, notEnoughMinerals, notEnoughGas, noIdleProduction, success };
+
 class ProductionManager
 {
-	CCBot &	   m_bot;
+private:
+    CCBot &	   m_bot;
 
 	BuildingManager m_buildingManager;
 	std::deque<BuildOrderItem> m_newQueue;
@@ -28,7 +31,7 @@ class ProductionManager
 	void    manageBuildOrderQueue();
     size_t     getFreeMinerals();
     size_t     getFreeGas();
-
+    size_t getSuggestedNumTechLabs() const;
 	
 
 public:
@@ -40,17 +43,18 @@ public:
 	void    onUnitDestroy(const sc2::Unit * unit);
 	void    drawProductionInformation();
 
-	void defaultMacro();
+    void defaultMacroBio();
     void macroMechanic();
+    ProductionStatus pleaseTrain(const sc2::UNIT_TYPEID & unitType, const size_t minerals, const size_t gas);
 
 	void requestScout();
 	void requestVikings();
 	void requestTurrets();
 	void requestLiberator();
 	void requestScan();
-	void usedScan(const int i=1);
-	int buildingsFinished(const CUnits units) const;
+    void usedScan(const size_t i=1);
+    size_t buildingsFinished(const CUnits units) const;
 	void needCC();
-	int howOftenQueued(sc2::UnitTypeID type);
-	bool tryingToExpand() const;
+    size_t howOftenQueued(sc2::UnitTypeID type);
+    bool tryingToExpand() const;
 };

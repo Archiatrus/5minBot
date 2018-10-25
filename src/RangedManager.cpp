@@ -311,7 +311,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 						// This can happen with vikings
 						if (rangedUnit->isFlying())
 						{
-							if (frontSoldier && (rangedUnit->getOrders().empty() || rangedUnit->getOrders().front().target_unit_tag && rangedUnit->getOrders().front().target_unit_tag != frontSoldier->getTag()))
+                            if (frontSoldier && (rangedUnit->getOrders().empty() || (rangedUnit->getOrders().front().target_unit_tag && rangedUnit->getOrders().front().target_unit_tag != frontSoldier->getTag())))
 							{
 								Micro::SmartMove(rangedUnit, frontSoldier, m_bot);
 							}
@@ -370,10 +370,10 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 						}
 					}
 					// We only need fancy micro if we are in range and its not a building
-					if (rangedUnit->isSelected())
-					{
-						int a = 1;
-					}
+                    //if (rangedUnit->isSelected())
+                    //{
+                    //	int a = 1;
+                    //}
 					if (targets[0].second)
 					{
 						// if the target in range is really the best target

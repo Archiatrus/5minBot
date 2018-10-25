@@ -55,19 +55,23 @@ void BuildingPlacer::expandBuildingTesterOnce()
 	}
 }
 
+/*
 bool BuildingPlacer::isInResourceBox(float x, float y) const
 {
 	return false;
 	// return m_bot.Bases().getPlayerStartingBaseLocation(Players::Self)->isInResourceBox(x, y);
 }
+*/
 
 // makes final checks to see if a building can be built at a certain location
 bool BuildingPlacer::canBuildHere(float bx, float by, const Building & b) const
 {
+    /*
 	if (isInResourceBox(by, by))
 	{
 		return false;
 	}
+    */
 
 	// if it overlaps a base location return false
 	if (tileOverlapsBaseLocation(bx, by, b.m_type))
@@ -292,7 +296,7 @@ void BuildingPlacer::drawReservedTiles()
 	{
 		for (int y = 0; y < rheight; ++y)
 		{
-			if (m_reserveMap[x][y] || isInResourceBox(x, y))
+            if (m_reserveMap[x][y]) // || isInResourceBox(x, y))
 			{
 				Drawing::drawSphere(m_bot, sc2::Point2D(x + 0.5f, y + 0.5f), 0.5f, sc2::Colors::Yellow);
 			}

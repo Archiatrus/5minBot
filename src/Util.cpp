@@ -350,6 +350,7 @@ bool Util::IsCombatUnit(const sc2::Unit * unit, CCBot & bot)
 }
 */
 
+
 bool Util::IsSupplyProviderType(const sc2::UnitTypeID & type)
 {
 	switch (type.ToType()) 
@@ -872,4 +873,25 @@ bool Util::isBadEffect(const sc2::EffectID id, bool flying)
 		return true;
     default: return false;
     }
+}
+
+
+std::string Util::GetAbilityText(sc2::AbilityID ability_id)
+{
+    std::string str;
+    str += sc2::AbilityTypeToName(ability_id);
+    str += " (";
+    str += std::to_string(static_cast<uint32_t>(ability_id));
+    str += ")";
+    return str;
+}
+
+std::string Util::GetUnitText(sc2::UnitTypeID unit_id)
+{
+    std::string str;
+    str += sc2::UnitTypeToName(unit_id);
+    str += " (";
+    str += std::to_string(static_cast<uint32_t>(unit_id));
+    str += ")";
+    return str;
 }
