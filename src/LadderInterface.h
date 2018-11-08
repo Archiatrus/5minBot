@@ -156,10 +156,11 @@ static void RunBot(int argc, char *argv[], sc2::Agent *Agent,sc2::Race race)
 	// Step forward the game simulation.
 	if (!coordinator.JoinGame())
 	{
-		Drawing::cout{} << "Join Game failed!(5minBot)" << std::endl;
+		std::cout << "Join Game failed!(5minBot)" << std::endl;
 	}
-	coordinator.SetTimeoutMS(10000);
-	Drawing::cout{} << " Successfully joined game" << std::endl;
+	coordinator.SetTimeoutMS(100);
+	std::cout << "Successfully joined game" << std::endl;
 	while (coordinator.Update()) {
 	}
+	std::cout << "done!" << std::endl;
 }

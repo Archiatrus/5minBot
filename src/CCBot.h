@@ -47,7 +47,7 @@ public:
 	CCBot();
 	void OnGameStart() override;
 	void OnStep() override;
-
+	void OnGameEnd() override;
 	void OnBuildingConstructionComplete(const sc2::Unit * unit) override;
 	void OnUnitCreated(const sc2::Unit * unit) override;
 	void OnUnitEnterVision(const sc2::Unit * unit) override;

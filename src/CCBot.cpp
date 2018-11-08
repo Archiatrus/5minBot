@@ -145,6 +145,11 @@ void CCBot::OnStep()
 	#endif // VSHUMAN
 }
 
+void CCBot::OnGameEnd()
+{
+	std::cout << "Game ended" << std::endl;
+}
+
 void CCBot::OnUnitCreated(const sc2::Unit * unit)
 {
 	Timer t;
