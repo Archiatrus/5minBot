@@ -27,7 +27,7 @@ void RangedManager::assignTargets(const CUnits & targetsRaw)
 		if (!target->isVisible() && !target->isTownHall()) { continue; }
 		if (target->isType(sc2::UNIT_TYPEID::ZERG_EGG)) { continue; }
 		if (target->isType(sc2::UNIT_TYPEID::ZERG_LARVA)) { continue; }
-		if (target->getPos() == sc2::Point3D()) { continue; }
+		if (sc2::Point3D() == target->getPos()) { continue; }
 		rangedUnitTargets.push_back(target);
 	}
 	const auto sortedUnitTargets = getAttackPriority(rangedUnitTargets);
