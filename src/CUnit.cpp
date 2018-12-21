@@ -120,7 +120,7 @@ int CUnit::getOwner() const
 {
 	return m_unit->owner;
 }
-sc2::Point3D CUnit::getPos() const
+const sc2::Point3D &CUnit::getPos() const
 {
 	return m_pos;
 }
@@ -443,6 +443,13 @@ float CUnit::hasBonusDmgAgainst(const std::shared_ptr<CUnit> & enemy) const
 		}
 	}
 	return 0.0f;
+}
+
+std::vector<std::shared_ptr<CUnit>> CUnit::getClosestUnits(const sc2::Unit::Alliance alliance,const size_t k) const
+{
+	std::vector<std::shared_ptr<CUnit>> nearestUnits;
+	nearestUnits.reserve(k);
+	return nearestUnits;
 }
 
 std::vector<std::shared_ptr<CUnit>> CUnit::getEnemyUnitsInSight() const

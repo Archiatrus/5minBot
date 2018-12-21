@@ -23,7 +23,7 @@ void UnitInfoManager::onStart()
 
 void UnitInfoManager::onFrame()
 {
-    updateUnitInfo();
+	updateUnitInfo();
 }
 
 void UnitInfoManager::updateUnitInfo()
@@ -33,14 +33,51 @@ void UnitInfoManager::updateUnitInfo()
 	{
 		m_unitDataBase[unit->alliance][unit->unit_type].insert(unit, m_bot);
 	}
-	//remove dead
+	//remove dead and all into RTree
 	for (auto & playerData : m_unitDataBase)
 	{
 		for (auto & units : playerData.second)
 		{
 			units.second.removeDead(m_bot);
+			for (const auto& unit : units.second.getUnits())
+			{
+				if (sc2::Point3D() != unit->getPos())
+				{
+					m_rtree[unit->getAlliance()].insert(RTreeNode(unit));
+				}
+			}
 		}
 	}
+}
+
+std::vector<std::shared_ptr<CUnit>> UnitInfoManager::getNearestUnitsTo(int player, const CUnit_ptr& unit, size_t k) const
+{
+	std::vector<std::shared_ptr<CUnit>> units;
+	if (sc2::Point3D() != unit->getPos())
+	{
+	for (auto const& nearestUnit(m_rtree.at(player).qbegin(bgi::nearest(RTreeNode(unit), k+1)));
+		 nearestUnit!=m_rtree.at(player).qend();
+		 ++nearestUnit)
+	{
+		units.push_back(nearestUnit->unit);
+	}
+	}
+	return units;
+}
+
+std::vector<std::shared_ptr<CUnit>> UnitInfoManager::getUnitsNear(int player, const sc2::Point2D& pos, size_t k) const
+{
+	std::vector<std::shared_ptr<CUnit>> units;
+	if (sc2::Point3D() != unit->getPos())
+	{
+	for (auto const& nearestUnit(m_rtree.at(player).qbegin(bgi::nearest(RTreeNode(pos), k+1)));
+		 nearestUnit!=m_rtree.at(player).qend();
+		 ++nearestUnit)
+	{
+		units.push_back(nearestUnit->unit);
+	}
+	}
+	return units;
 }
 
 size_t UnitInfoManager::getNumCombatUnits(int player) const

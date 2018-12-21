@@ -59,7 +59,7 @@ class CUnit
 	sc2::Tag getTag() const;
 	sc2::UnitTypeID getUnitType() const;
 	int getOwner() const;
-	sc2::Point3D getPos() const;
+	const sc2::Point3D& getPos() const;
 	float getFacing() const;
 	float getRadius() const;
 	float getBuildProgress() const;
@@ -138,6 +138,7 @@ class CUnit
 	void newAbilityCoolDown(const uint32_t CD);
 	const std::pair<CUnit::Occupation, int> getOccupation() const;
 	void setOccupation(std::pair<CUnit::Occupation, int> occupation);
+	std::vector<std::shared_ptr<CUnit> > getClosestUnits(sc2::Unit::Alliance, size_t) const;
 };
 
 class CUnitsData
@@ -150,5 +151,5 @@ class CUnitsData
 	const std::vector<std::shared_ptr<CUnit>>& getUnits() const;
 };
 
-typedef std::vector<std::shared_ptr<CUnit>> CUnits;
+using CUnits = std::vector<std::shared_ptr<CUnit>>;
 typedef std::shared_ptr<CUnit> CUnit_ptr;

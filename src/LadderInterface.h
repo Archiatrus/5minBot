@@ -1,3 +1,5 @@
+#include "sc2api/sc2_api.h"
+
 static sc2::Difficulty GetDifficultyFromString(std::string InDifficulty)
 {
 	if (InDifficulty == "VeryEasy")
@@ -151,6 +153,7 @@ static void RunBot(int argc, char *argv[], sc2::Agent *Agent,sc2::Race race)
 
 	// Step forward the game simulation.
 	Drawing::cout{} << "Connecting to port " << Options.GamePort << std::endl;
+	coordinator.SetTimeoutMS(30000);
 	coordinator.Connect(Options.GamePort);
 	coordinator.SetupPorts(num_agents, Options.StartPort, false);
 	// Step forward the game simulation.
@@ -158,9 +161,15 @@ static void RunBot(int argc, char *argv[], sc2::Agent *Agent,sc2::Race race)
 	{
 		std::cout << "Join Game failed!(5minBot)" << std::endl;
 	}
-	coordinator.SetTimeoutMS(100);
 	std::cout << "Successfully joined game" << std::endl;
 	while (coordinator.Update()) {
 	}
-	std::cout << "done!" << std::endl;
+	for(const auto & result :Agent->Observation()->GetResults())
+	{
+		if (result.player_id == Agent->Observation()->GetPlayerID())
+		{
+			std::cout << result.result << std::endl;
+		}
+	}
+	std::cout << "Game ended!" << std::endl;
 }

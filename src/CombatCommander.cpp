@@ -394,7 +394,7 @@ void CombatCommander::updateDefenseSquads()
 		bool enemyUnitInRange = false;
 		for (const auto & unit : m_bot.UnitInfo().getUnits(Players::Enemy))
 		{
-			if (unit->getPos() != sc2::Point3D() && Util::DistSq(unit->getPos(), order.getPosition()) < std::pow(order.getRadius() + unit->getAttackRange(), 2))
+			if (sc2::Point3D() != unit->getPos() && Util::DistSq(unit->getPos(), order.getPosition()) < std::pow(order.getRadius() + unit->getAttackRange(), 2))
 			{
 				enemyUnitInRange = true;
 				break;
@@ -599,7 +599,7 @@ sc2::Point2D CombatCommander::getMainAttackLocation()
 	CUnit_ptr closestEnemy = nullptr;
 	for (const auto & enemyUnit : m_bot.UnitInfo().getUnits(Players::Enemy))
 	{
-		if (enemyUnit->getPos() != sc2::Point3D())
+		if (sc2::Point3D() != enemyUnit->getPos())
 		{
 			int dist = base->getGroundDistance(enemyUnit->getPos());
 			if (!closestEnemy || minDist > dist)
