@@ -35,7 +35,6 @@ void CCBot::OnGameStart()
 	#ifdef VSHUMAN
 	timer.start();
 	#endif // VSHUMAN
-	m_config.readConfigFile();
 	
 	// get my race
 	auto playerID = Observation()->GetPlayerID();
@@ -50,6 +49,8 @@ void CCBot::OnGameStart()
 			m_playerRace[Players::Enemy] = playerInfo.race_requested;
 		}
 	}
+	m_config.setOpponentRace(Util::GetStringFromRace(m_playerRace.at(Players::Enemy)));
+	m_config.onStart();
 	m_techTree.onStart();
 	m_strategy.onStart();
 	m_map.onStart();
@@ -433,3 +434,14 @@ void CCBot::OnError(const std::vector<sc2::ClientError> & client_errors, const s
 	}
 
 }
+
+void CCBot::setOpponentID(const std::string& opponentID)
+{
+	m_config.setOpponentID(opponentID);
+}
+
+void CCBot::processResult(sc2::GameResult result)
+{
+	m_config.processResult(result);
+}
+

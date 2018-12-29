@@ -1,4 +1,6 @@
 #pragma once
+#include <utility>
+#include <vector>
 
 #include "sc2api/sc2_api.h"
 
@@ -138,7 +140,7 @@ class CUnit
 	void newAbilityCoolDown(const uint32_t CD);
 	const std::pair<CUnit::Occupation, int> getOccupation() const;
 	void setOccupation(std::pair<CUnit::Occupation, int> occupation);
-	std::vector<std::shared_ptr<CUnit> > getClosestUnits(sc2::Unit::Alliance, size_t) const;
+	std::vector<std::shared_ptr<CUnit>> getClosestUnits(const int player, const size_t k = 1U) const;
 };
 
 class CUnitsData

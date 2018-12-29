@@ -1172,6 +1172,7 @@ float MapTools::getHeight(const float x, const float y) const
 
 void MapTools::draw() const
 {
+	return;
 	sc2::Point2D camera = m_bot.Observation()->GetCameraPos();
 	for (float x = camera.x - 16.0f; x < camera.x + 16.0f; ++x)
 	{
@@ -1182,14 +1183,14 @@ void MapTools::draw() const
 				continue;
 			}
 
-			if (m_bot.Config().DrawWalkableSectors)
+			if (false)
 			{
 				std::stringstream ss;
 				ss << getSectorNumber(static_cast<int>(x), static_cast<int>(y));
 				Drawing::drawTextScreen(m_bot, sc2::Point3D(x + 0.5f, y + 0.5f, m_maxZ + 0.1f), ss.str(), sc2::Colors::Yellow);
 			}
 
-			if (m_bot.Config().DrawTileInfo)
+			if (false)
 			{
 				sc2::Color color = isWalkable(static_cast<int>(x), static_cast<int>(y)) ? sc2::Colors::Green : sc2::Colors::Red;
 				if (isWalkable(static_cast<int>(x), static_cast<int>(y)) && !isBuildable(static_cast<int>(x), static_cast<int>(y)))

@@ -1,61 +1,41 @@
 #pragma once
+#include <string>
+#include <map>
 
 #include "sc2api/sc2_api.h"
 #include "Common.h"
 
+// Only add builds at the end of the list of builds. Otherwise the 'learned' data is invalid.
+constexpr auto BUILDS_START_LINE = __LINE__;
+enum class build
+{
+	Bio0Rax,
+	Bio1Rax,
+	Bio2Rax,
+	BioParanoid
+};
+constexpr auto NO_BUILDS = __LINE__ - BUILDS_START_LINE - 4;
+
 class BotConfig
 {
-	sc2::Race GetRace(const std::string & raceName);
+ public:
+	size_t m_buildingSpacing;
 
-public:
-
-	bool ConfigFileFound;
-	bool ConfigFileParsed;
-	std::string ConfigFileLocation;
-		
-	bool UsingAutoObserver;		
-	
-	std::string BotName;
-	std::string Authors;
-	bool PrintInfoOnStart;
-	std::string BotMode;
-	
-	std::string StrategyName;
-	std::string ReadDir;
-	std::string WriteDir;
-	bool UseEnemySpecificStrategy;
-	bool FoundEnemySpecificStrategy;
-	
-	bool DrawGameInfo;
-	bool DrawTileInfo;
-	bool DrawBaseLocationInfo;
-	bool DrawWalkableSectors;
-	bool DrawResourceInfo;
-	bool DrawProductionInfo;
-	bool DrawScoutInfo;
-	bool DrawWorkerInfo;
-	bool DrawModuleTimers;
-	bool DrawReservedBuildingTiles;
-	bool DrawBuildingInfo;
-	bool DrawEnemyUnitInfo;
-	bool DrawLastSeenTileInfo;
-	bool DrawUnitTargetInfo;
-	bool DrawSquadInfo;		
-	
-	sc2::Color ColorLineTarget;
-	sc2::Color ColorLineMineral;
-	sc2::Color ColorUnitNearEnemy;
-	sc2::Color ColorUnitNotNearEnemy;
-	
-	bool KiteWithRangedUnits;	
-	bool ScoutHarassEnemy;
-	int CombatUnitsForAttack;
-	
-	int WorkersPerRefinery;
-	int BuildingSpacing;
-	int PylonSpacing;
- 
 	BotConfig();
+	void onStart();
+	build getBuild() const;
+	void processResult(const sc2::GameResult result);
+	void setOpponentID(const std::string& opponentID);
+	void setOpponentRace(const std::string& opponentRace);
+
+private:
+
+	std::string m_opponentID;
+	std::string m_opponentRace;
+	size_t m_noBuilds;
+	build m_chosenBuild;
+	std::map<std::string, std::vector<int>> m_buildStats;
 
 	void readConfigFile();
+	void decideForBuild();
 };

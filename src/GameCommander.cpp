@@ -60,7 +60,7 @@ void GameCommander::drawGameInformation(const sc2::Point2D pos)
 {
 	std::stringstream ss;
 	ss << "Players: " << "\n";
-	ss << "Strategy: " << m_bot.Config().StrategyName << "\n";
+	ss << "Strategy: " << static_cast<int>(m_bot.Config().getBuild()) << "\n";
 	ss << "Map Name: " << "\n";
 	ss << "Time: " << "\n";
 	Drawing::drawTextScreen(m_bot, pos, ss.str());

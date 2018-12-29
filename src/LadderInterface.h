@@ -1,3 +1,7 @@
+#pragma once
+
+#include <algorithm>
+#include <string>
 #include "sc2api/sc2_api.h"
 
 static sc2::Difficulty GetDifficultyFromString(std::string InDifficulty)
@@ -116,7 +120,6 @@ static void ParseArguments(int argc, char *argv[], ConnectionOptions &connect_op
 		{
 			connect_options.ComputerDifficulty = GetDifficultyFromString(CompDiff);
 		}
-
 	}
 	else
 	{
@@ -124,7 +127,7 @@ static void ParseArguments(int argc, char *argv[], ConnectionOptions &connect_op
 	}
 }
 
-static void RunBot(int argc, char *argv[], sc2::Agent *Agent,sc2::Race race)
+static sc2::GameResult RunBot(int argc, char *argv[], sc2::Agent *Agent, sc2::Race race)
 {
 	ConnectionOptions Options;
 	ParseArguments(argc, argv, Options);
@@ -162,14 +165,14 @@ static void RunBot(int argc, char *argv[], sc2::Agent *Agent,sc2::Race race)
 		std::cout << "Join Game failed!(5minBot)" << std::endl;
 	}
 	std::cout << "Successfully joined game" << std::endl;
-	while (coordinator.Update()) {
-	}
-	for(const auto & result :Agent->Observation()->GetResults())
+	while (coordinator.Update()) {}
+	std::cout << "Game ended!" << std::endl;
+	for(const auto & result : Agent->Observation()->GetResults())
 	{
 		if (result.player_id == Agent->Observation()->GetPlayerID())
 		{
-			std::cout << result.result << std::endl;
+			return result.result;
 		}
 	}
-	std::cout << "Game ended!" << std::endl;
+	return sc2::GameResult::Undecided;
 }

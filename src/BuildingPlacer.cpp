@@ -43,7 +43,7 @@ void BuildingPlacer::expandBuildingTesterOnce()
 		}
 		sc2::Point2D pos = buildLocationTester.m_closestTiles[buildLocationTester.m_idx];
 
-		if (canBuildHereWithSpace(pos.x, pos.y, buildLocationTester.m_building, m_bot.Config().BuildingSpacing))
+		if (canBuildHereWithSpace(pos.x, pos.y, buildLocationTester.m_building, m_bot.Config().m_buildingSpacing))
 		{
 			buildLocationTester.m_canBuildHere = true;
 		}

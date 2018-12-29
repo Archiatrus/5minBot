@@ -445,10 +445,13 @@ float CUnit::hasBonusDmgAgainst(const std::shared_ptr<CUnit> & enemy) const
 	return 0.0f;
 }
 
-std::vector<std::shared_ptr<CUnit>> CUnit::getClosestUnits(const sc2::Unit::Alliance alliance,const size_t k) const
+std::vector<std::shared_ptr<CUnit>> CUnit::getClosestUnits(const int player, const size_t k) const
 {
-	std::vector<std::shared_ptr<CUnit>> nearestUnits;
-	nearestUnits.reserve(k);
+	std::vector<std::shared_ptr<CUnit>> nearestUnits = m_bot->UnitInfo().getNearestUnitsTo(player, getPos(), k);
+	if (player == Players::Self)
+	{
+		nearestUnits.erase(std::remove_if(nearestUnits.begin(), nearestUnits.end(), [tag = getTag()](const auto& unit)->bool {return unit->getTag() == tag; }));
+	}
 	return nearestUnits;
 }
 
@@ -456,11 +459,11 @@ std::vector<std::shared_ptr<CUnit>> CUnit::getEnemyUnitsInSight() const
 {
 	std::vector<std::shared_ptr<CUnit>> enemyUnitsInSight;
 
-	const float sightDistance = getSightRange();
+	const float sightDistance = std::pow(getSightRange(), 2);
 	// for each enemy unit (and building?)
 	for (const auto &enemy : m_bot->UnitInfo().getUnits(Players::Enemy))
 	{
-		const float dist = Util::Dist(getPos(), enemy->getPos());
+		const float dist = Util::DistSq(getPos(), enemy->getPos());
 
 		if (dist < sightDistance && (enemy->isCombatUnit() || enemy->isWorker()))
 		{

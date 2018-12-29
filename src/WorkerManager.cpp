@@ -506,7 +506,7 @@ void WorkerManager::setCombatWorker(const CUnit_ptr worker)
 
 void WorkerManager::drawResourceDebugInfo()
 {
-    if (!m_bot.Config().DrawResourceInfo)
+    if (true)
     {
         return;
     }
@@ -527,7 +527,7 @@ void WorkerManager::drawResourceDebugInfo()
 
 void WorkerManager::drawWorkerInformation()
 {
-	if (!m_bot.Config().DrawWorkerInfo)
+	if (true)
 	{
 		return;
 	}

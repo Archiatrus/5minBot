@@ -1,162 +1,184 @@
-#include "BotConfig.h"
-#include "rapidjson/document.h"
-#include "JSONTools.h"
+#include  <random>
 #include <iostream>
 
-BotConfig::BotConfig()
+#include "BotConfig.h"
+
+#include "sc2utils/sc2_manage_process.h"
+
+#include "rapidjson/document.h"
+#include "JSONTools.h"
+#include "rapidjson/ostreamwrapper.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/prettywriter.h"
+
+
+constexpr auto configFile = "Data/config.json";
+
+BotConfig::BotConfig():
+	m_opponentID(" "),
+	m_opponentRace("Random"),
+	m_noBuilds(NO_BUILDS),
+	m_chosenBuild(build::Bio0Rax),
+	m_buildingSpacing(1)
 {
-	ConfigFileFound					 = true;
-	ConfigFileParsed					= true;
-	ConfigFileLocation				  = "";
-	BotName							 = "5min";
-	Authors							 = "DK";
-	PrintInfoOnStart					= false;
-	StrategyName						= "Terran_test";
-	ReadDir							 = "read/";
-	WriteDir							= "write/";
-	UseEnemySpecificStrategy			= false;
-	FoundEnemySpecificStrategy		  = false;
-	UsingAutoObserver				   = false;
 
-	DrawGameInfo						= false;
-	DrawProductionInfo				  = true;
-	DrawBaseLocationInfo				= false;
-	DrawTileInfo						= false;
-	DrawWalkableSectors				 = false;
-	DrawScoutInfo					   = false;
-	DrawResourceInfo					= false;
-	DrawWorkerInfo					  = false;
-	DrawModuleTimers					= false;
-	DrawReservedBuildingTiles		   = false;
-	DrawBuildingInfo					= false;
-	DrawEnemyUnitInfo				   = false;
-	DrawLastSeenTileInfo				= false;
-	DrawUnitTargetInfo				  = false;
-	DrawSquadInfo					   = false;
+}
 
-	KiteWithRangedUnits				 = true;
-	ScoutHarassEnemy					= true;
-	CombatUnitsForAttack				= 50;
+void BotConfig::onStart()
+{
+	readConfigFile();
+	decideForBuild();
+	processResult(sc2::GameResult::Win);
+}
 
-	ColorLineTarget					 = sc2::Colors::White;
-	ColorLineMineral					= sc2::Colors::Teal;
-	ColorUnitNearEnemy				  = sc2::Colors::Red;
-	ColorUnitNotNearEnemy			   = sc2::Colors::Green;
-	
-	WorkersPerRefinery				  = 3;
-	BuildingSpacing					 = 1;
-	PylonSpacing						= 3;
+void BotConfig::setOpponentID(const std::string& opponentID)
+{
+	m_opponentID = opponentID;
+}
+
+void BotConfig::setOpponentRace(const std::string& opponentRace)
+{
+	m_opponentRace = opponentRace;
 }
 
 void BotConfig::readConfigFile()
 {
-	/*
-	rapidjson::Document doc;
-
-	std::string config = JSONTools::ReadFile(ConfigFileLocation);
-
-	if (config.length() == 0)
+	if (sc2::DoesFileExist(configFile))
 	{
-		std::cerr << "Error: Config File Not Found or is Empty\n";
-		std::cerr << "Config Filename: " << ConfigFileLocation << "\n";
-		std::cerr << "The bot will not run without its configuration file\n";
-		std::cerr << "Please check that the file exists and is not empty. Incomplete paths are relative to the bot .exe file\n";
-		std::cerr << "You can change the config file location in Config::ConfigFile::ConfigFileLocation\n";
-		ConfigFileFound = false;
-		return;
+		const std::string config = JSONTools::ReadFile(configFile);
+		if (config.length() > 0)
+		{
+			rapidjson::Document doc;
+			bool parsingFailed = doc.Parse(config.c_str()).HasParseError();
+			if (!parsingFailed)
+			{
+				for (rapidjson::Value::ConstMemberIterator member = doc.MemberBegin(); member != doc.MemberEnd(); ++member)
+				{
+					if (member->value.IsArray())
+					{
+						auto opponent = member->name.GetString();
+						m_buildStats[opponent].resize(m_noBuilds);
+						for (rapidjson::SizeType i(0); i < member->value.Size() && i < m_noBuilds; ++i)
+						{
+							m_buildStats.at(opponent).at(i) = member->value[i].GetInt();
+						}
+					}
+				}
+			}
+		}
 	}
-
-	bool parsingFailed = doc.Parse(config.c_str()).HasParseError();
-	if (parsingFailed)
+	if (m_buildStats.empty())
 	{
-		std::cerr << "Error: Config File Found, but could not be parsed\n";
-		std::cerr << "Config Filename: " << ConfigFileLocation << "\n";
-		std::cerr << "The bot will not run without its configuration file\n";
-		std::cerr << "Please check that the file exists, is not empty, and is valid JSON. Incomplete paths are relative to the bot .exe file\n";
-		std::cerr << "You can change the config file location in Config::ConfigFile::ConfigFileLocation\n";
-		ConfigFileParsed = false;
-		return;
+		// if !sc2::DoesFileExist(configFile) || config.length() == 0 || parsingFailed
+		m_buildStats["Protoss"].resize(m_noBuilds);
+		m_buildStats["Random"].resize(m_noBuilds);
+		m_buildStats["Terran"].resize(m_noBuilds);
+		m_buildStats["Zerg"].resize(m_noBuilds);
 	}
-
-	// Parse the Bot Info
-	if (doc.HasMember("Bot Info") && doc["Bot Info"].IsObject())
+	std::cout << "Memory:" << std::endl;
+	for (const auto& a : m_buildStats)
 	{
-		const rapidjson::Value & info = doc["Bot Info"];
-		JSONTools::ReadString("BotName", info, BotName);
-		JSONTools::ReadString("Authors", info, Authors);
-		JSONTools::ReadBool("PrintInfoOnStart", info, PrintInfoOnStart);
+		std::cout << a.first << " : ";
+		for (const auto b : a.second)
+		{
+			std::cout << b << " ";
+		}
+		std::cout << std::endl;
 	}
-
-	// Parse the Micro Options
-	if (doc.HasMember("Micro") && doc["Micro"].IsObject())
-	{
-		const rapidjson::Value & micro = doc["Micro"];
-		JSONTools::ReadBool("KiteWithRangedUnits", micro, KiteWithRangedUnits);
-		JSONTools::ReadBool("ScoutHarassEnemy", micro, ScoutHarassEnemy);
-		JSONTools::ReadInt("CombatUnitsForAttack", micro, CombatUnitsForAttack);
-	}
-
-	// Parse the Macro Options
-	if (doc.HasMember("Macro") && doc["Macro"].IsObject())
-	{
-		const rapidjson::Value & macro = doc["Macro"];
-		JSONTools::ReadInt("BuildingSpacing", macro, BuildingSpacing);
-		JSONTools::ReadInt("PylongSpacing", macro, PylonSpacing);
-		JSONTools::ReadInt("WorkersPerRefinery", macro, WorkersPerRefinery);
-	}
-
-	// Parse the Debug Options
-	if (doc.HasMember("Debug") && doc["Debug"].IsObject())
-	{
-		const rapidjson::Value & debug = doc["Debug"];
-		JSONTools::ReadBool("DrawGameInfo",			 debug, DrawGameInfo);
-		JSONTools::ReadBool("DrawTileInfo",			 debug, DrawTileInfo);
-		JSONTools::ReadBool("DrawBaseLocationInfo",	 debug, DrawBaseLocationInfo);
-		JSONTools::ReadBool("DrawWalkableSectors",	  debug, DrawWalkableSectors);
-		JSONTools::ReadBool("DrawResourceInfo",		 debug, DrawResourceInfo);
-		JSONTools::ReadBool("DrawWorkerInfo",		   debug, DrawWorkerInfo);
-		JSONTools::ReadBool("DrawProductionInfo",	   debug, DrawProductionInfo);
-		JSONTools::ReadBool("DrawScoutInfo",			debug, DrawScoutInfo);
-		JSONTools::ReadBool("DrawSquadInfo",			debug, DrawSquadInfo);
-		JSONTools::ReadBool("DrawBuildingInfo",		 debug, DrawBuildingInfo);
-		JSONTools::ReadBool("DrawModuleTimers",		 debug, DrawModuleTimers);
-		JSONTools::ReadBool("DrawEnemyUnitInfo",		debug, DrawEnemyUnitInfo);
-		JSONTools::ReadBool("DrawLastSeenTileInfo",	 debug, DrawLastSeenTileInfo);
-		JSONTools::ReadBool("DrawUnitTargetInfo",	   debug, DrawUnitTargetInfo);
-		JSONTools::ReadBool("DrawReservedBuildingTiles",debug, DrawReservedBuildingTiles);
-	}
-
-	// Parse the Module Options
-	if (doc.HasMember("Modules") && doc["Modules"].IsObject())
-	{
-		const rapidjson::Value & module = doc["Modules"];
-
-		JSONTools::ReadBool("UseAutoObserver", module, UsingAutoObserver);
-	}*/
 }
 
-sc2::Race BotConfig::GetRace(const std::string & raceName)
+
+void BotConfig::decideForBuild()
 {
-	if (raceName == "Protoss")
+	std::vector<int> buildMemory;
+	const auto& opponent = m_buildStats.find(m_opponentID);
+	if (m_buildStats.end() != opponent)
 	{
-		return sc2::Race::Protoss;
+		buildMemory = opponent->second;
+	}
+	else
+	{
+		if (" " != m_opponentID)
+		{
+			m_buildStats[m_opponentID] = m_buildStats[m_opponentRace];
+		}
+		buildMemory = m_buildStats[m_opponentRace];
+	}
+	auto min = *std::min_element(buildMemory.begin(), buildMemory.end());
+
+	// I could do this much(!) smarter... but I am too lazy atm
+	if (min <= 0)
+	{
+		--min;
+		for (auto & val : buildMemory)
+		{
+			val -= min;
+		}
+	}
+	std::vector<int> pool;
+	for (auto i(0); i < buildMemory.size(); ++i)
+	{
+		for (auto ii(0); ii < buildMemory[i]; ++ii)
+		{
+			pool.push_back(i);
+		}
 	}
 
-	if (raceName == "Terran")
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> dis(0, pool.size() - 1);
+	m_chosenBuild = static_cast<build>(pool[dis(gen)]);
+	std::cout << "Picked build : " << static_cast<int>(m_chosenBuild) << std::endl;
+}
+
+void BotConfig::processResult(const sc2::GameResult result)
+{
+	switch (result)
 	{
-		return sc2::Race::Terran;
+	case sc2::GameResult::Win:
+	{
+		if (" " != m_opponentID)
+		{
+			++m_buildStats[m_opponentID][static_cast<int>(m_chosenBuild)];
+		}
+		++m_buildStats[m_opponentRace][static_cast<int>(m_chosenBuild)];
+		break;
+	}
+	case sc2::GameResult::Loss:
+	{
+		if (" " != m_opponentID)
+		{
+			--m_buildStats[m_opponentID][static_cast<int>(m_chosenBuild)];
+		}
+		--m_buildStats[m_opponentRace][static_cast<int>(m_chosenBuild)];
+		break;
+	}
+	default: break;
 	}
 
-	if (raceName == "Zerg")
+	rapidjson::Document ResultsDoc;
+	rapidjson::Document::AllocatorType& alloc = ResultsDoc.GetAllocator();
+	ResultsDoc.SetObject();
+	rapidjson::Value ResultsArray(rapidjson::kArrayType);
+
+	for (const auto& opponentStats : m_buildStats)
 	{
-		return sc2::Race::Zerg;
+		rapidjson::Value ResultsArray(rapidjson::kArrayType);
+		for (const auto& val : opponentStats.second)
+		{
+			ResultsArray.PushBack(rapidjson::Value(val).Move(), alloc);
+		}
+		rapidjson::Value key((opponentStats.first).c_str(), alloc);
+		ResultsDoc.AddMember(key, ResultsArray, alloc);
 	}
 
-	if (raceName == "Random")
-	{
-		return sc2::Race::Random;
-	}
+	std::ofstream ofs(configFile);
+	rapidjson::OStreamWrapper osw(ofs);
+	rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(osw);
+	ResultsDoc.Accept(writer);
+}
 
-	BOT_ASSERT(false, "Race not found: %s", raceName.c_str());
-	return sc2::Race::Random;
+build BotConfig::getBuild() const
+{
+	return m_chosenBuild;
 }

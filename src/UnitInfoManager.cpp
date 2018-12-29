@@ -6,15 +6,11 @@
 #include <sstream>
 
 
-UnitInfoManager::UnitInfoManager(CCBot & bot)
-	: m_bot(bot)
-{
-
-}
+UnitInfoManager::UnitInfoManager(CCBot & bot): m_bot(bot) {}
 
 void UnitInfoManager::onStart()
 {
-	//Once also the snapshots to get base positions
+	// Once also the snapshots to get base positions
 	for (const auto & unit : m_bot.Observation()->GetUnits())
 	{
 		m_unitDataBase[unit->alliance][unit->unit_type].insert(unit, m_bot);
@@ -28,22 +24,23 @@ void UnitInfoManager::onFrame()
 
 void UnitInfoManager::updateUnitInfo()
 {
-	//Insert new units
+	// Insert new units
 	for (const auto & unit : m_bot.Observation()->GetUnits(Util::IsNoSnapShot()))
 	{
 		m_unitDataBase[unit->alliance][unit->unit_type].insert(unit, m_bot);
 	}
-	//remove dead and all into RTree
+	// remove dead and all into RTree
 	for (auto & playerData : m_unitDataBase)
 	{
 		for (auto & units : playerData.second)
 		{
 			units.second.removeDead(m_bot);
+			m_rtree[playerData.first].clear();
 			for (const auto& unit : units.second.getUnits())
 			{
 				if (sc2::Point3D() != unit->getPos())
 				{
-					m_rtree[unit->getAlliance()].insert(RTreeNode(unit));
+					m_rtree[playerData.first].insert(RTreeNode(unit));
 				}
 			}
 		}
@@ -55,27 +52,31 @@ std::vector<std::shared_ptr<CUnit>> UnitInfoManager::getNearestUnitsTo(int playe
 	std::vector<std::shared_ptr<CUnit>> units;
 	if (sc2::Point3D() != unit->getPos())
 	{
-	for (auto const& nearestUnit(m_rtree.at(player).qbegin(bgi::nearest(RTreeNode(unit), k+1)));
-		 nearestUnit!=m_rtree.at(player).qend();
-		 ++nearestUnit)
-	{
-		units.push_back(nearestUnit->unit);
-	}
+		for (auto & nearestUnit(m_rtree.at(player).qbegin(bgi::nearest(RTreeNode(unit), k + 1)));
+			nearestUnit != m_rtree.at(player).qend();
+			++nearestUnit)
+		{
+			if (nearestUnit->unit->getTag() == unit->getTag())
+			{
+				continue;
+			}
+			units.push_back(nearestUnit->unit);
+		}
 	}
 	return units;
 }
 
-std::vector<std::shared_ptr<CUnit>> UnitInfoManager::getUnitsNear(int player, const sc2::Point2D& pos, size_t k) const
+std::vector<std::shared_ptr<CUnit>> UnitInfoManager::getNearestUnitsTo(int player, const sc2::Point2D& pos, size_t k) const
 {
 	std::vector<std::shared_ptr<CUnit>> units;
-	if (sc2::Point3D() != unit->getPos())
+	if (sc2::Point2D() != pos)
 	{
-	for (auto const& nearestUnit(m_rtree.at(player).qbegin(bgi::nearest(RTreeNode(pos), k+1)));
-		 nearestUnit!=m_rtree.at(player).qend();
-		 ++nearestUnit)
-	{
-		units.push_back(nearestUnit->unit);
-	}
+		for (auto & nearestUnit(m_rtree.at(player).qbegin(bgi::nearest(RTreeNode(pos), k + 1)));
+			nearestUnit != m_rtree.at(player).qend();
+			++nearestUnit)
+		{
+			units.push_back(nearestUnit->unit);
+		}
 	}
 	return units;
 }
@@ -251,7 +252,7 @@ size_t UnitInfoManager::getUnitTypeCount(int player, sc2::UnitTypeID type, bool 
 		return 0;
 	}
     size_t count = 0;
-	if (type!=sc2::UNIT_TYPEID::TERRAN_REFINERY)
+	if (type != sc2::UNIT_TYPEID::TERRAN_REFINERY)
 	{
 		if (!completed)
 		{
@@ -401,8 +402,8 @@ const std::vector<std::shared_ptr<CUnit>> UnitInfoManager::getUnits(int player) 
 	for (const auto & u : m_unitDataBase.at(player))
 	{
 		std::vector<std::shared_ptr<CUnit>> newUnits(u.second.getUnits());
-		//Too cowardly to do std::make_move_iterator
-		allUnits.insert(allUnits.end(),newUnits.begin(),newUnits.end());
+		// Too cowardly to do std::make_move_iterator
+		allUnits.insert(allUnits.end(), newUnits.begin(), newUnits.end());
 	}
 	return allUnits;
 }
@@ -431,7 +432,7 @@ const std::vector<std::shared_ptr<CUnit>> UnitInfoManager::getUnits(int player, 
 			continue;
 		}
 		std::vector<std::shared_ptr<CUnit>> newUnits(m_unitDataBase.at(player).at(type).getUnits());
-		//Too cowardly to do std::make_move_iterator
+		// Too cowardly to do std::make_move_iterator
 		allUnits.insert(allUnits.end(), newUnits.begin(), newUnits.end());
 	}
 	return allUnits;
@@ -451,7 +452,7 @@ const std::vector<std::shared_ptr<CUnit>> UnitInfoManager::getUnits(int player, 
 			continue;
 		}
 		std::vector<std::shared_ptr<CUnit>> newUnits(m_unitDataBase.at(player).at(type).getUnits());
-		//Too cowardly to do std::make_move_iterator
+		// Too cowardly to do std::make_move_iterator
 		allUnits.insert(allUnits.end(), newUnits.begin(), newUnits.end());
 	}
 	return allUnits;

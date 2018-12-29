@@ -79,6 +79,9 @@ public:
     bool underAttack() const;
 	void setPlayerRace(int player, sc2::Race race);
 	void retreat();
+
+	void setOpponentID(const std::string& opponentID);
+	void processResult(sc2::GameResult result);
 };
 
 extern bool useDebug;

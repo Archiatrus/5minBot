@@ -179,7 +179,7 @@ size_t ProductionManager::getFreeMinerals()
 		m_buildingManager.resetFreeMinerals();
 		reserved = 0;
 	}
-	return m_bot.Observation()->GetMinerals() - m_buildingManager.getReservedMinerals();
+	return m_bot.Observation()->GetMinerals() - m_buildingManager.getReservedMinerals() < 0 ? 0U : static_cast<size_t>(m_bot.Observation()->GetMinerals() - m_buildingManager.getReservedMinerals());
 }
 
 size_t ProductionManager::getFreeGas()
@@ -268,29 +268,14 @@ void ProductionManager::defaultMacroBio()
 	{
 		// If we are under attack marines have priority
         // Drawing::cout{m_bot.Observation()->GetGameLoop()} << "Under attack!" << std::endl;
-		for (const auto & unit : Rax)
+		if (pleaseTrain(sc2::UNIT_TYPEID::TERRAN_MARINE, minerals, gas) == ProductionStatus::success)
 		{
-			// Any finished rax
-			if (unit->isCompleted())
-			{
-				// that is idle
-                const auto addon = unit->getAddOn();
-                if (unit->isIdle() || (addon && addon->isType(sc2::UNIT_TYPEID::TERRAN_BARRACKSREACTOR) && unit->getOrders().size() < 2))
-				{
-                    if (minerals >= m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).mineralCost && supply <= 200 - m_bot.Data(sc2::UNIT_TYPEID::TERRAN_MARINE).supplyCost)
-					{
-						m_bot.Actions()->UnitCommand(unit->getUnit_ptr(), sc2::ABILITY_ID::TRAIN_MARINE);
-                        Drawing::cout{m_bot.Observation()->GetGameLoop()} << "Marine" << std::endl;
-						return;
-					}
-				}
-			}
+			return;
 		}
 		const CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
 		if (m_bot.Workers().getMineralWorkers().size() > 5 && Bunker.size() + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BUNKER) < 1)
 		{
-			m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BUNKER), BUILDING, false));
-            Drawing::cout{m_bot.Observation()->GetGameLoop()} << "Bunker" << std::endl;
+			pleaseTrain(sc2::UNIT_TYPEID::TERRAN_BUNKER, minerals, gas);
 			return;
 		}
 	}
@@ -1019,7 +1004,7 @@ bool ProductionManager::tryingToExpand() const
 
 void ProductionManager::drawProductionInformation()
 {
-	if (!m_bot.Config().DrawProductionInfo)
+	if (true)
 	{
 		return;
 	}

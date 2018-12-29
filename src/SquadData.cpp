@@ -84,7 +84,7 @@ void SquadData::updateAllSquads()
 
 void SquadData::drawSquadInformation()
 {
-	if (!m_bot.Config().DrawSquadInfo)
+	if (true)
 	{
 		return;
 	}

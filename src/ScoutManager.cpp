@@ -184,7 +184,7 @@ void ScoutManager::setScout(CUnit_ptr unit)
 
 void ScoutManager::drawScoutInformation()
 {
-	if (!m_bot.Config().DrawScoutInfo)
+	if (true)
 	{
 		return;
 	}

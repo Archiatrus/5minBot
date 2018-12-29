@@ -485,7 +485,7 @@ void BuildingManager::drawBuildingInformation()
 {
 	m_buildingPlacer.drawReservedTiles();
 
-	if (!m_bot.Config().DrawBuildingInfo)
+	if (true)
 	{
 		return;
 	}
@@ -612,7 +612,7 @@ sc2::Point2D BuildingManager::getBuildingLocation(const Building & b)
 		return m_buildingPlacer.getBuildLocationNear(b, 0);
 	}
 	// get a position within our region
-	return m_buildingPlacer.getBuildLocationNear(b, m_bot.Config().BuildingSpacing);
+	return m_buildingPlacer.getBuildLocationNear(b, m_bot.Config().m_buildingSpacing);
 }
 
 void BuildingManager::removeBuildings(const std::vector<Building> & toRemove)
