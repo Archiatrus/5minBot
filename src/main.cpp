@@ -23,7 +23,7 @@ bool useAutoObserver = false;
 bool useDebug = false;
 bool useAutoObserver = false;
 #else
-bool useDebug = true;
+bool useDebug = false;
 bool useAutoObserver = false;
 #endif
 
@@ -80,7 +80,7 @@ static void ParseArguments(int argc, char *argv[], ConnectionOptions &connect_op
 	}
 	else
 	{
-		Drawing::cout{} << std::endl << "Could not read race option. Please provide it via --HumanRace \"Zerg/Protoss/Terran\". Using default: Zerg" << std::endl << std::endl;
+		Drawing::cout{} << "Could not read race option. Please provide it via --HumanRace \"Zerg/Protoss/Terran\". Using default: Zerg" << std::endl << std::endl;
 		connect_options.HumanRace = sc2::Zerg;
 	}
 
@@ -187,6 +187,14 @@ int main(int argc, char* argv[])
 				while (coordinator.Update())
 				{
 				}
+				for (const auto & result : bot.Observation()->GetResults())
+				{
+					if (result.player_id == bot.Observation()->GetPlayerID())
+					{
+						bot.processResult(result.result);
+					}
+				}
+				
 				if (bot.Observation() && bot.Observation()->GetResults().size() > 0 && bot.Observation()->GetResults().front().result == sc2::GameResult::Win)
 				{
 					mapScore[map] += sc2::Point2D(1, 0);
@@ -197,17 +205,17 @@ int main(int argc, char* argv[])
 					mapScore[map] += sc2::Point2D(0, 1);
 					raceScore[opponent] += sc2::Point2D(0, 1);
 				}
-				Drawing::cout{} << std::endl;
+				std::cout << std::endl;
 				for (const auto & rs : raceScore)
 				{
 					Drawing::cout{} << Util::GetStringFromRace(rs.first) << " = " << rs.second.x << " : " << rs.second.y << " (" << roundf(rs.second.x / (rs.second.x + rs.second.y) * 100.0f) / 100.0f << "%)" << std::endl;
 				}
-				Drawing::cout{} << std::endl;
+				std::cout << std::endl;
 				for (const auto & ms : mapScore)
 				{
 					Drawing::cout{} << ms.first << " = " << ms.second.x << " : " << ms.second.y << " (" << roundf(ms.second.x / (ms.second.x + ms.second.y) * 100.0f) / 100.0f << "%)" << std::endl;
 				}
-				Drawing::cout{} << std::endl << std::endl;
+				std::cout << std::endl << std::endl;
 				coordinator.LeaveGame();
 				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 			}

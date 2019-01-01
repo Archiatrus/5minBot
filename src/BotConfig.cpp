@@ -28,7 +28,6 @@ void BotConfig::onStart()
 {
 	readConfigFile();
 	decideForBuild();
-	processResult(sc2::GameResult::Win);
 }
 
 void BotConfig::setOpponentID(const std::string& opponentID)

@@ -764,8 +764,8 @@ void ProductionManager::defaultMacroBio()
         }
     }
     // Units
-    else
-    {
+	// else
+    // {
         if (m_bot.UnitInfo().getUnits(Players::Enemy, Util::getAntiMedivacTypes()).size() > 3)
         {
             if (pleaseTrain(sc2::UNIT_TYPEID::TERRAN_MARAUDER, minerals, gas) == ProductionStatus::success)
@@ -777,11 +777,11 @@ void ProductionManager::defaultMacroBio()
         {
             return;
         }
-    }
+		// }
 
 
 
-	if (minerals >= 100 && numBases >= 2)  // m_bot.GetPlayerRace(Players::Enemy) != sc2::Race::Terran &&
+	if (minerals >= 100 && numBases >= 2)
 	{
 		const CUnits Bunker = m_bot.UnitInfo().getUnits(Players::Self, sc2::UNIT_TYPEID::TERRAN_BUNKER);
 		if (Bunker.size() + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BUNKER) < 1)
@@ -820,29 +820,30 @@ void ProductionManager::defaultMacroBio()
 	// On one base save a little to get an expansion
 	if (numBases == 1)
 	{
-		if (true)  // m_bot.GetPlayerRace(Players::Enemy) == sc2::Race::Protoss)
+		size_t raxBeforeCC = 0;
+		if (m_bot.Config().getBuild() == build::Bio2Rax || m_bot.Config().getBuild() == build::BioParanoid)
 		{
-			if (numDepotsFinished > 0 && minerals >= 150 && numRax + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 2)
-			{
-				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
-                Drawing::cout{m_bot.Observation()->GetGameLoop()} << "Barracks" << std::endl;
-				return;
-			}
+			raxBeforeCC = 2;
 		}
-		else
+		else if (m_bot.Config().getBuild() == build::Bio1Rax)
 		{
-			if (numDepotsFinished > 0 && minerals >= 150 && numRax + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 1)
-			{
-				m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
-                Drawing::cout{m_bot.Observation()->GetGameLoop()} << "Barracks" << std::endl;
-				return;
-			}
+			raxBeforeCC = 1;
+		}
+		else if (m_bot.Config().getBuild() == build::Bio0Rax)
+		{
+			//raxBeforeCC = 0;
+		}
+		if (numDepotsFinished > 0 && minerals >= 150 && numRax + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < raxBeforeCC)
+		{
+			m_newQueue.push_back(BuildOrderItem(BuildType(sc2::UNIT_TYPEID::TERRAN_BARRACKS), BUILDING, false));
+			Drawing::cout{ m_bot.Observation()->GetGameLoop() } << "Barracks" << std::endl;
+			return;
 		}
 	}
 	// On two bases let the starport start first
 	else
 	{
-		if (numRax == 1 || numStarport > 0)
+		if (numRax <= 1 || numStarport > 0)
 		{
 			if (minerals >= 150 && numRax + howOftenQueued(sc2::UNIT_TYPEID::TERRAN_BARRACKS) < 3 * numBases - 4 && numRax <= 9)
 			{

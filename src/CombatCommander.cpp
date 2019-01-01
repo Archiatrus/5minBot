@@ -684,6 +684,11 @@ void CombatCommander::checkForProxyOrCheese()
 			const size_t bases = m_bot.UnitInfo().getUnitTypeCount(Players::Self, Util::getTownHallTypes());
 			if (bases <= 1)
 			{
+				if (m_bot.Config().getBuild() == build::BioParanoid)
+				{
+					m_underAttack = true;
+					return;
+				}
 				const CUnits enemyProduction = m_bot.UnitInfo().getUnits(Players::Enemy, std::vector<sc2::UnitTypeID>({ sc2::UNIT_TYPEID::TERRAN_BARRACKS, sc2::UNIT_TYPEID::TERRAN_FACTORY, sc2::UNIT_TYPEID::PROTOSS_GATEWAY, sc2::UNIT_TYPEID::PROTOSS_FORGE }));
 				if (enemyProduction.empty())
 				{

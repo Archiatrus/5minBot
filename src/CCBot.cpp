@@ -84,7 +84,7 @@ void CCBot::OnStep()
 				{
 					Drawing::cout{} << ", Ability: " << Observation()->GetAbilityData()[order.front().ability_id].friendly_name;
 				}
-				Drawing::cout{} << std::endl;
+				std::cout << std::endl;
 			}
 		}
 	}
